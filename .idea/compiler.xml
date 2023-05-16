@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="CompilerConfiguration">
+    <bytecodeTargetLevel target="17">
+      <module name="HexaEcon1161.main" target="1.8" />
+      <module name="HexaEcon1161.test" target="1.8" />
+      <module name="HexaEcon1162" target="1.8" />
+      <module name="HexaEcon_1.16.1" target="1.8" />
+      <module name="HexaEcon_1.16.1.main" target="1.8" />
+      <module name="HexaEcon_1.16.1.test" target="1.8" />
+    </bytecodeTargetLevel>
+  </component>
+</project>

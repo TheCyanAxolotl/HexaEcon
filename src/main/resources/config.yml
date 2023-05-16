@@ -1,0 +1,80 @@
+#      __  __                ______
+#     / / / /__  _  ______ _/ ____/________  ____
+#    / /_/ / _ \| |/_/ __ `/ __/ / ___/ __ \/ __ \
+#   / __  /  __/>  </ /_/ / /___/ /__/ /_/ / / / /
+#  /_/ /_/\___/_/|_|\__,_/_____/\___/\____/_/ /_/
+#
+# Offical best Economy plugin, made by KiyoshiDevelopment
+# Kiyoshi Discord: https://discord.kiyoshi.space
+# Kiyoshi Spigot: https://spigot.kiyoshi.space
+# ⚠️ IF THE PLUGIN CRASHES ON FIRST RUN, THAT'S NORMAL ⚠️
+
+# Gradients And Patterns
+# You can use for HEX this format #b50e22
+# For gradients you can use <GRADIENT:63c7db> Starting color and end color </GRADIENT:b50e22>
+
+# MySQL Setup
+MySQL:
+  Host: "" # HostName
+  Port: "3306" # Port
+  DataBase: "" # DataBase
+  DataEconomyName: "coins" # Economy Name
+  UserName: "" # UserName
+  Password: "" # Password
+
+# Modules
+Modules: # Coming Soon
+  OnKillMonsters: true
+  OnKillAnimals: false
+
+Economy:
+  Events:
+    OnKillMonsters:
+      StrikeEffect: false # if this is enabled the OnKillMonsters sound is disabled
+      Earn: 5 # earn money amount
+    OnKillAnimals:
+      StrikeEffect: false # if this is enabled the OnKillAnimals sound is disabled
+      Earn: 1 # earn money amount
+  Virtual:
+    Name: "&e&lCOIN"
+    Symbol: "⛀" # ⛀⛁⛃⛂
+  Physical:
+    NBT: # you can use the nbt value to apply custom textures for the plugin
+      Value: 30015 # default texture here (https://www.dropbox.com/s/b9gmdetcysz66zn/HexaEcon.zip?dl=1)
+    Item: SUNFLOWER # this is the physical item (if the item is a sunflower the BlockPlaceEvent for this item is disabled)
+    DisplayName: "&e&lCOIN" # physical item display name (HEX SUPPORT)
+    Lore:
+      - "&f&l❚ &7Economy value"
+      - "&f&l❚ &7at /warp shop"
+
+# Sounds
+Sounds: # https://hub.spigotmc.org/javadocs/bukkit/org/bukkit/Sound.html
+  OnPlayerInteractWithEcon:
+    Sound: "NONE" # if the sound is NONE no play sounds
+    Volume: 100
+    Pitch: 1
+  OnPlayerSneakPickupEcon:
+    Sound: "NONE"
+    Volume: 100
+    Pitch: 1
+  OnKillMonsters: # on monster kill
+    Sound: "ENTITY_PLAYER_LEVELUP"
+    Volume: 100
+    Pitch: 1
+  OnKillAnimals: # on animals kill
+    Sound: "ENTITY_FOX_DEATH"
+    Volume: 100
+    Pitch: 1
+  EcoCommand:
+    Sound: "ENTITY_CHICKEN_EGG"
+    Volume: 100
+    Pitch: 1
+  WalletCommand:
+    Sound: "ENTITY_VILLAGER_YES"
+    Volume: 100
+    Pitch: 1
+
+# Texture
+TextureManager:
+  Enabled: false
+  Texture: "https://www.dropbox.com/s/b9gmdetcysz66zn/HexaEcon.zip?dl=1"

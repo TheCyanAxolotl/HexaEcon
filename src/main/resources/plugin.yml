@@ -1,0 +1,15 @@
+name: HexaEcon
+version: '1.0'
+main: space.kiyoshi.hexaecon.HexaEcon
+author: TheUwUAxolotl
+website: https://discord.kiyoshi.space
+api-version: 1.16
+softdepend:
+  - PlaceholderAPI
+commands:
+  eco:
+    description: "See Balance"
+    aliases: ["balance", "bal"]
+  wallet:
+    description: "Withdraw money from the wallet"
+    aliases: ["money", "coin", "coins", "econ", "economy", "bank"]
