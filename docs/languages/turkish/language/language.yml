@@ -1,0 +1,19 @@
+Formatted:
+  Amount: '&e%amount&6%symbol'
+Language:
+  Prefix: '&e[&9HexaEcon&e]&r '
+  IsConsolePlayer: '&eüzgünüm ama bu komutu konsolda çalıştıramazsınız.'
+  BankAmount: '&6%amount &e%valuename sahipsiniz.'
+  GenericEarn: '&e+ &6%amount &e%valuename.'
+  GenerateToOther: '&e+ &6%amount &e%valuename &6%p tarafından verildi' 
+  AccessDenied: '&eBu komuta erişim izniniz yok: &6%perm'
+  InvalidAmount: '&eminimum değer &61 &e%valuename &eolmalı veya geçerli bir sayı girip girmediğini kontrol et.'
+  WalletWithdrawAmount: '&e- &6%amount &e%valuename.'
+  PlayerNotFound: '&eoyuncu &6%p &ebulunamadı veya çevirimiçi değil.'
+  WalletWithdrawConverted: '&6%amount &e%valuename dönüştürüldü.'
+  WalletWithdrawRemaningAmount: '&ehala %valuename &6%amount &eolarak kalıyor.'
+  WalletWithdrawNoEnoughAmount: '&eyeterli %valuename sahip değilsin, şuanki paran &6%amount
+    &e%valuename.'
+  UsageFormat: '&eKullanım: %u'
+Usages:
+  EconConvertDeposit: '&e/cüzdan [generate/withdraw] <miktar>'

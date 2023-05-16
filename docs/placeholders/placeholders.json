@@ -1,0 +1,6 @@
+{
+  // HexaEcon PlaceHolders (https://www.spigotmc.org/resources/placeholderapi.6245/)
+  "%hexaecon_version%": "Returns the version of the plugin",
+  "%hexaecon_balance%": "Return the Balance of the player",
+  "%hexaecon_balance_formatted": "Returns the formatted Balance of the player"
+}
