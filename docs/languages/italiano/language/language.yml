@@ -1,0 +1,20 @@
+Formatted:
+  Amount: '&e%amount&6%symbol'
+Language:
+  Prefix: '&e[&9HexaEcon&e]&r '
+  IsConsolePlayer: '&enon puoi eseguire questo comando in console.'
+  BankAmount: '&ehai &6%amount &e%valuename.'
+  GenericEarn: '&e+ &6%amount &e%valuename.'
+  ConfigurationReloaded: '&econfig ricaricato con successo.'
+  GenerateToOther: '&e+ &6%amount &e%valuename generati da &6%p'
+  AccessDenied: '&enon hai il permesso per eseguire questo comando, permesso richiesto: &6%perm'
+  InvalidAmount: '&evalore minimo richiesto &61 &e%valuename &eo controlla che la sintassi sia corretta.'
+  WalletWithdrawAmount: '&e- &6%amount &e%valuename.'
+  PlayerNotFound: '&eplayer &6%p &enon trovato o non online.'
+  WalletWithdrawConverted: '&6%amount &e%valuename convertiti.'
+  WalletWithdrawRemaningAmount: '&eti rimangono %valuename &6%amount.'
+  WalletWithdrawNoEnoughAmount: '&enon hai abbastanza %valuename, hai &6%amount
+    &e%valuename.'
+  UsageFormat: '&eUtilizzo: %u'
+Usages:
+  EconConvertDeposit: '&e/wallet [generate/withdraw] <amount>'
