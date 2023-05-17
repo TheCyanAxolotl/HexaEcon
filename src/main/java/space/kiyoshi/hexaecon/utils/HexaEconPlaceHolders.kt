@@ -6,13 +6,15 @@ import com.iridium.iridiumcolorapi.IridiumColorAPI
 import me.clip.placeholderapi.expansion.PlaceholderExpansion
 import org.bukkit.entity.Player
 import space.kiyoshi.hexaecon.HexaEcon
+import space.kiyoshi.hexaecon.functions.TableFunction
 import space.kiyoshi.hexaecon.utils.Language.formattedAmount
 import java.util.concurrent.CompletableFuture
 
 class HexaEconPlaceHolders: PlaceholderExpansion() {
     private val symbol = GetConfig.main().getString("Economy.Virtual.Symbol")
-    private val dataeconomyvalue = GetConfig.main().getString("MySQL.DataEconomyName")!!
+    private val dataeconomyvalue = GetConfig.main().getString("DataBase.DataEconomyName")!!
     private val version = HexaEcon.plugin.description.version
+    private val databasetype = GetConfig.main().getString("DataBase.Type")!!
     override fun getIdentifier(): String {
         return "hexaecon"
     }
@@ -53,17 +55,21 @@ class HexaEconPlaceHolders: PlaceholderExpansion() {
     }
 
     private fun getBalance(player: Player): String {
-        val future = CompletableFuture.supplyAsync {
-            val stmt = HexaEcon.SQL!!.getconnection()!!.createStatement()
-            val SQL = "SELECT * FROM " + player.name
-            val rs = stmt.executeQuery(SQL)
-            rs.next()
-            val value = rs.getInt(dataeconomyvalue)
-            rs.close()
-            stmt.close()
-            value
+        return if (databasetype == "h2") {
+            TableFunction.selectAllFromTableAsStringSQLite(player.name).toString().replace("[", "").replace("]", "")
+        } else {
+            val future = CompletableFuture.supplyAsync {
+                val stmt = HexaEcon.MySQLManager!!.getConnection()!!.createStatement()
+                val SQL = "SELECT * FROM " + player.name
+                val rs = stmt.executeQuery(SQL)
+                rs.next()
+                val value = rs.getInt(dataeconomyvalue)
+                rs.close()
+                stmt.close()
+                value
+            }
+            val value = future.get()
+            value.toString()
         }
-        val value = future.get()
-        return value.toString()
     }
 }

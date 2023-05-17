@@ -13,17 +13,19 @@
 # You can use for HEX this format #b50e22
 # For gradients you can use <GRADIENT:63c7db> Starting color and end color </GRADIENT:b50e22>
 
-# MySQL Setup
+# DataBase Setup
+DataBase:
+  Type: "h2" # h2 / MySQL
+  DataEconomyName: "coins" # Economy Name
 MySQL:
   Host: "" # HostName
   Port: "3306" # Port
   DataBase: "" # DataBase
-  DataEconomyName: "coins" # Economy Name
   UserName: "" # UserName
   Password: "" # Password
 
 # Modules
-Modules: # Coming Soon
+Modules: # Modules
   OnKillMonsters: true
   OnKillAnimals: false
 

@@ -16,8 +16,7 @@ import org.bukkit.configuration.file.YamlConfiguration
 import org.bukkit.entity.Player
 import space.kiyoshi.hexaecon.HexaEcon
 import space.kiyoshi.hexaecon.HexaEcon.Companion.plugin
-import space.kiyoshi.hexaecon.functions.TableFunction.createTableAmount
-import space.kiyoshi.hexaecon.functions.TableFunction.dropTable
+import space.kiyoshi.hexaecon.functions.TableFunction
 import space.kiyoshi.hexaecon.utils.*
 import space.kiyoshi.hexaecon.utils.Language.accessDenied
 import space.kiyoshi.hexaecon.utils.Language.configurationReloaded
@@ -39,10 +38,11 @@ import java.util.logging.LogRecord
 
 
 class Wallet : CommandExecutor, TabCompleter {
-    private val dataeconomyvalue = GetConfig.main().getString("MySQL.DataEconomyName")!!
+    private val dataeconomyvalue = GetConfig.main().getString("DataBase.DataEconomyName")!!
     private val sound = GetConfig.main().getString("Sounds.OnKillMonsters.Sound")!!
     private val volume = GetConfig.main().getInt("Sounds.OnKillMonsters.Volume")
     private val pitch = GetConfig.main().getInt("Sounds.OnKillMonsters.Pitch")
+    private val databasetype = GetConfig.main().getString("DataBase.Type")!!
 
     override fun onCommand(sender: CommandSender, command: Command, label: String, args: Array<String>): Boolean {
         val player = sender
@@ -89,35 +89,112 @@ class Wallet : CommandExecutor, TabCompleter {
                                     sender.sendMessage(Format.hex(IridiumColorAPI.process(Format.color(invalidAmount().replace("%valuename", dataeconomyvalue)))))
                                 }
                                 if (remove >= 1) {
-                                    val data_names =
-                                        File(plugin.dataFolder.toString() + "/data/" + sender.name + ".txt")
-                                    val data_names_config: FileConfiguration =
-                                        YamlConfiguration.loadConfiguration(data_names)
-                                    val soma = data_names_config.getInt("data.${dataeconomyvalue}") - remove
-                                    if (data_names_config.getInt("data.${dataeconomyvalue}") >= remove) {
-                                        try {
-                                            dropTable(sender as Player)
-                                        } catch (e: SQLException) {
-                                            throw RuntimeException(e)
+                                    val data_names_sqlite =
+                                        File(plugin.dataFolder.toString() + "/data/" + sender.name + "_SQLite.txt")
+                                    val data_names_mysql =
+                                        File(plugin.dataFolder.toString() + "/data/" + sender.name + "_MySQL.txt")
+                                    val data_names_config_sqlite: FileConfiguration =
+                                        YamlConfiguration.loadConfiguration(data_names_sqlite)
+                                    val data_names_config_mysql: FileConfiguration =
+                                        YamlConfiguration.loadConfiguration(data_names_mysql)
+                                    val somasqlite = data_names_config_sqlite.getInt("data.${dataeconomyvalue}") - remove
+                                    val somamysql = data_names_config_mysql.getInt("data.${dataeconomyvalue}") - remove
+                                    if(databasetype == "h2") {
+                                        if (data_names_config_sqlite.getInt("data.${dataeconomyvalue}") >= remove) {
+                                            try {
+                                                if(databasetype == "h2") {
+                                                    TableFunction.dropTableSQLite(sender as Player)
+                                                } else {
+                                                    TableFunction.dropTable(sender as Player)
+                                                }
+                                            } catch (_: SQLException) {}
+                                            try {
+                                                if(databasetype == "h2") {
+                                                    TableFunction.createTableAmountSQLite(player as Player, somasqlite)
+                                                } else {
+                                                    TableFunction.createTableAmount(player as Player, somamysql)
+                                                }
+                                            } catch (e: SQLException) {
+                                                throw RuntimeException(e)
+                                            }
+                                            if(databasetype == "h2") {
+                                                data_names_config_sqlite["data.${dataeconomyvalue}"] = somasqlite
+                                            } else {
+                                                data_names_config_mysql["data.${dataeconomyvalue}"] = somamysql
+                                            }
+                                            try {
+                                                if(databasetype == "h2") {
+                                                    data_names_config_sqlite.save(data_names_sqlite)
+                                                } else {
+                                                    data_names_config_mysql.save(data_names_mysql)
+                                                }
+                                            } catch (e: IOException) {
+                                                throw RuntimeException(e)
+                                            }
+                                            plugin.reloadConfig()
+                                            player.sendMessage(Format.hex(Format.color(IridiumColorAPI.process(walletWithdrawAmount().replace("%amount", remove.toString()).replace("%valuename", dataeconomyvalue)))))
+                                            player.sendMessage(Format.hex(Format.color(IridiumColorAPI.process(walletWithdrawConverted().replace("%amount", remove.toString()).replace("%valuename", dataeconomyvalue)))))
+                                            if(databasetype == "h2") {
+                                                player.sendMessage(Format.hex(Format.color(IridiumColorAPI.process(walletWithdrawRemainingAmount().replace("%amount", data_names_config_sqlite.getInt("data.${dataeconomyvalue}").toString()).replace("%valuename", dataeconomyvalue)))))
+                                            } else {
+                                                player.sendMessage(Format.hex(Format.color(IridiumColorAPI.process(walletWithdrawRemainingAmount().replace("%amount", data_names_config_mysql.getInt("data.${dataeconomyvalue}").toString()).replace("%valuename", dataeconomyvalue)))))
+                                            }
+                                            player.inventory.addItem(Economy.addEconomy(player, remove))
+                                        } else {
+                                            if(databasetype == "h2") {
+                                                player.sendMessage(Format.hex(Format.color(IridiumColorAPI.process(walletWithdrawNoEnoughAmount().replace("%amount", data_names_config_sqlite.getInt("data.${dataeconomyvalue}").toString()).replace("%valuename", dataeconomyvalue)))))
+                                            } else {
+                                                player.sendMessage(Format.hex(Format.color(IridiumColorAPI.process(walletWithdrawNoEnoughAmount().replace("%amount", data_names_config_mysql.getInt("data.${dataeconomyvalue}").toString()).replace("%valuename", dataeconomyvalue)))))
+                                            }
                                         }
-                                        try {
-                                            createTableAmount(player as Player, soma)
-                                        } catch (e: SQLException) {
-                                            throw RuntimeException(e)
-                                        }
-                                        data_names_config["data.${dataeconomyvalue}"] = soma
-                                        try {
-                                            data_names_config.save(data_names)
-                                        } catch (e: IOException) {
-                                            throw RuntimeException(e)
-                                        }
-                                        plugin.reloadConfig()
-                                        player.sendMessage(Format.hex(Format.color(IridiumColorAPI.process(walletWithdrawAmount().replace("%amount", remove.toString()).replace("%valuename", dataeconomyvalue)))))
-                                        player.sendMessage(Format.hex(Format.color(IridiumColorAPI.process(walletWithdrawConverted().replace("%amount", remove.toString()).replace("%valuename", dataeconomyvalue)))))
-                                        player.sendMessage(Format.hex(Format.color(IridiumColorAPI.process(walletWithdrawRemainingAmount().replace("%amount", data_names_config.getInt("data.${dataeconomyvalue}").toString()).replace("%valuename", dataeconomyvalue)))))
-                                        player.inventory.addItem(Economy.addEconomy(player, remove))
                                     } else {
-                                        player.sendMessage(Format.hex(Format.color(IridiumColorAPI.process(walletWithdrawNoEnoughAmount().replace("%amount", data_names_config.getInt("data.${dataeconomyvalue}").toString()).replace("%valuename", dataeconomyvalue)))))
+                                        if (data_names_config_mysql.getInt("data.${dataeconomyvalue}") >= remove) {
+                                            try {
+                                                if (databasetype == "h2") {
+                                                    TableFunction.dropTableSQLite(sender as Player)
+                                                } else {
+                                                    TableFunction.dropTable(sender as Player)
+                                                }
+                                            } catch (_: SQLException) {}
+                                            try {
+                                                if (databasetype == "h2") {
+                                                    TableFunction.createTableAmountSQLite(player as Player, somasqlite)
+                                                } else {
+                                                    TableFunction.createTableAmount(player as Player, somamysql)
+                                                }
+                                            } catch (e: SQLException) {
+                                                throw RuntimeException(e)
+                                            }
+                                            if(databasetype == "h2") {
+                                                data_names_config_sqlite["data.${dataeconomyvalue}"] = somasqlite
+                                            } else {
+                                                data_names_config_mysql["data.${dataeconomyvalue}"] = somamysql
+                                            }
+                                            try {
+                                                if(databasetype == "h2") {
+                                                    data_names_config_sqlite.save(data_names_sqlite)
+                                                } else {
+                                                    data_names_config_mysql.save(data_names_mysql)
+                                                }
+                                            } catch (e: IOException) {
+                                                throw RuntimeException(e)
+                                            }
+                                            plugin.reloadConfig()
+                                            player.sendMessage(Format.hex(Format.color(IridiumColorAPI.process(walletWithdrawAmount().replace("%amount", remove.toString()).replace("%valuename", dataeconomyvalue)))))
+                                            player.sendMessage(Format.hex(Format.color(IridiumColorAPI.process(walletWithdrawConverted().replace("%amount", remove.toString()).replace("%valuename", dataeconomyvalue)))))
+                                            if(databasetype == "h2") {
+                                                player.sendMessage(Format.hex(Format.color(IridiumColorAPI.process(walletWithdrawRemainingAmount().replace("%amount", data_names_config_sqlite.getInt("data.${dataeconomyvalue}").toString()).replace("%valuename", dataeconomyvalue)))))
+                                            } else {
+                                                player.sendMessage(Format.hex(Format.color(IridiumColorAPI.process(walletWithdrawRemainingAmount().replace("%amount", data_names_config_mysql.getInt("data.${dataeconomyvalue}").toString()).replace("%valuename", dataeconomyvalue)))))
+                                            }
+                                            player.inventory.addItem(Economy.addEconomy(player, remove))
+                                        } else {
+                                            if(databasetype == "h2") {
+                                                player.sendMessage(Format.hex(Format.color(IridiumColorAPI.process(walletWithdrawNoEnoughAmount().replace("%amount", data_names_config_sqlite.getInt("data.${dataeconomyvalue}").toString()).replace("%valuename", dataeconomyvalue)))))
+                                            } else {
+                                                player.sendMessage(Format.hex(Format.color(IridiumColorAPI.process(walletWithdrawNoEnoughAmount().replace("%amount", data_names_config_mysql.getInt("data.${dataeconomyvalue}").toString()).replace("%valuename", dataeconomyvalue)))))
+                                            }
+                                        }
                                     }
                                 }
                             } else {
@@ -169,26 +246,51 @@ class Wallet : CommandExecutor, TabCompleter {
                                             }
                                             return false
                                         }
-                                        val data_names2 =
-                                            File(plugin.dataFolder.toString() + "/data/" + target!!.name + ".txt")
-                                        val data_names_config2: FileConfiguration =
-                                            YamlConfiguration.loadConfiguration(data_names2)
-                                        val data_names = File(
+                                        val data_names2_sqlite =
+                                            File(plugin.dataFolder.toString() + "/data/" + target!!.name + "_SQLite.txt")
+                                        val data_names2_mysql =
+                                            File(plugin.dataFolder.toString() + "/data/" + target.name + "_MySQL.txt")
+                                        val data_names_config2_sqlite: FileConfiguration =
+                                            YamlConfiguration.loadConfiguration(data_names2_sqlite)
+                                        val data_names_config2_mysql: FileConfiguration =
+                                            YamlConfiguration.loadConfiguration(data_names2_mysql)
+                                        val data_names_sqlite = File(
                                             plugin.dataFolder.toString() + "/data/" + target
-                                                .name + ".txt"
+                                                .name + "_SQLite.txt"
                                         )
-                                        val soma = data_names_config2.getInt("data.${dataeconomyvalue}") + amount
+                                        val data_names_mysql = File(
+                                            plugin.dataFolder.toString() + "/data/" + target
+                                                .name + "_MySQL.txt"
+                                        )
+                                        val somasqlite = data_names_config2_sqlite.getInt("data.${dataeconomyvalue}") + amount
+                                        val somamysql = data_names_config2_mysql.getInt("data.${dataeconomyvalue}") + amount
                                         try {
-                                            dropTable(target)
+                                            if(databasetype == "h2") {
+                                                TableFunction.dropTableSQLite(target)
+                                            } else {
+                                                TableFunction.dropTable(target)
+                                            }
                                         } catch (_: SQLException) {
                                         }
                                         try {
-                                            createTableAmount(target, soma)
+                                            if(databasetype == "h2") {
+                                                TableFunction.createTableAmountSQLite(target, somasqlite)
+                                            } else {
+                                                TableFunction.createTableAmount(target, somamysql)
+                                            }
                                         } catch (_: SQLException) {
                                         }
-                                        data_names_config2["data.${dataeconomyvalue}"] = soma
+                                        if(databasetype == "h2") {
+                                            data_names_config2_sqlite["data.${dataeconomyvalue}"] = somasqlite
+                                        } else {
+                                            data_names_config2_mysql["data.${dataeconomyvalue}"] = somamysql
+                                        }
                                         try {
-                                            data_names_config2.save(data_names)
+                                            if(databasetype == "h2") {
+                                                data_names_config2_sqlite.save(data_names_sqlite)
+                                            } else {
+                                                data_names_config2_mysql.save(data_names_mysql)
+                                            }
                                         } catch (_: IOException) {}
                                         plugin.reloadConfig()
                                         target.sendMessage(Format.hex(Format.color(IridiumColorAPI.process(generateToOther().replace("%amount", amount.toString()).replace("%valuename", dataeconomyvalue).replace("%p", player.name)))))

@@ -11,7 +11,8 @@ import space.kiyoshi.hexaecon.events.AnimalsDeath
 import space.kiyoshi.hexaecon.events.EventsListener
 import space.kiyoshi.hexaecon.events.JoinEvent
 import space.kiyoshi.hexaecon.events.MonsterDeath
-import space.kiyoshi.hexaecon.sql.MySQL
+import space.kiyoshi.hexaecon.sql.MySQLManager
+import space.kiyoshi.hexaecon.sql.SQLiteManager
 import space.kiyoshi.hexaecon.utils.HexaEconPlaceHolders
 import space.kiyoshi.hexaecon.utils.KiyoshiLogger
 import space.kiyoshi.hexaecon.utils.NMSUtils
@@ -76,23 +77,29 @@ class HexaEcon : JavaPlugin() {
     }
 
     private fun database() {
-        val cansetupdatabase = config.getString("MySQL.Host")!!
-        if(cansetupdatabase.isEmpty() || cansetupdatabase.isBlank() || cansetupdatabase.equals(null)){
+        val databasetype = config.getString("DataBase.Type")!!
+        if(databasetype.isEmpty() || databasetype.isBlank() || databasetype.equals(null)){
             val worlds = Bukkit.getWorlds()
             for(world in worlds){
                 world.save()
             }
-            KiyoshiLogger.log(LogRecord(Level.WARNING, "[MySQL] You need to connect MySQL database to use the plugin, check the config.yml"), "HexaEcon")
+            KiyoshiLogger.log(LogRecord(Level.WARNING, "[DataBase] You need to connect DataBsae database to use the plugin, check the config.yml"), "HexaEcon")
             server.shutdown()
-        } else {
+        } else if (databasetype == "h2") {
+            SQLiteManager = SQLiteManager("$dataFolder/data.db")
+            SQLiteManager?.connect()
+            if(SQLiteManager?.isConnected == true) {
+                KiyoshiLogger.log(LogRecord(Level.INFO, "[SQLite] pulling sqlite requests from HexaEcon [OK]"), "HexaEcon")
+            }
+        } else if (databasetype == "MySQL") {
             val worlds = Bukkit.getWorlds()
             for(world in worlds){
                 world.save()
             }
-            SQL = MySQL()
-            SQL?.connect()
-            if (SQL?.isConnected == true) {
-                KiyoshiLogger.log(LogRecord(Level.INFO, "[MySQL] pulling mysql requests frin HexaEcon [OK]"), "HexaEcon")
+            MySQLManager = MySQLManager()
+            MySQLManager?.connect()
+            if (MySQLManager?.isConnected == true) {
+                KiyoshiLogger.log(LogRecord(Level.INFO, "[MySQL] pulling mysql requests from HexaEcon [OK]"), "HexaEcon")
             }
         }
     }
@@ -130,16 +137,24 @@ class HexaEcon : JavaPlugin() {
     }
 
     override fun onDisable() {
-        SQL = MySQL()
-        try {
-            SQL!!.disconnect()
-        } catch (_: ClassNotFoundException) {}
-
+        val databasetype = config.getString("DataBase.Type")!!
+        MySQLManager = MySQLManager()
+        SQLiteManager = SQLiteManager("$dataFolder/data.db")
+        if(databasetype == "h2") {
+            try {
+                SQLiteManager!!.disconnect()
+            } catch (_: ClassNotFoundException) {}
+        } else if (databasetype == "MySQL") {
+            try {
+                MySQLManager!!.disconnect()
+            } catch (_: ClassNotFoundException) {}
+        }
     }
 
     companion object {
         var plugin: HexaEcon by Delegates.notNull()
-        var SQL: MySQL? = null
+        var MySQLManager: MySQLManager? = null
+        var SQLiteManager: SQLiteManager? = null
         var PAPI = false
     }
 

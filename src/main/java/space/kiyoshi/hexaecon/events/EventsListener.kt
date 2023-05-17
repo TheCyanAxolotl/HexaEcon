@@ -27,13 +27,14 @@ import java.sql.SQLException
 class EventsListener: Listener {
     private val itemdisplayname = GetConfig.main().getString("Economy.Physical.DisplayName")!!
     private val itemtype = GetConfig.main().getString("Economy.Physical.Item")!!
-    private val dataeconomyvalue = GetConfig.main().getString("MySQL.DataEconomyName")!!
+    private val dataeconomyvalue = GetConfig.main().getString("DataBase.DataEconomyName")!!
     private val soundonpickup = GetConfig.main().getString("Sounds.OnPlayerSneakPickupEcon.Sound")!!
     private val volumeonpickup = GetConfig.main().getInt("Sounds.OnPlayerSneakPickupEcon.Volume")
     private val pitchonpickup = GetConfig.main().getInt("Sounds.OnPlayerSneakPickupEcon.Pitch")
     private val soundoninteract = GetConfig.main().getString("Sounds.OnPlayerInteractWithEcon.Sound")!!
     private val volumeoninteract = GetConfig.main().getInt("Sounds.OnPlayerInteractWithEcon.Volume")
     private val pitchoninteract = GetConfig.main().getInt("Sounds.OnPlayerInteractWithEcon.Pitch")
+    private val databasetype = GetConfig.main().getString("DataBase.Type")!!
     @EventHandler
     fun onPlaceEvent(event: BlockPlaceEvent) {
 
@@ -70,25 +71,44 @@ class EventsListener: Listener {
             if(player.isSneaking){
                 event.isCancelled = true
                 if(action == Action.RIGHT_CLICK_AIR || action == Action.RIGHT_CLICK_BLOCK){
-                    val data_names = File(
+                    val data_names_sqlite = File(
                         HexaEcon.plugin.dataFolder.toString() + "/data/" + player
-                            .name + ".txt"
+                            .name + "_SQLite.txt"
                     )
-                    val data_names_config: FileConfiguration = YamlConfiguration.loadConfiguration(data_names)
-                    val soma = data_names_config.getInt("data.${dataeconomyvalue}") + amount!!
+                    val data_names_mysql = File(
+                        HexaEcon.plugin.dataFolder.toString() + "/data/" + player
+                            .name + "_MySQL.txt"
+                    )
+                    val data_names_config_sqlite: FileConfiguration = YamlConfiguration.loadConfiguration(data_names_sqlite)
+                    val data_names_config_mysql: FileConfiguration = YamlConfiguration.loadConfiguration(data_names_mysql)
+                    val somasqlite = data_names_config_sqlite.getInt("data.${dataeconomyvalue}") + amount!!
+                    val somamysql = data_names_config_mysql.getInt("data.${dataeconomyvalue}") + amount
                     try {
-                        TableFunction.dropTable(player)
-                    } catch (ignored: SQLException) {
+                        if(databasetype == "h2") {
+                            TableFunction.dropTableSQLite(player)
+                        } else {
+                            TableFunction.dropTable(player)
+                        }
+                    } catch (_: SQLException) {}
+                    try {
+                        if(databasetype == "h2") {
+                            TableFunction.createTableAmountSQLite(player, somasqlite)
+                        } else {
+                            TableFunction.createTableAmount(player, somamysql)
+                        }
+                    } catch (_: SQLException) {}
+                    if(databasetype == "h2") {
+                        data_names_config_sqlite["data.${dataeconomyvalue}"] = somasqlite
+                    } else {
+                        data_names_config_mysql["data.${dataeconomyvalue}"] = somamysql
                     }
                     try {
-                        TableFunction.createTableAmount(player, soma)
-                    } catch (ignored: SQLException) {
-                    }
-                    data_names_config["data.${dataeconomyvalue}"] = soma
-                    try {
-                        data_names_config.save(data_names)
-                    } catch (ignored: IOException) {
-                    }
+                        if(databasetype == "h2") {
+                            data_names_config_sqlite.save(data_names_sqlite)
+                        } else {
+                            data_names_config_mysql.save(data_names_mysql)
+                        }
+                    } catch (_: IOException) {}
                     HexaEcon.plugin.reloadConfig()
                     if (player.inventory.itemInMainHand.amount > 1) {
                         player.inventory.itemInMainHand.amount = player.inventory.itemInMainHand.amount - amount
