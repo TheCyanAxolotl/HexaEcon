@@ -1,0 +1,21 @@
+# Created by Mr.Fox
+Formatted:
+  Amount: '&e%amount&6%symbol'
+Language:
+  Prefix: '&e[&9HexaEcon&e]&r '
+  IsConsolePlayer: '&elo sentimos, pero no puedes ejecutar este comando en la consola.'
+  BankAmount: '&etú tienes &6%amount &e%valuename.'
+  GenericEarn: '&e+ &6%amount &e%valuename.'
+  ConfigurationReloaded: '&earchivos de configuración recargadas correctamente.'
+  GenerateToOther: '&e+ &6%amount &e%valuename generado por &6%p'
+  AccessDenied: '&eno tienes acceso a este comando, requieres de permiso: &6%perm'
+  InvalidAmount: '&erequiere minimo &61 &e%valuename &eo comprueba si es un valor válido.'
+  WalletWithdrawAmount: '&e- &6%amount &e%valuename.'
+  PlayerNotFound: '&eel jugador &6%p &eno fue encontrado o no está conectado.'
+  WalletWithdrawConverted: '&6%amount &e%valuename convertido.'
+  WalletWithdrawRemaningAmount: '&eel aún precisa de %valuename &6%amount.'
+  WalletWithdrawNoEnoughAmount: '&eno tienes suficiente %valuename, tienes &6%amount
+    &e%valuename.'
+  UsageFormat: '&eUso: %u'
+Usages:
+  EconConvertDeposit: '&e/wallet [generate/withdraw] <amount>'
