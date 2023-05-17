@@ -2,7 +2,7 @@
     "ReplaceSizeCheckWithIsNotEmpty", "LocalVariableName", "SpellCheckingInspection", "SENSELESS_COMPARISON"
 )
 
-package space.kiyoshi.hexaecon.wallet.commands
+package space.kiyoshi.hexaecon.commands
 
 import com.iridium.iridiumcolorapi.IridiumColorAPI
 import org.bukkit.Bukkit

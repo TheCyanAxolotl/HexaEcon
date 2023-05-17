@@ -16,7 +16,7 @@ import space.kiyoshi.hexaecon.sql.SQLiteManager
 import space.kiyoshi.hexaecon.utils.HexaEconPlaceHolders
 import space.kiyoshi.hexaecon.utils.KiyoshiLogger
 import space.kiyoshi.hexaecon.utils.NMSUtils
-import space.kiyoshi.hexaecon.wallet.commands.Wallet
+import space.kiyoshi.hexaecon.commands.Wallet
 import java.io.File
 import java.io.IOException
 import java.util.logging.Level
