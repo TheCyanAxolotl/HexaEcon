@@ -21,7 +21,6 @@ import space.kiyoshi.hexaecon.utils.Economy
 import space.kiyoshi.hexaecon.utils.Format
 import space.kiyoshi.hexaecon.utils.GetConfig
 import space.kiyoshi.hexaecon.utils.Language.genericEarn
-import space.kiyoshi.hexaecon.utils.NMSUtils
 import java.io.File
 import java.io.IOException
 import java.sql.SQLException
@@ -37,7 +36,6 @@ class EventsListener : Listener {
     private val volumeoninteract = GetConfig.main().getInt("Sounds.OnPlayerInteractWithEcon.Volume")
     private val pitchoninteract = GetConfig.main().getInt("Sounds.OnPlayerInteractWithEcon.Pitch")
     private val databasetype = GetConfig.main().getString("DataBase.Type")!!
-    private val nms = NMSUtils
 
     @EventHandler
     fun onPlaceEvent(event: BlockPlaceEvent) {
