@@ -17,4 +17,4 @@ Language:
     &e%valuename.'
   UsageFormat: '&eKullanım: %u'
 Usages:
-  EconConvertDeposit: '&e/cüzdan [generate/withdraw] <miktar>'
+  EconConvertDeposit: '&e/wallet <generate/withdraw/remove> <amount> <player>'

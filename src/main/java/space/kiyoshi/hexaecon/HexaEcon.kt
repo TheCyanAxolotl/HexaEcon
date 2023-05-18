@@ -85,7 +85,7 @@ class HexaEcon : JavaPlugin() {
                 languageconfig["Language.CannotPaySelf"] = "&eYou cannot pay yourself."
                 languageconfig["Language.UsageFormat"] = "&eUsage: %u"
                 languageconfig.createSection("Usages")
-                languageconfig["Usages.EconConvertDeposit"] = "&e/wallet <generate/withdraw> <amount>"
+                languageconfig["Usages.EconConvertDeposit"] = "&e/wallet <generate/withdraw/remove> <amount> <player>"
                 languageconfig["Usages.Pay"] = "&e/pay <amount> <player>"
                 languageconfig.save(languagefile)
             } catch (_: IOException) {

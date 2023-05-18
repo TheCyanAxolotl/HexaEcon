@@ -434,6 +434,209 @@ class WalletCommand : CommandExecutor, TabCompleter {
                         )
                     }
                 }
+                if (args[0] == "remove") {
+                    if(player.hasPermission("hexaecon.permissions.remove")) {
+                        try {
+                            if (args.size < 2) {
+                                sender.sendMessage(
+                                    Format.hex(
+                                        Format.color(
+                                            IridiumColorAPI.process(
+                                                usageFormat().replace(
+                                                    "%u",
+                                                    usageConvertDeposit()!!
+                                                )
+                                            )
+                                        )
+                                    )
+                                )
+                                if (sound != "NONE") {
+                                    if (sender is Player) {
+                                        sender.playSound(
+                                            sender.location,
+                                            Sound.valueOf(sound),
+                                            volume.toFloat(),
+                                            pitch.toFloat()
+                                        )
+                                    }
+                                }
+                            } else {
+                                if (!(Format.hasLetter(args[1]) ||
+                                            Format.hasLetterAndSpecial(args[1]) ||
+                                            Format.hasLetterAndMabyeDigit(args[1]) ||
+                                            Format.hasLetterSpecialAndMaybeDigit(args[1]) ||
+                                            Format.hasSpecial(args[1]) ||
+                                            Format.hasLetter(args[1]))
+                                ) {
+                                    val remove = args[1].toInt()
+                                    if (remove == 0) {
+                                        sender.sendMessage(
+                                            Format.hex(
+                                                IridiumColorAPI.process(
+                                                    Format.color(
+                                                        invalidAmount().replace(
+                                                            "%valuename",
+                                                            dataeconomyvalue
+                                                        )
+                                                    )
+                                                )
+                                            )
+                                        )
+                                    }
+                                    if (remove >= 1) {
+                                        val targetname = args[2]
+                                        val target = Bukkit.getPlayer(targetname)
+                                        if (targetname == null || targetname.isEmpty() || targetname.isBlank()) {
+                                            player.sendMessage(
+                                                Format.hex(
+                                                    Format.hex(
+                                                        Format.color(
+                                                            IridiumColorAPI.process(
+                                                                playerNotFound().replace("%p", args[2])
+                                                            )
+                                                        )
+                                                    )
+                                                )
+                                            )
+                                            if (sound != "NONE") {
+                                                if (sender is Player) {
+                                                    sender.playSound(
+                                                        sender.location,
+                                                        Sound.valueOf(sound),
+                                                        volume.toFloat(),
+                                                        pitch.toFloat()
+                                                    )
+                                                }
+                                            }
+                                            return false
+                                        }
+                                        val data_names_sqlite =
+                                            File(plugin.dataFolder.toString() + "/data/" + target!!.name + "_SQLite.txt")
+                                        val data_names_mysql =
+                                            File(plugin.dataFolder.toString() + "/data/" + target.name + "_MySQL.txt")
+                                        val data_names_config_sqlite: FileConfiguration =
+                                            YamlConfiguration.loadConfiguration(data_names_sqlite)
+                                        val data_names_config_mysql: FileConfiguration =
+                                            YamlConfiguration.loadConfiguration(data_names_mysql)
+                                        val somasqlite =
+                                            data_names_config_sqlite.getInt("data.${dataeconomyvalue}") - remove
+                                        val somamysql = data_names_config_mysql.getInt("data.${dataeconomyvalue}") - remove
+                                        if (databasetype == "h2") {
+                                            if (data_names_config_sqlite.getInt("data.${dataeconomyvalue}") >= remove) {
+                                                try {
+                                                    if (databasetype == "h2") {
+                                                        TableFunction.dropTableSQLite(target)
+                                                    } else {
+                                                        TableFunction.dropTable(target)
+                                                    }
+                                                } catch (_: SQLException) {
+                                                }
+                                                try {
+                                                    if (databasetype == "h2") {
+                                                        TableFunction.createTableAmountSQLite(target, somasqlite)
+                                                    } else {
+                                                        TableFunction.createTableAmount(target, somamysql)
+                                                    }
+                                                } catch (e: SQLException) {
+                                                    throw RuntimeException(e)
+                                                }
+                                                if (databasetype == "h2") {
+                                                    data_names_config_sqlite["data.${dataeconomyvalue}"] = somasqlite
+                                                } else {
+                                                    data_names_config_mysql["data.${dataeconomyvalue}"] = somamysql
+                                                }
+                                                try {
+                                                    if (databasetype == "h2") {
+                                                        data_names_config_sqlite.save(data_names_sqlite)
+                                                    } else {
+                                                        data_names_config_mysql.save(data_names_mysql)
+                                                    }
+                                                } catch (e: IOException) {
+                                                    throw RuntimeException(e)
+                                                }
+                                                plugin.reloadConfig()
+                                            }
+                                        } else {
+                                            if (data_names_config_mysql.getInt("data.${dataeconomyvalue}") >= remove) {
+                                                try {
+                                                    if (databasetype == "h2") {
+                                                        TableFunction.dropTableSQLite(target)
+                                                    } else {
+                                                        TableFunction.dropTable(target)
+                                                    }
+                                                } catch (_: SQLException) {
+                                                }
+                                                try {
+                                                    if (databasetype == "h2") {
+                                                        TableFunction.createTableAmountSQLite(target, somasqlite)
+                                                    } else {
+                                                        TableFunction.createTableAmount(target, somamysql)
+                                                    }
+                                                } catch (e: SQLException) {
+                                                    throw RuntimeException(e)
+                                                }
+                                                if (databasetype == "h2") {
+                                                    data_names_config_sqlite["data.${dataeconomyvalue}"] = somasqlite
+                                                } else {
+                                                    data_names_config_mysql["data.${dataeconomyvalue}"] = somamysql
+                                                }
+                                                try {
+                                                    if (databasetype == "h2") {
+                                                        data_names_config_sqlite.save(data_names_sqlite)
+                                                    } else {
+                                                        data_names_config_mysql.save(data_names_mysql)
+                                                    }
+                                                } catch (e: IOException) {
+                                                    throw RuntimeException(e)
+                                                }
+                                                plugin.reloadConfig()
+                                            }
+                                        }
+                                    }
+                                } else {
+                                    player.sendMessage(
+                                        Format.hex(
+                                            Format.color(
+                                                IridiumColorAPI.process(
+                                                    invalidAmount().replace(
+                                                        "%valuename",
+                                                        dataeconomyvalue
+                                                    )
+                                                )
+                                            )
+                                        )
+                                    )
+                                }
+                            }
+                        } catch (e: NumberFormatException) {
+                            player.sendMessage(
+                                Format.hex(
+                                    Format.color(
+                                        IridiumColorAPI.process(
+                                            invalidAmount().replace(
+                                                "%valuename",
+                                                dataeconomyvalue
+                                            )
+                                        )
+                                    )
+                                )
+                            )
+                        }
+                    } else {
+                        player.sendMessage(
+                            Format.hex(
+                                Format.color(
+                                    IridiumColorAPI.process(
+                                        accessDenied().replace(
+                                            "%perm",
+                                            "hexaecon.permissions.remove"
+                                        )
+                                    )
+                                )
+                            )
+                        )
+                    }
+                }
                 if (args[0] == "generate") {
                     if (player.hasPermission("hexaecon.permissions.generate")) {
                         try {
@@ -658,11 +861,19 @@ class WalletCommand : CommandExecutor, TabCompleter {
             if (args.size == 1) {
                 a(s, args[0], "generate")
                 a(s, args[0], "withdraw")
+                a(s, args[0], "remove")
                 a(s, args[0], "reload")
                 return s
             }
             if (args.size == 2) {
                 if (args[0] == "withdraw") {
+                    for (i in 1..100) {
+                        a(s, args[1], i.toString())
+                    }
+                    s.sort()
+                    return s
+                }
+                if (args[0] == "remove") {
                     for (i in 1..100) {
                         a(s, args[1], i.toString())
                     }

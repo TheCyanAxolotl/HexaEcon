@@ -20,5 +20,5 @@ Language:
   CannotPaySelf: '&eNo puedes pagarte a ti mismo.'
   UsageFormat: '&eUso: %u'
 Usages:
-  EconConvertDeposit: '&e/wallet <generate/withdraw> <cantidad>'
+  EconConvertDeposit: '&e/wallet <generate/withdraw/remove> <amount> <player>'
   Pay: '&e/pay <cantidad> <jugador>'
