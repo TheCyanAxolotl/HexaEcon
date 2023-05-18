@@ -193,12 +193,12 @@ class HexaEcon : JavaPlugin() {
     }
 
     private fun printBanner() {
-        KiyoshiLogger.log(LogRecord(Level.FINE, "           HexaEcon by TheUwUAxolotl        "), "HexaEcon")
-        KiyoshiLogger.log(LogRecord(Level.FINE, "***********************************************"), "HexaEcon")
-        KiyoshiLogger.log(LogRecord(Level.FINE, "*                                             *"), "HexaEcon")
-        KiyoshiLogger.log(LogRecord(Level.FINE, "*          HexaEcon has been enabled         *"), "HexaEcon")
-        KiyoshiLogger.log(LogRecord(Level.FINE, "*                                             *"), "HexaEcon")
-        KiyoshiLogger.log(LogRecord(Level.FINE, "***********************************************"), "HexaEcon")
+        KiyoshiLogger.log(LogRecord(Level.INFO, "           HexaEcon by TheUwUAxolotl        "), "HexaEcon")
+        KiyoshiLogger.log(LogRecord(Level.INFO, "***********************************************"), "HexaEcon")
+        KiyoshiLogger.log(LogRecord(Level.INFO, "*                                             *"), "HexaEcon")
+        KiyoshiLogger.log(LogRecord(Level.INFO, "*          HexaEcon has been enabled          *"), "HexaEcon")
+        KiyoshiLogger.log(LogRecord(Level.INFO, "*                                             *"), "HexaEcon")
+        KiyoshiLogger.log(LogRecord(Level.INFO, "***********************************************"), "HexaEcon")
     }
 
     fun getLanguages(): FileConfiguration {
