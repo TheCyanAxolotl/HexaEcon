@@ -17,9 +17,11 @@ import org.bukkit.inventory.ItemStack
 import org.bukkit.inventory.PlayerInventory
 import space.kiyoshi.hexaecon.HexaEcon
 import space.kiyoshi.hexaecon.functions.TableFunction
+import space.kiyoshi.hexaecon.utils.Economy
 import space.kiyoshi.hexaecon.utils.Format
 import space.kiyoshi.hexaecon.utils.GetConfig
 import space.kiyoshi.hexaecon.utils.Language.genericEarn
+import space.kiyoshi.hexaecon.utils.NMSUtils
 import java.io.File
 import java.io.IOException
 import java.sql.SQLException
@@ -35,11 +37,12 @@ class EventsListener : Listener {
     private val volumeoninteract = GetConfig.main().getInt("Sounds.OnPlayerInteractWithEcon.Volume")
     private val pitchoninteract = GetConfig.main().getInt("Sounds.OnPlayerInteractWithEcon.Pitch")
     private val databasetype = GetConfig.main().getString("DataBase.Type")!!
+    private val nms = NMSUtils
 
     @EventHandler
     fun onPlaceEvent(event: BlockPlaceEvent) {
 
-        val item: ItemStack = event.player.inventory.itemInHand
+        val item: ItemStack = event.player.inventory.itemInMainHand
         if (item.type == Material.valueOf(itemtype) && item.itemMeta?.displayName == Format.hex(
                 Format.color(
                     itemdisplayname
@@ -135,11 +138,7 @@ class EventsListener : Listener {
                     } catch (_: IOException) {
                     }
                     HexaEcon.plugin.reloadConfig()
-                    if (player.inventory.itemInHand.amount > 1) {
-                        player.inventory.itemInHand.amount = player.inventory.itemInHand.amount - amount
-                    } else {
-                        player.inventory.setItemInHand(null)
-                    }
+                    Economy.removeEconomyFromHand(player, amount)
                     player.sendMessage(
                         Format.hex(
                             Format.color(

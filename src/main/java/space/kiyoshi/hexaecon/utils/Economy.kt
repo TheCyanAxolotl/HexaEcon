@@ -1,4 +1,4 @@
-@file:Suppress("UNUSED_PARAMETER", "unused", "LocalVariableName", "SpellCheckingInspection")
+@file:Suppress("UNUSED_PARAMETER", "unused", "LocalVariableName", "SpellCheckingInspection", "DEPRECATION")
 
 package space.kiyoshi.hexaecon.utils
 
@@ -49,5 +49,25 @@ object Economy {
         econ_meta.lore = lore
         econ.itemMeta = econ_meta
         return econ
+    }
+
+    fun removeEconomyFromHand(player: Player, amount: Int) {
+        if(nms.checkLegacyVersion(nms.getCleanServerVersion())){
+            val handItem = player.itemInHand
+            if (handItem.amount > amount) {
+                handItem.amount = handItem.amount - amount
+                player.setItemInHand(handItem)
+            } else {
+                player.setItemInHand(ItemStack(Material.AIR))
+            }
+        } else {
+            val handItem = player.inventory.itemInMainHand
+            if (handItem.amount > amount) {
+                handItem.amount = handItem.amount - amount
+                player.inventory.setItemInMainHand(handItem)
+            } else {
+                player.inventory.setItemInMainHand(ItemStack(Material.AIR))
+            }
+        }
     }
 }
