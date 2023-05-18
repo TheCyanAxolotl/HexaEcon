@@ -16,7 +16,7 @@ object NMSUtils {
         }
     }
 
-    fun checkServerVersion(version: String): Boolean {
+    fun checkServerVersionUp(version: String): Boolean {
         val targetVersion = "1.16"
         val versionPattern = """^(\d+)\.(\d+)(?:\.\d+)?$""".toRegex()
 
@@ -37,6 +37,10 @@ object NMSUtils {
         }
 
         return false
+    }
+
+    fun checkLegacyVersion(version: String): Boolean {
+        return version.contains("1.8")
     }
 
     fun getCleanServerVersion(): String {

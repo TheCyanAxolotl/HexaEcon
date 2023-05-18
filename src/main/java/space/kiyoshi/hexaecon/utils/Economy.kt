@@ -16,12 +16,15 @@ object Economy {
     private val itemlore: List<String> = GetConfig.main().getStringList("Economy.Physical.Lore")
     private val ignorelevelrestriction = GetConfig.main().getBoolean("Economy.Physical.Enchant.IgnoreLevelRestriction")
     private val enchantlevel = GetConfig.main().getInt("Economy.Physical.Enchant.Level")
+    private val nms = NMSUtils
     fun addEconomy(player: Player?, amount: Int?): ItemStack {
         val econ = ItemStack(Material.valueOf(itemtype), amount!!)
         val econ_meta = econ.itemMeta
         NMSUtils.setMaxStackSize(econ, 1)
         econ_meta!!.setDisplayName(Format.hex(Format.color(IridiumColorAPI.process(itemdisplayname))))
-        econ_meta.setCustomModelData(itemnbtvalue)
+        if (!(nms.checkLegacyVersion(nms.getCleanServerVersion()))) {
+            econ_meta.setCustomModelData(itemnbtvalue)
+        }
         econ_meta.addItemFlags(ItemFlag.HIDE_ENCHANTS)
         val lore = ArrayList<String?>()
         lore.add(Format.hex(Format.color(IridiumColorAPI.process(itemlore[0]))))
@@ -36,7 +39,9 @@ object Economy {
         val econ_meta = econ.itemMeta
         NMSUtils.setMaxStackSize(econ, 1)
         econ_meta!!.setDisplayName(Format.hex(Format.color(IridiumColorAPI.process(itemdisplayname))))
-        econ_meta.setCustomModelData(itemnbtvalue)
+        if (!(nms.checkLegacyVersion(nms.getCleanServerVersion()))) {
+            econ_meta.setCustomModelData(itemnbtvalue)
+        }
         econ_meta.addItemFlags(ItemFlag.HIDE_ENCHANTS)
         val lore = ArrayList<String?>()
         lore.add(Format.hex(Format.color(IridiumColorAPI.process(itemlore[0]))))

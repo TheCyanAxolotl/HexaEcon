@@ -39,7 +39,7 @@ class EventsListener : Listener {
     @EventHandler
     fun onPlaceEvent(event: BlockPlaceEvent) {
 
-        val item: ItemStack = event.player.inventory.itemInMainHand
+        val item: ItemStack = event.player.inventory.itemInHand
         if (item.type == Material.valueOf(itemtype) && item.itemMeta?.displayName == Format.hex(
                 Format.color(
                     itemdisplayname
@@ -135,10 +135,10 @@ class EventsListener : Listener {
                     } catch (_: IOException) {
                     }
                     HexaEcon.plugin.reloadConfig()
-                    if (player.inventory.itemInMainHand.amount > 1) {
-                        player.inventory.itemInMainHand.amount = player.inventory.itemInMainHand.amount - amount
+                    if (player.inventory.itemInHand.amount > 1) {
+                        player.inventory.itemInHand.amount = player.inventory.itemInHand.amount - amount
                     } else {
-                        player.inventory.setItemInMainHand(null)
+                        player.inventory.setItemInHand(null)
                     }
                     player.sendMessage(
                         Format.hex(

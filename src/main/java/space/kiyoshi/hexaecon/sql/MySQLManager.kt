@@ -23,7 +23,7 @@ class MySQLManager {
     fun connect() {
         if (!isConnected) {
             connection = try {
-                if (nms.checkServerVersion(nms.getCleanServerVersion())) {
+                if (nms.checkServerVersionUp(nms.getCleanServerVersion())) {
                     Class.forName("com.mysql.jdbc.Driver")
                 } else {
                     Class.forName("com.mysql.cj.jdbc.Driver")

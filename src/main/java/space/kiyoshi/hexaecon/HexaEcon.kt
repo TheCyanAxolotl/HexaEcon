@@ -32,7 +32,7 @@ class HexaEcon : JavaPlugin() {
     private fun initialize() {
         saveDefaultConfig()
         config.options().copyDefaults(true)
-        if (nms.checkServerVersion(nms.getCleanServerVersion())) {
+        if (nms.checkServerVersionUp(nms.getCleanServerVersion())) {
             KiyoshiLogger.log(
                 LogRecord(
                     Level.INFO,

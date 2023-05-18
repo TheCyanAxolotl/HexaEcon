@@ -43,7 +43,7 @@ Economy:
   Physical:
     NBT: # you can use the nbt value to apply custom textures for the plugin
       Value: 30015 # default texture here (https://www.dropbox.com/s/b9gmdetcysz66zn/HexaEcon.zip?dl=1)
-    Item: SUNFLOWER # this is the physical item (if the item is a sunflower the BlockPlaceEvent for this item is disabled)
+    Item: SUNFLOWER # (Legacy 1.8 DOUBLE_PLANT)this is the physical item (if the item is a sunflower the BlockPlaceEvent for this item is disabled)
     DisplayName: "&e&lCOIN" # physical item display name (HEX SUPPORT)
     Lore:
       - "&f&l❚ &7Economy value"
@@ -78,5 +78,5 @@ Sounds: # https://hub.spigotmc.org/javadocs/bukkit/org/bukkit/Sound.html
 
 # Texture
 TextureManager:
-  Enabled: false
+  Enabled: false # Texture not works for 1.8
   Texture: "https://www.dropbox.com/s/b9gmdetcysz66zn/HexaEcon.zip?dl=1"
