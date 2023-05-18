@@ -38,7 +38,9 @@ class MonsterDeath : Listener {
                     if (hasstrikeeffect) {
                         e.entity.location.world!!.strikeLightningEffect(e.entity.location)
                     } else {
-                        player?.playSound(player.location, Sound.valueOf(sound), volume.toFloat(), pitch.toFloat())
+                        if(sound != "NONE") {
+                            player?.playSound(player.location, Sound.valueOf(sound), volume.toFloat(), pitch.toFloat())
+                        }
                     }
 
                     val data_names_sqlite = File(
