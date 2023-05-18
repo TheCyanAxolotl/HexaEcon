@@ -83,7 +83,7 @@ class HexaEcon : JavaPlugin() {
             for(world in worlds){
                 world.save()
             }
-            KiyoshiLogger.log(LogRecord(Level.WARNING, "[DataBase] You need to connect DataBsae database to use the plugin, check the config.yml"), "HexaEcon")
+            KiyoshiLogger.log(LogRecord(Level.WARNING, "[DataBase] You need to connect the DataBase to use the plugin, check the config.yml"), "HexaEcon")
             server.shutdown()
         } else if (databasetype == "h2") {
             SQLiteManager = SQLiteManager("$dataFolder/data.db")
