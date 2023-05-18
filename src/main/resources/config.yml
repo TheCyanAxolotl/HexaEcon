@@ -60,19 +60,19 @@ Sounds: # https://hub.spigotmc.org/javadocs/bukkit/org/bukkit/Sound.html
     Volume: 100
     Pitch: 1
   OnKillMonsters: # on monster kill
-    Sound: "ENTITY_PLAYER_LEVELUP"
+    Sound: "NONE"
     Volume: 100
     Pitch: 1
   OnKillAnimals: # on animals kill
-    Sound: "ENTITY_FOX_DEATH"
+    Sound: "NONE"
     Volume: 100
     Pitch: 1
   EcoCommand:
-    Sound: "ENTITY_CHICKEN_EGG"
+    Sound: "NONE"
     Volume: 100
     Pitch: 1
   WalletCommand:
-    Sound: "ENTITY_VILLAGER_YES"
+    Sound: "NONE"
     Volume: 100
     Pitch: 1
 
