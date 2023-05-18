@@ -1,4 +1,5 @@
 @file:Suppress("RedundantIf", "SpellCheckingInspection")
+
 package space.kiyoshi.hexaecon.sql
 
 import space.kiyoshi.hexaecon.HexaEcon

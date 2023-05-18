@@ -24,7 +24,7 @@ import java.io.File
 import java.io.IOException
 import java.sql.SQLException
 
-class EventsListener: Listener {
+class EventsListener : Listener {
     private val itemdisplayname = GetConfig.main().getString("Economy.Physical.DisplayName")!!
     private val itemtype = GetConfig.main().getString("Economy.Physical.Item")!!
     private val dataeconomyvalue = GetConfig.main().getString("DataBase.DataEconomyName")!!
@@ -35,12 +35,17 @@ class EventsListener: Listener {
     private val volumeoninteract = GetConfig.main().getInt("Sounds.OnPlayerInteractWithEcon.Volume")
     private val pitchoninteract = GetConfig.main().getInt("Sounds.OnPlayerInteractWithEcon.Pitch")
     private val databasetype = GetConfig.main().getString("DataBase.Type")!!
+
     @EventHandler
     fun onPlaceEvent(event: BlockPlaceEvent) {
 
-        val item : ItemStack = event.player.inventory.itemInMainHand
-        if(item.type == Material.valueOf(itemtype) && item.itemMeta?.displayName == Format.hex(Format.color(itemdisplayname))
-        ){
+        val item: ItemStack = event.player.inventory.itemInMainHand
+        if (item.type == Material.valueOf(itemtype) && item.itemMeta?.displayName == Format.hex(
+                Format.color(
+                    itemdisplayname
+                )
+            )
+        ) {
             event.isCancelled = true
         }
     }
@@ -50,12 +55,22 @@ class EventsListener: Listener {
         val player = event.player
         val inventory: PlayerInventory = event.player.inventory
         val item = event.item.itemStack
-        if (item.type == Material.valueOf(itemtype) && item.itemMeta?.displayName == Format.hex(Format.color(itemdisplayname))){
-            if(!(player.isSneaking)){
+        if (item.type == Material.valueOf(itemtype) && item.itemMeta?.displayName == Format.hex(
+                Format.color(
+                    itemdisplayname
+                )
+            )
+        ) {
+            if (!(player.isSneaking)) {
                 event.isCancelled = true
             } else {
-                if(soundonpickup != "NONE"){
-                    player.playSound(player.location, Sound.valueOf(soundonpickup), volumeonpickup.toFloat(), pitchonpickup.toFloat())
+                if (soundonpickup != "NONE") {
+                    player.playSound(
+                        player.location,
+                        Sound.valueOf(soundonpickup),
+                        volumeonpickup.toFloat(),
+                        pitchonpickup.toFloat()
+                    )
                 }
             }
         }
@@ -67,10 +82,15 @@ class EventsListener: Listener {
         val item = event.item
         val amount = item?.amount
         val action = event.action
-        if (item?.type == Material.valueOf(itemtype) && item.itemMeta?.displayName == Format.hex(Format.color(itemdisplayname))){
-            if(player.isSneaking){
+        if (item?.type == Material.valueOf(itemtype) && item.itemMeta?.displayName == Format.hex(
+                Format.color(
+                    itemdisplayname
+                )
+            )
+        ) {
+            if (player.isSneaking) {
                 event.isCancelled = true
-                if(action == Action.RIGHT_CLICK_AIR || action == Action.RIGHT_CLICK_BLOCK){
+                if (action == Action.RIGHT_CLICK_AIR || action == Action.RIGHT_CLICK_BLOCK) {
                     val data_names_sqlite = File(
                         HexaEcon.plugin.dataFolder.toString() + "/data/" + player
                             .name + "_SQLite.txt"
@@ -79,45 +99,66 @@ class EventsListener: Listener {
                         HexaEcon.plugin.dataFolder.toString() + "/data/" + player
                             .name + "_MySQL.txt"
                     )
-                    val data_names_config_sqlite: FileConfiguration = YamlConfiguration.loadConfiguration(data_names_sqlite)
-                    val data_names_config_mysql: FileConfiguration = YamlConfiguration.loadConfiguration(data_names_mysql)
+                    val data_names_config_sqlite: FileConfiguration =
+                        YamlConfiguration.loadConfiguration(data_names_sqlite)
+                    val data_names_config_mysql: FileConfiguration =
+                        YamlConfiguration.loadConfiguration(data_names_mysql)
                     val somasqlite = data_names_config_sqlite.getInt("data.${dataeconomyvalue}") + amount!!
                     val somamysql = data_names_config_mysql.getInt("data.${dataeconomyvalue}") + amount
                     try {
-                        if(databasetype == "h2") {
+                        if (databasetype == "h2") {
                             TableFunction.dropTableSQLite(player)
                         } else {
                             TableFunction.dropTable(player)
                         }
-                    } catch (_: SQLException) {}
+                    } catch (_: SQLException) {
+                    }
                     try {
-                        if(databasetype == "h2") {
+                        if (databasetype == "h2") {
                             TableFunction.createTableAmountSQLite(player, somasqlite)
                         } else {
                             TableFunction.createTableAmount(player, somamysql)
                         }
-                    } catch (_: SQLException) {}
-                    if(databasetype == "h2") {
+                    } catch (_: SQLException) {
+                    }
+                    if (databasetype == "h2") {
                         data_names_config_sqlite["data.${dataeconomyvalue}"] = somasqlite
                     } else {
                         data_names_config_mysql["data.${dataeconomyvalue}"] = somamysql
                     }
                     try {
-                        if(databasetype == "h2") {
+                        if (databasetype == "h2") {
                             data_names_config_sqlite.save(data_names_sqlite)
                         } else {
                             data_names_config_mysql.save(data_names_mysql)
                         }
-                    } catch (_: IOException) {}
+                    } catch (_: IOException) {
+                    }
                     HexaEcon.plugin.reloadConfig()
                     if (player.inventory.itemInMainHand.amount > 1) {
                         player.inventory.itemInMainHand.amount = player.inventory.itemInMainHand.amount - amount
                     } else {
                         player.inventory.setItemInMainHand(null)
                     }
-                    player.sendMessage(Format.hex(Format.color(IridiumColorAPI.process(genericEarn().replace("%amount", amount.toString()).replace("%valuename", dataeconomyvalue)))))
-                    if(soundoninteract != "NONE") {
-                        player.playSound(player.location, Sound.valueOf(soundoninteract), volumeoninteract.toFloat(), pitchoninteract.toFloat())
+                    player.sendMessage(
+                        Format.hex(
+                            Format.color(
+                                IridiumColorAPI.process(
+                                    genericEarn().replace(
+                                        "%amount",
+                                        amount.toString()
+                                    ).replace("%valuename", dataeconomyvalue)
+                                )
+                            )
+                        )
+                    )
+                    if (soundoninteract != "NONE") {
+                        player.playSound(
+                            player.location,
+                            Sound.valueOf(soundoninteract),
+                            volumeoninteract.toFloat(),
+                            pitchoninteract.toFloat()
+                        )
                     }
                 }
             }

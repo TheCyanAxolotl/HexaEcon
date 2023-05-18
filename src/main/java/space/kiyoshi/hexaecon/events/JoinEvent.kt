@@ -16,17 +16,19 @@ class JoinEvent : Listener {
     private val hastextureenabled = GetConfig.main().getBoolean("TextureManager.Enabled")
     private val texture = GetConfig.main().getString("TextureManager.Texture")!!
     private val databasetype = GetConfig.main().getString("DataBase.Type")!!
+
     @EventHandler
     fun onJoin(event: PlayerJoinEvent) {
         try {
-            if(databasetype == "h2") {
+            if (databasetype == "h2") {
                 TableFunction.createTableSQLite(event.player)
             } else {
                 TableFunction.createTable(event.player)
             }
-        } catch (_: SQLException) {}
+        } catch (_: SQLException) {
+        }
         GetConfig.generatePlayerConfig(event.player)
-        if(hastextureenabled){
+        if (hastextureenabled) {
             event.player.setTexturePack(texture)
         }
     }

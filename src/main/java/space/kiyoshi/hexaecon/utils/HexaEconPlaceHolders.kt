@@ -10,7 +10,7 @@ import space.kiyoshi.hexaecon.functions.TableFunction
 import space.kiyoshi.hexaecon.utils.Language.formattedAmount
 import java.util.concurrent.CompletableFuture
 
-class HexaEconPlaceHolders: PlaceholderExpansion() {
+class HexaEconPlaceHolders : PlaceholderExpansion() {
     private val symbol = GetConfig.main().getString("Economy.Virtual.Symbol")
     private val dataeconomyvalue = GetConfig.main().getString("DataBase.DataEconomyName")!!
     private val version = HexaEcon.plugin.description.version
@@ -32,12 +32,15 @@ class HexaEconPlaceHolders: PlaceholderExpansion() {
             "version" -> {
                 version
             }
+
             "author" -> {
                 "TheUwUAxolotl"
             }
+
             "balance" -> {
                 getBalance(player)
             }
+
             "balance_formatted" -> {
                 Format.hex(
                     Format.color(
@@ -50,6 +53,7 @@ class HexaEconPlaceHolders: PlaceholderExpansion() {
                     )
                 )
             }
+
             else -> null
         }
     }

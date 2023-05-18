@@ -28,7 +28,7 @@ object GetConfig {
         }
         val data_names_config_sqlite: FileConfiguration = YamlConfiguration.loadConfiguration(data_names_sqlite)
         val data_names_config_mysql: FileConfiguration = YamlConfiguration.loadConfiguration(data_names_mysql)
-        if(databasetype == "h2") {
+        if (databasetype == "h2") {
             if (!data_names_sqlite.exists()) {
                 try {
                     data_names_sqlite.createNewFile()
@@ -37,7 +37,8 @@ object GetConfig {
                         data_names_config_sqlite["data.${dataeconomyvalue}"] = 0
                         data_names_config_sqlite.save(data_names_sqlite)
                     }
-                } catch (_: IOException) {}
+                } catch (_: IOException) {
+                }
             }
         } else {
             if (!data_names_mysql.exists()) {
@@ -48,7 +49,8 @@ object GetConfig {
                         data_names_config_mysql["data.${dataeconomyvalue}"] = 0
                         data_names_config_mysql.save(data_names_mysql)
                     }
-                } catch (_: IOException) {}
+                } catch (_: IOException) {
+                }
             }
         }
     }

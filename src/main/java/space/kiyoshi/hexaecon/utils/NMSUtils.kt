@@ -12,7 +12,8 @@ object NMSUtils {
             val field: Field = Item::class.java.getDeclaredField("maxStackSize")
             field.isAccessible = true
             field.setInt(item, i)
-        } catch (_: Exception) {}
+        } catch (_: Exception) {
+        }
     }
 
     fun checkServerVersion(version: String): Boolean {

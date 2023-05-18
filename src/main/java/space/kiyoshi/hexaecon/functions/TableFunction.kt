@@ -9,8 +9,9 @@ import java.sql.SQLException
 
 object TableFunction {
     private val dataeconomyvalue = GetConfig.main().getString("DataBase.DataEconomyName")!!
+
     @Throws(SQLException::class)
-    fun createTable(name: Player ) {
+    fun createTable(name: Player) {
         val tableName = name.name
         val defaultvalue = 0
         val sqlCreate = ("CREATE TABLE IF NOT EXISTS " + name.name
@@ -33,7 +34,7 @@ object TableFunction {
     }
 
     @Throws(SQLException::class)
-    fun createTableSQLite(name: Player ) {
+    fun createTableSQLite(name: Player) {
         val tableName = name.name
         val defaultvalue = 0
         val sqlCreate = """CREATE TABLE IF NOT EXISTS $tableName ($dataeconomyvalue INT(255))"""

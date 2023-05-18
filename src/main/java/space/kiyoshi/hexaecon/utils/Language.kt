@@ -55,6 +55,18 @@ object Language {
         return getPrefix() + plugin.getLanguages().getString("Language.WalletWithdrawNoEnoughAmount")
     }
 
+    fun playerpayed(): String {
+        return getPrefix() + plugin.getLanguages().getString("Language.PlayerPayed")
+    }
+
+    fun paymentrecived(): String {
+        return getPrefix() + plugin.getLanguages().getString("Language.PlayerPaymentRecived")
+    }
+
+    fun cannotpayself(): String {
+        return getPrefix() + plugin.getLanguages().getString("Language.CannotPaySelf")
+    }
+
     fun usageFormat(): String {
         return getPrefix() + plugin.getLanguages().getString("Language.UsageFormat")
     }
@@ -63,6 +75,10 @@ object Language {
 
     fun usageConvertDeposit(): String? {
         return plugin.getLanguages().getString("Usages.EconConvertDeposit")
+    }
+
+    fun usagePayment(): String? {
+        return plugin.getLanguages().getString("Usages.Pay")
     }
 
     fun configurationReloaded(): String {

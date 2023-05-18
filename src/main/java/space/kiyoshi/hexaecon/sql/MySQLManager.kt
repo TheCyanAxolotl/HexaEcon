@@ -23,12 +23,13 @@ class MySQLManager {
     fun connect() {
         if (!isConnected) {
             connection = try {
-                if(nms.checkServerVersion(nms.getCleanServerVersion())){
+                if (nms.checkServerVersion(nms.getCleanServerVersion())) {
                     Class.forName("com.mysql.jdbc.Driver")
                 } else {
                     Class.forName("com.mysql.cj.jdbc.Driver")
                 }
-                val unicode = "useSSL=false&autoReconnect=true&useUnicode=yes&characterEncoding=UTF-8&allowPublicKeyRetrieval=true"
+                val unicode =
+                    "useSSL=false&autoReconnect=true&useUnicode=yes&characterEncoding=UTF-8&allowPublicKeyRetrieval=true"
                 DriverManager.getConnection(
                     "jdbc:mysql://" +
                             host + ":" + port + "/" + database + "?" + unicode, username, password

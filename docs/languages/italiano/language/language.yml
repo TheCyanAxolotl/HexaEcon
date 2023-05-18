@@ -16,6 +16,10 @@ Language:
   WalletWithdrawRemaningAmount: '&eti rimangono %valuename &6%amount.'
   WalletWithdrawNoEnoughAmount: '&enon hai abbastanza %valuename, hai &6%amount
     &e%valuename.'
+  PlayerPayed: '&eHai inviato con successo a &6%p &6%amount &e%valuename.'
+  PlayerPaymentRecived: '&eHai ricevuto un pagamento di &6%amount &e%valuename &eda &6%p.'
+  CannotPaySelf: '&eNon puoi inviare denaro a te stesso.'
   UsageFormat: '&eUtilizzo: %u'
 Usages:
   EconConvertDeposit: '&e/wallet [generate/withdraw] <amount>'
+  Pay: '&e/pay <amount> <player>'

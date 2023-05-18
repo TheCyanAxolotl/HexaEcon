@@ -16,7 +16,7 @@ import space.kiyoshi.hexaecon.utils.Language.bankAmount
 import space.kiyoshi.hexaecon.utils.Language.isConsolePlayer
 import java.util.concurrent.CompletableFuture
 
-class Eco : CommandExecutor {
+class EcoCommand : CommandExecutor {
     private val dataeconomyvalue = GetConfig.main().getString("DataBase.DataEconomyName")!!
     private val sound = GetConfig.main().getString("Sounds.EcoCommand.Sound")!!
     private val volume = GetConfig.main().getInt("Sounds.EcoCommand.Volume")
@@ -30,9 +30,24 @@ class Eco : CommandExecutor {
         val player = sender
         if (command.name == "eco") {
             if (args.size == 0) {
-                if(databasetype == "h2") {
-                    player.sendMessage(Format.hex(Format.color(IridiumColorAPI.process(bankAmount().replace("%valuename", dataeconomyvalue).replace("%amount", TableFunction.selectAllFromTableAsStringSQLite(player.name).toString().replace("[", "").replace("]", ""))))))
-                    if(sound != "NONE") {
+                if (databasetype == "h2") {
+                    player.sendMessage(
+                        Format.hex(
+                            Format.color(
+                                IridiumColorAPI.process(
+                                    bankAmount().replace(
+                                        "%valuename",
+                                        dataeconomyvalue
+                                    ).replace(
+                                        "%amount",
+                                        TableFunction.selectAllFromTableAsStringSQLite(player.name).toString()
+                                            .replace("[", "").replace("]", "")
+                                    )
+                                )
+                            )
+                        )
+                    )
+                    if (sound != "NONE") {
                         player.playSound(player.location, Sound.valueOf(sound), volume.toFloat(), pitch.toFloat())
                     }
                 } else {
@@ -47,8 +62,19 @@ class Eco : CommandExecutor {
                         value
                     }
                     val value = future.get()
-                    player.sendMessage(Format.hex(Format.color(IridiumColorAPI.process(bankAmount().replace("%valuename", dataeconomyvalue).replace("%amount", value.toString())))))
-                    if(sound != "NONE") {
+                    player.sendMessage(
+                        Format.hex(
+                            Format.color(
+                                IridiumColorAPI.process(
+                                    bankAmount().replace(
+                                        "%valuename",
+                                        dataeconomyvalue
+                                    ).replace("%amount", value.toString())
+                                )
+                            )
+                        )
+                    )
+                    if (sound != "NONE") {
                         player.playSound(player.location, Sound.valueOf(sound), volume.toFloat(), pitch.toFloat())
                     }
                 }

@@ -32,54 +32,74 @@ class MonsterDeath : Listener {
         val pitch = GetConfig.main().getInt("Sounds.OnKillMonsters.Pitch")
         val player = e.entity.killer
         val databasetype = GetConfig.main().getString("DataBase.Type")!!
-        if(GetConfig.main().getBoolean("Modules.OnKillMonsters")){
+        if (GetConfig.main().getBoolean("Modules.OnKillMonsters")) {
             if (e.entity is Monster) {
                 if (e.entity.killer != null && e.entity.killer is Player) {
-                    if(hasstrikeeffect) {
+                    if (hasstrikeeffect) {
                         e.entity.location.world!!.strikeLightningEffect(e.entity.location)
                     } else {
                         player?.playSound(player.location, Sound.valueOf(sound), volume.toFloat(), pitch.toFloat())
                     }
 
                     val data_names_sqlite = File(
-                            plugin.dataFolder.toString() + "/data/" + e.entity.killer!!
-                                    .name + "_SQLite.txt")
+                        plugin.dataFolder.toString() + "/data/" + e.entity.killer!!
+                            .name + "_SQLite.txt"
+                    )
                     val data_names_mysql = File(
                         plugin.dataFolder.toString() + "/data/" + e.entity.killer!!
-                            .name + "_MySQL.txt")
+                            .name + "_MySQL.txt"
+                    )
 
-                    val data_names_config_sqlite: FileConfiguration = YamlConfiguration.loadConfiguration(data_names_sqlite)
-                    val data_names_config_mysql: FileConfiguration = YamlConfiguration.loadConfiguration(data_names_mysql)
-                    val somasqlite = data_names_config_sqlite.getInt("data.${dataeconomyvalue}") + eventsonkillmonstersearnamount
-                    val somamysql = data_names_config_mysql.getInt("data.${dataeconomyvalue}") + eventsonkillmonstersearnamount
+                    val data_names_config_sqlite: FileConfiguration =
+                        YamlConfiguration.loadConfiguration(data_names_sqlite)
+                    val data_names_config_mysql: FileConfiguration =
+                        YamlConfiguration.loadConfiguration(data_names_mysql)
+                    val somasqlite =
+                        data_names_config_sqlite.getInt("data.${dataeconomyvalue}") + eventsonkillmonstersearnamount
+                    val somamysql =
+                        data_names_config_mysql.getInt("data.${dataeconomyvalue}") + eventsonkillmonstersearnamount
                     try {
-                        if(databasetype == "h2") {
+                        if (databasetype == "h2") {
                             TableFunction.dropTableSQLite(e.entity.killer!!)
                         } else {
                             TableFunction.dropTable(e.entity.killer!!)
                         }
-                    } catch (_: SQLException) {}
+                    } catch (_: SQLException) {
+                    }
                     try {
-                        if(databasetype == "h2") {
+                        if (databasetype == "h2") {
                             TableFunction.createTableAmountSQLite(e.entity.killer!!, somasqlite)
                         } else {
                             TableFunction.createTableAmount(e.entity.killer!!, somamysql)
                         }
-                    } catch (_: SQLException) {}
-                    if(databasetype == "h2") {
+                    } catch (_: SQLException) {
+                    }
+                    if (databasetype == "h2") {
                         data_names_config_sqlite["data.${dataeconomyvalue}"] = somasqlite
                     } else {
                         data_names_config_mysql["data.${dataeconomyvalue}"] = somamysql
                     }
                     try {
-                        if(databasetype == "h2") {
+                        if (databasetype == "h2") {
                             data_names_config_sqlite.save(data_names_sqlite)
                         } else {
                             data_names_config_mysql.save(data_names_mysql)
                         }
-                    } catch (_: IOException) {}
+                    } catch (_: IOException) {
+                    }
                     plugin.reloadConfig()
-                    e.entity.killer!!.sendMessage(Format.hex(Format.color(IridiumColorAPI.process(genericEarn().replace("%amount", eventsonkillmonstersearnamount.toString()).replace("%valuename", dataeconomyvalue)))))
+                    e.entity.killer!!.sendMessage(
+                        Format.hex(
+                            Format.color(
+                                IridiumColorAPI.process(
+                                    genericEarn().replace(
+                                        "%amount",
+                                        eventsonkillmonstersearnamount.toString()
+                                    ).replace("%valuename", dataeconomyvalue)
+                                )
+                            )
+                        )
+                    )
                 }
             }
         }
