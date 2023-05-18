@@ -94,44 +94,307 @@ class WalletCommand : CommandExecutor, TabCompleter {
                     }
                 }
                 if (args[0] == "withdraw") {
-                    try {
-                        if (args.size < 2) {
-                            sender.sendMessage(
-                                Format.hex(
-                                    Format.color(
-                                        IridiumColorAPI.process(
-                                            usageFormat().replace(
-                                                "%u",
-                                                usageConvertDeposit()!!
+                    if(player.hasPermission("hexaecon.permissions.withdraw")) {
+                        try {
+                            if (args.size < 2) {
+                                sender.sendMessage(
+                                    Format.hex(
+                                        Format.color(
+                                            IridiumColorAPI.process(
+                                                usageFormat().replace(
+                                                    "%u",
+                                                    usageConvertDeposit()!!
+                                                )
                                             )
                                         )
                                     )
                                 )
-                            )
-                            if (sound != "NONE") {
-                                if (sender is Player) {
-                                    sender.playSound(
-                                        sender.location,
-                                        Sound.valueOf(sound),
-                                        volume.toFloat(),
-                                        pitch.toFloat()
-                                    )
+                                if (sound != "NONE") {
+                                    if (sender is Player) {
+                                        sender.playSound(
+                                            sender.location,
+                                            Sound.valueOf(sound),
+                                            volume.toFloat(),
+                                            pitch.toFloat()
+                                        )
+                                    }
                                 }
-                            }
-                        } else {
-                            if (!(Format.hasLetter(args[1]) ||
-                                        Format.hasLetterAndSpecial(args[1]) ||
-                                        Format.hasLetterAndMabyeDigit(args[1]) ||
-                                        Format.hasLetterSpecialAndMaybeDigit(args[1]) ||
-                                        Format.hasSpecial(args[1]) ||
-                                        Format.hasLetter(args[1]))
-                            ) {
-                                val remove = args[1].toInt()
-                                if (remove == 0) {
-                                    sender.sendMessage(
+                            } else {
+                                if (!(Format.hasLetter(args[1]) ||
+                                            Format.hasLetterAndSpecial(args[1]) ||
+                                            Format.hasLetterAndMabyeDigit(args[1]) ||
+                                            Format.hasLetterSpecialAndMaybeDigit(args[1]) ||
+                                            Format.hasSpecial(args[1]) ||
+                                            Format.hasLetter(args[1]))
+                                ) {
+                                    val remove = args[1].toInt()
+                                    if (remove == 0) {
+                                        sender.sendMessage(
+                                            Format.hex(
+                                                IridiumColorAPI.process(
+                                                    Format.color(
+                                                        invalidAmount().replace(
+                                                            "%valuename",
+                                                            dataeconomyvalue
+                                                        )
+                                                    )
+                                                )
+                                            )
+                                        )
+                                    }
+                                    if (remove >= 1) {
+                                        val data_names_sqlite =
+                                            File(plugin.dataFolder.toString() + "/data/" + sender.name + "_SQLite.txt")
+                                        val data_names_mysql =
+                                            File(plugin.dataFolder.toString() + "/data/" + sender.name + "_MySQL.txt")
+                                        val data_names_config_sqlite: FileConfiguration =
+                                            YamlConfiguration.loadConfiguration(data_names_sqlite)
+                                        val data_names_config_mysql: FileConfiguration =
+                                            YamlConfiguration.loadConfiguration(data_names_mysql)
+                                        val somasqlite =
+                                            data_names_config_sqlite.getInt("data.${dataeconomyvalue}") - remove
+                                        val somamysql = data_names_config_mysql.getInt("data.${dataeconomyvalue}") - remove
+                                        if (databasetype == "h2") {
+                                            if (data_names_config_sqlite.getInt("data.${dataeconomyvalue}") >= remove) {
+                                                try {
+                                                    if (databasetype == "h2") {
+                                                        TableFunction.dropTableSQLite(sender as Player)
+                                                    } else {
+                                                        TableFunction.dropTable(sender as Player)
+                                                    }
+                                                } catch (_: SQLException) {
+                                                }
+                                                try {
+                                                    if (databasetype == "h2") {
+                                                        TableFunction.createTableAmountSQLite(player as Player, somasqlite)
+                                                    } else {
+                                                        TableFunction.createTableAmount(player as Player, somamysql)
+                                                    }
+                                                } catch (e: SQLException) {
+                                                    throw RuntimeException(e)
+                                                }
+                                                if (databasetype == "h2") {
+                                                    data_names_config_sqlite["data.${dataeconomyvalue}"] = somasqlite
+                                                } else {
+                                                    data_names_config_mysql["data.${dataeconomyvalue}"] = somamysql
+                                                }
+                                                try {
+                                                    if (databasetype == "h2") {
+                                                        data_names_config_sqlite.save(data_names_sqlite)
+                                                    } else {
+                                                        data_names_config_mysql.save(data_names_mysql)
+                                                    }
+                                                } catch (e: IOException) {
+                                                    throw RuntimeException(e)
+                                                }
+                                                plugin.reloadConfig()
+                                                player.sendMessage(
+                                                    Format.hex(
+                                                        Format.color(
+                                                            IridiumColorAPI.process(
+                                                                walletWithdrawAmount().replace("%amount", remove.toString())
+                                                                    .replace("%valuename", dataeconomyvalue)
+                                                            )
+                                                        )
+                                                    )
+                                                )
+                                                player.sendMessage(
+                                                    Format.hex(
+                                                        Format.color(
+                                                            IridiumColorAPI.process(
+                                                                walletWithdrawConverted().replace(
+                                                                    "%amount",
+                                                                    remove.toString()
+                                                                ).replace("%valuename", dataeconomyvalue)
+                                                            )
+                                                        )
+                                                    )
+                                                )
+                                                if (databasetype == "h2") {
+                                                    player.sendMessage(
+                                                        Format.hex(
+                                                            Format.color(
+                                                                IridiumColorAPI.process(
+                                                                    walletWithdrawRemainingAmount().replace(
+                                                                        "%amount",
+                                                                        data_names_config_sqlite.getInt("data.${dataeconomyvalue}")
+                                                                            .toString()
+                                                                    ).replace("%valuename", dataeconomyvalue)
+                                                                )
+                                                            )
+                                                        )
+                                                    )
+                                                } else {
+                                                    player.sendMessage(
+                                                        Format.hex(
+                                                            Format.color(
+                                                                IridiumColorAPI.process(
+                                                                    walletWithdrawRemainingAmount().replace(
+                                                                        "%amount",
+                                                                        data_names_config_mysql.getInt("data.${dataeconomyvalue}")
+                                                                            .toString()
+                                                                    ).replace("%valuename", dataeconomyvalue)
+                                                                )
+                                                            )
+                                                        )
+                                                    )
+                                                }
+                                                player.inventory.addItem(Economy.addEconomy(player, remove))
+                                            } else {
+                                                if (databasetype == "h2") {
+                                                    player.sendMessage(
+                                                        Format.hex(
+                                                            Format.color(
+                                                                IridiumColorAPI.process(
+                                                                    walletWithdrawNoEnoughAmount().replace(
+                                                                        "%amount",
+                                                                        data_names_config_sqlite.getInt("data.${dataeconomyvalue}")
+                                                                            .toString()
+                                                                    ).replace("%valuename", dataeconomyvalue)
+                                                                )
+                                                            )
+                                                        )
+                                                    )
+                                                } else {
+                                                    player.sendMessage(
+                                                        Format.hex(
+                                                            Format.color(
+                                                                IridiumColorAPI.process(
+                                                                    walletWithdrawNoEnoughAmount().replace(
+                                                                        "%amount",
+                                                                        data_names_config_mysql.getInt("data.${dataeconomyvalue}")
+                                                                            .toString()
+                                                                    ).replace("%valuename", dataeconomyvalue)
+                                                                )
+                                                            )
+                                                        )
+                                                    )
+                                                }
+                                            }
+                                        } else {
+                                            if (data_names_config_mysql.getInt("data.${dataeconomyvalue}") >= remove) {
+                                                try {
+                                                    if (databasetype == "h2") {
+                                                        TableFunction.dropTableSQLite(sender as Player)
+                                                    } else {
+                                                        TableFunction.dropTable(sender as Player)
+                                                    }
+                                                } catch (_: SQLException) {
+                                                }
+                                                try {
+                                                    if (databasetype == "h2") {
+                                                        TableFunction.createTableAmountSQLite(player as Player, somasqlite)
+                                                    } else {
+                                                        TableFunction.createTableAmount(player as Player, somamysql)
+                                                    }
+                                                } catch (e: SQLException) {
+                                                    throw RuntimeException(e)
+                                                }
+                                                if (databasetype == "h2") {
+                                                    data_names_config_sqlite["data.${dataeconomyvalue}"] = somasqlite
+                                                } else {
+                                                    data_names_config_mysql["data.${dataeconomyvalue}"] = somamysql
+                                                }
+                                                try {
+                                                    if (databasetype == "h2") {
+                                                        data_names_config_sqlite.save(data_names_sqlite)
+                                                    } else {
+                                                        data_names_config_mysql.save(data_names_mysql)
+                                                    }
+                                                } catch (e: IOException) {
+                                                    throw RuntimeException(e)
+                                                }
+                                                plugin.reloadConfig()
+                                                player.sendMessage(
+                                                    Format.hex(
+                                                        Format.color(
+                                                            IridiumColorAPI.process(
+                                                                walletWithdrawAmount().replace("%amount", remove.toString())
+                                                                    .replace("%valuename", dataeconomyvalue)
+                                                            )
+                                                        )
+                                                    )
+                                                )
+                                                player.sendMessage(
+                                                    Format.hex(
+                                                        Format.color(
+                                                            IridiumColorAPI.process(
+                                                                walletWithdrawConverted().replace(
+                                                                    "%amount",
+                                                                    remove.toString()
+                                                                ).replace("%valuename", dataeconomyvalue)
+                                                            )
+                                                        )
+                                                    )
+                                                )
+                                                if (databasetype == "h2") {
+                                                    player.sendMessage(
+                                                        Format.hex(
+                                                            Format.color(
+                                                                IridiumColorAPI.process(
+                                                                    walletWithdrawRemainingAmount().replace(
+                                                                        "%amount",
+                                                                        data_names_config_sqlite.getInt("data.${dataeconomyvalue}")
+                                                                            .toString()
+                                                                    ).replace("%valuename", dataeconomyvalue)
+                                                                )
+                                                            )
+                                                        )
+                                                    )
+                                                } else {
+                                                    player.sendMessage(
+                                                        Format.hex(
+                                                            Format.color(
+                                                                IridiumColorAPI.process(
+                                                                    walletWithdrawRemainingAmount().replace(
+                                                                        "%amount",
+                                                                        data_names_config_mysql.getInt("data.${dataeconomyvalue}")
+                                                                            .toString()
+                                                                    ).replace("%valuename", dataeconomyvalue)
+                                                                )
+                                                            )
+                                                        )
+                                                    )
+                                                }
+                                                player.inventory.addItem(Economy.addEconomy(player, remove))
+                                            } else {
+                                                if (databasetype == "h2") {
+                                                    player.sendMessage(
+                                                        Format.hex(
+                                                            Format.color(
+                                                                IridiumColorAPI.process(
+                                                                    walletWithdrawNoEnoughAmount().replace(
+                                                                        "%amount",
+                                                                        data_names_config_sqlite.getInt("data.${dataeconomyvalue}")
+                                                                            .toString()
+                                                                    ).replace("%valuename", dataeconomyvalue)
+                                                                )
+                                                            )
+                                                        )
+                                                    )
+                                                } else {
+                                                    player.sendMessage(
+                                                        Format.hex(
+                                                            Format.color(
+                                                                IridiumColorAPI.process(
+                                                                    walletWithdrawNoEnoughAmount().replace(
+                                                                        "%amount",
+                                                                        data_names_config_mysql.getInt("data.${dataeconomyvalue}")
+                                                                            .toString()
+                                                                    ).replace("%valuename", dataeconomyvalue)
+                                                                )
+                                                            )
+                                                        )
+                                                    )
+                                                }
+                                            }
+                                        }
+                                    }
+                                } else {
+                                    player.sendMessage(
                                         Format.hex(
-                                            IridiumColorAPI.process(
-                                                Format.color(
+                                            Format.color(
+                                                IridiumColorAPI.process(
                                                     invalidAmount().replace(
                                                         "%valuename",
                                                         dataeconomyvalue
@@ -141,277 +404,29 @@ class WalletCommand : CommandExecutor, TabCompleter {
                                         )
                                     )
                                 }
-                                if (remove >= 1) {
-                                    val data_names_sqlite =
-                                        File(plugin.dataFolder.toString() + "/data/" + sender.name + "_SQLite.txt")
-                                    val data_names_mysql =
-                                        File(plugin.dataFolder.toString() + "/data/" + sender.name + "_MySQL.txt")
-                                    val data_names_config_sqlite: FileConfiguration =
-                                        YamlConfiguration.loadConfiguration(data_names_sqlite)
-                                    val data_names_config_mysql: FileConfiguration =
-                                        YamlConfiguration.loadConfiguration(data_names_mysql)
-                                    val somasqlite =
-                                        data_names_config_sqlite.getInt("data.${dataeconomyvalue}") - remove
-                                    val somamysql = data_names_config_mysql.getInt("data.${dataeconomyvalue}") - remove
-                                    if (databasetype == "h2") {
-                                        if (data_names_config_sqlite.getInt("data.${dataeconomyvalue}") >= remove) {
-                                            try {
-                                                if (databasetype == "h2") {
-                                                    TableFunction.dropTableSQLite(sender as Player)
-                                                } else {
-                                                    TableFunction.dropTable(sender as Player)
-                                                }
-                                            } catch (_: SQLException) {
-                                            }
-                                            try {
-                                                if (databasetype == "h2") {
-                                                    TableFunction.createTableAmountSQLite(player as Player, somasqlite)
-                                                } else {
-                                                    TableFunction.createTableAmount(player as Player, somamysql)
-                                                }
-                                            } catch (e: SQLException) {
-                                                throw RuntimeException(e)
-                                            }
-                                            if (databasetype == "h2") {
-                                                data_names_config_sqlite["data.${dataeconomyvalue}"] = somasqlite
-                                            } else {
-                                                data_names_config_mysql["data.${dataeconomyvalue}"] = somamysql
-                                            }
-                                            try {
-                                                if (databasetype == "h2") {
-                                                    data_names_config_sqlite.save(data_names_sqlite)
-                                                } else {
-                                                    data_names_config_mysql.save(data_names_mysql)
-                                                }
-                                            } catch (e: IOException) {
-                                                throw RuntimeException(e)
-                                            }
-                                            plugin.reloadConfig()
-                                            player.sendMessage(
-                                                Format.hex(
-                                                    Format.color(
-                                                        IridiumColorAPI.process(
-                                                            walletWithdrawAmount().replace("%amount", remove.toString())
-                                                                .replace("%valuename", dataeconomyvalue)
-                                                        )
-                                                    )
-                                                )
-                                            )
-                                            player.sendMessage(
-                                                Format.hex(
-                                                    Format.color(
-                                                        IridiumColorAPI.process(
-                                                            walletWithdrawConverted().replace(
-                                                                "%amount",
-                                                                remove.toString()
-                                                            ).replace("%valuename", dataeconomyvalue)
-                                                        )
-                                                    )
-                                                )
-                                            )
-                                            if (databasetype == "h2") {
-                                                player.sendMessage(
-                                                    Format.hex(
-                                                        Format.color(
-                                                            IridiumColorAPI.process(
-                                                                walletWithdrawRemainingAmount().replace(
-                                                                    "%amount",
-                                                                    data_names_config_sqlite.getInt("data.${dataeconomyvalue}")
-                                                                        .toString()
-                                                                ).replace("%valuename", dataeconomyvalue)
-                                                            )
-                                                        )
-                                                    )
-                                                )
-                                            } else {
-                                                player.sendMessage(
-                                                    Format.hex(
-                                                        Format.color(
-                                                            IridiumColorAPI.process(
-                                                                walletWithdrawRemainingAmount().replace(
-                                                                    "%amount",
-                                                                    data_names_config_mysql.getInt("data.${dataeconomyvalue}")
-                                                                        .toString()
-                                                                ).replace("%valuename", dataeconomyvalue)
-                                                            )
-                                                        )
-                                                    )
-                                                )
-                                            }
-                                            player.inventory.addItem(Economy.addEconomy(player, remove))
-                                        } else {
-                                            if (databasetype == "h2") {
-                                                player.sendMessage(
-                                                    Format.hex(
-                                                        Format.color(
-                                                            IridiumColorAPI.process(
-                                                                walletWithdrawNoEnoughAmount().replace(
-                                                                    "%amount",
-                                                                    data_names_config_sqlite.getInt("data.${dataeconomyvalue}")
-                                                                        .toString()
-                                                                ).replace("%valuename", dataeconomyvalue)
-                                                            )
-                                                        )
-                                                    )
-                                                )
-                                            } else {
-                                                player.sendMessage(
-                                                    Format.hex(
-                                                        Format.color(
-                                                            IridiumColorAPI.process(
-                                                                walletWithdrawNoEnoughAmount().replace(
-                                                                    "%amount",
-                                                                    data_names_config_mysql.getInt("data.${dataeconomyvalue}")
-                                                                        .toString()
-                                                                ).replace("%valuename", dataeconomyvalue)
-                                                            )
-                                                        )
-                                                    )
-                                                )
-                                            }
-                                        }
-                                    } else {
-                                        if (data_names_config_mysql.getInt("data.${dataeconomyvalue}") >= remove) {
-                                            try {
-                                                if (databasetype == "h2") {
-                                                    TableFunction.dropTableSQLite(sender as Player)
-                                                } else {
-                                                    TableFunction.dropTable(sender as Player)
-                                                }
-                                            } catch (_: SQLException) {
-                                            }
-                                            try {
-                                                if (databasetype == "h2") {
-                                                    TableFunction.createTableAmountSQLite(player as Player, somasqlite)
-                                                } else {
-                                                    TableFunction.createTableAmount(player as Player, somamysql)
-                                                }
-                                            } catch (e: SQLException) {
-                                                throw RuntimeException(e)
-                                            }
-                                            if (databasetype == "h2") {
-                                                data_names_config_sqlite["data.${dataeconomyvalue}"] = somasqlite
-                                            } else {
-                                                data_names_config_mysql["data.${dataeconomyvalue}"] = somamysql
-                                            }
-                                            try {
-                                                if (databasetype == "h2") {
-                                                    data_names_config_sqlite.save(data_names_sqlite)
-                                                } else {
-                                                    data_names_config_mysql.save(data_names_mysql)
-                                                }
-                                            } catch (e: IOException) {
-                                                throw RuntimeException(e)
-                                            }
-                                            plugin.reloadConfig()
-                                            player.sendMessage(
-                                                Format.hex(
-                                                    Format.color(
-                                                        IridiumColorAPI.process(
-                                                            walletWithdrawAmount().replace("%amount", remove.toString())
-                                                                .replace("%valuename", dataeconomyvalue)
-                                                        )
-                                                    )
-                                                )
-                                            )
-                                            player.sendMessage(
-                                                Format.hex(
-                                                    Format.color(
-                                                        IridiumColorAPI.process(
-                                                            walletWithdrawConverted().replace(
-                                                                "%amount",
-                                                                remove.toString()
-                                                            ).replace("%valuename", dataeconomyvalue)
-                                                        )
-                                                    )
-                                                )
-                                            )
-                                            if (databasetype == "h2") {
-                                                player.sendMessage(
-                                                    Format.hex(
-                                                        Format.color(
-                                                            IridiumColorAPI.process(
-                                                                walletWithdrawRemainingAmount().replace(
-                                                                    "%amount",
-                                                                    data_names_config_sqlite.getInt("data.${dataeconomyvalue}")
-                                                                        .toString()
-                                                                ).replace("%valuename", dataeconomyvalue)
-                                                            )
-                                                        )
-                                                    )
-                                                )
-                                            } else {
-                                                player.sendMessage(
-                                                    Format.hex(
-                                                        Format.color(
-                                                            IridiumColorAPI.process(
-                                                                walletWithdrawRemainingAmount().replace(
-                                                                    "%amount",
-                                                                    data_names_config_mysql.getInt("data.${dataeconomyvalue}")
-                                                                        .toString()
-                                                                ).replace("%valuename", dataeconomyvalue)
-                                                            )
-                                                        )
-                                                    )
-                                                )
-                                            }
-                                            player.inventory.addItem(Economy.addEconomy(player, remove))
-                                        } else {
-                                            if (databasetype == "h2") {
-                                                player.sendMessage(
-                                                    Format.hex(
-                                                        Format.color(
-                                                            IridiumColorAPI.process(
-                                                                walletWithdrawNoEnoughAmount().replace(
-                                                                    "%amount",
-                                                                    data_names_config_sqlite.getInt("data.${dataeconomyvalue}")
-                                                                        .toString()
-                                                                ).replace("%valuename", dataeconomyvalue)
-                                                            )
-                                                        )
-                                                    )
-                                                )
-                                            } else {
-                                                player.sendMessage(
-                                                    Format.hex(
-                                                        Format.color(
-                                                            IridiumColorAPI.process(
-                                                                walletWithdrawNoEnoughAmount().replace(
-                                                                    "%amount",
-                                                                    data_names_config_mysql.getInt("data.${dataeconomyvalue}")
-                                                                        .toString()
-                                                                ).replace("%valuename", dataeconomyvalue)
-                                                            )
-                                                        )
-                                                    )
-                                                )
-                                            }
-                                        }
-                                    }
-                                }
-                            } else {
-                                player.sendMessage(
-                                    Format.hex(
-                                        Format.color(
-                                            IridiumColorAPI.process(
-                                                invalidAmount().replace(
-                                                    "%valuename",
-                                                    dataeconomyvalue
-                                                )
+                            }
+                        } catch (e: NumberFormatException) {
+                            player.sendMessage(
+                                Format.hex(
+                                    Format.color(
+                                        IridiumColorAPI.process(
+                                            invalidAmount().replace(
+                                                "%valuename",
+                                                dataeconomyvalue
                                             )
                                         )
                                     )
                                 )
-                            }
+                            )
                         }
-                    } catch (e: NumberFormatException) {
+                    } else {
                         player.sendMessage(
                             Format.hex(
                                 Format.color(
                                     IridiumColorAPI.process(
-                                        invalidAmount().replace(
-                                            "%valuename",
-                                            dataeconomyvalue
+                                        accessDenied().replace(
+                                            "%perm",
+                                            "hexaecon.permissions.withdraw"
                                         )
                                     )
                                 )
