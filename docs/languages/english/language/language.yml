@@ -17,6 +17,10 @@ Language:
   WalletWithdrawNoEnoughAmount: '&eyou don''t have enough %valuename, you have &6%amount
     &e%valuename.'
   PlayerPayed: '&eYou have successfully sent to &6%p &6%amount &e%valuename.'
+  RemovedEconFromPlayer: '&eYou have successfully removed &6%amount &e%valuename from
+    &6%p.'
+  CannotRemoveEconFromPlayer: '&eCannot remove &6%amount &e%valuename from &6%p &ebecause
+    player has &6%targetbalance &e%valuename.'
   PlayerPaymentRecived: '&eYou recived a payment of &6%amount &e%valuename &eby &6%p.'
   CannotPaySelf: '&eYou cannot pay yourself.'
   UsageFormat: '&eUsage: %u'

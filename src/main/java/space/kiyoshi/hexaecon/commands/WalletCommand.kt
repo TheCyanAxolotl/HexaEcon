@@ -20,10 +20,12 @@ import space.kiyoshi.hexaecon.HexaEcon.Companion.plugin
 import space.kiyoshi.hexaecon.functions.TableFunction
 import space.kiyoshi.hexaecon.utils.*
 import space.kiyoshi.hexaecon.utils.Language.accessDenied
+import space.kiyoshi.hexaecon.utils.Language.cannotRemoveEconFromPlayer
 import space.kiyoshi.hexaecon.utils.Language.configurationReloaded
 import space.kiyoshi.hexaecon.utils.Language.generateToOther
 import space.kiyoshi.hexaecon.utils.Language.invalidAmount
 import space.kiyoshi.hexaecon.utils.Language.playerNotFound
+import space.kiyoshi.hexaecon.utils.Language.removedEconFromPlayer
 import space.kiyoshi.hexaecon.utils.Language.usageConvertDeposit
 import space.kiyoshi.hexaecon.utils.Language.usageFormat
 import space.kiyoshi.hexaecon.utils.Language.walletWithdrawAmount
@@ -554,7 +556,31 @@ class WalletCommand : CommandExecutor, TabCompleter {
                                                 } catch (e: IOException) {
                                                     throw RuntimeException(e)
                                                 }
+                                                sender.sendMessage(
+                                                    Format.hex(
+                                                        Format.color(
+                                                            IridiumColorAPI.process(
+                                                                removedEconFromPlayer().replace("%amount", remove.toString())
+                                                                    .replace("%valuename", dataeconomyvalue)
+                                                                    .replace("%p", target.name)
+                                                            )
+                                                        )
+                                                    )
+                                                )
                                                 plugin.reloadConfig()
+                                            } else {
+                                                sender.sendMessage(
+                                                    Format.hex(
+                                                        Format.color(
+                                                            IridiumColorAPI.process(
+                                                                cannotRemoveEconFromPlayer().replace("%amount", remove.toString())
+                                                                    .replace("%valuename", dataeconomyvalue)
+                                                                    .replace("%p", target.name)
+                                                                    .replace("%targetbalance", data_names_config_sqlite.getInt("data.${dataeconomyvalue}").toString())
+                                                            )
+                                                        )
+                                                    )
+                                                )
                                             }
                                         } else {
                                             if (data_names_config_mysql.getInt("data.${dataeconomyvalue}") >= remove) {
@@ -589,7 +615,31 @@ class WalletCommand : CommandExecutor, TabCompleter {
                                                 } catch (e: IOException) {
                                                     throw RuntimeException(e)
                                                 }
+                                                sender.sendMessage(
+                                                    Format.hex(
+                                                        Format.color(
+                                                            IridiumColorAPI.process(
+                                                                removedEconFromPlayer().replace("%amount", remove.toString())
+                                                                    .replace("%valuename", dataeconomyvalue)
+                                                                    .replace("%p", target.name)
+                                                            )
+                                                        )
+                                                    )
+                                                )
                                                 plugin.reloadConfig()
+                                            } else {
+                                                sender.sendMessage(
+                                                    Format.hex(
+                                                        Format.color(
+                                                            IridiumColorAPI.process(
+                                                                cannotRemoveEconFromPlayer().replace("%amount", remove.toString())
+                                                                    .replace("%valuename", dataeconomyvalue)
+                                                                    .replace("%p", target.name)
+                                                                    .replace("%targetbalance", data_names_config_mysql.getInt("data.${dataeconomyvalue}").toString())
+                                                            )
+                                                        )
+                                                    )
+                                                )
                                             }
                                         }
                                     }

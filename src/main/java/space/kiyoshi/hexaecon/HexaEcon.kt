@@ -83,6 +83,8 @@ class HexaEcon : JavaPlugin() {
                 languageconfig["Language.PlayerPaymentRecived"] =
                     "&eYou recived a payment of &6%amount &e%valuename &eby &6%p."
                 languageconfig["Language.CannotPaySelf"] = "&eYou cannot pay yourself."
+                languageconfig["Language.RemovedEconFromPlayer"] = "&eYou have successfully removed &6%amount &e%valuename from &6%p."
+                languageconfig["Language.CannotRemoveEconFromPlayer"] = "&eCannot remove &6%amount &e%valuename from &6%p &ebecause player has &6%targetbalance &e%valuename."
                 languageconfig["Language.UsageFormat"] = "&eUsage: %u"
                 languageconfig.createSection("Usages")
                 languageconfig["Usages.EconConvertDeposit"] = "&e/wallet <generate/withdraw/remove> <amount> <player>"

@@ -67,6 +67,14 @@ object Language {
         return getPrefix() + plugin.getLanguages().getString("Language.CannotPaySelf")
     }
 
+    fun removedEconFromPlayer(): String {
+        return getPrefix() + plugin.getLanguages().getString("Language.RemovedEconFromPlayer")
+    }
+
+    fun cannotRemoveEconFromPlayer(): String {
+        return getPrefix() + plugin.getLanguages().getString("Language.CannotRemoveEconFromPlayer")
+    }
+
     fun usageFormat(): String {
         return getPrefix() + plugin.getLanguages().getString("Language.UsageFormat")
     }

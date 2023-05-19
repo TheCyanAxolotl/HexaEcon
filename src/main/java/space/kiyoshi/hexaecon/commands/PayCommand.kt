@@ -419,9 +419,8 @@ class PayCommand : CommandExecutor, TabCompleter {
                     a(s, args[0], i.toString())
                 }
                 s.sort()
-                return s
+                return s + mutableListOf()
             }
-            return mutableListOf()
         }
         return null
     }
