@@ -22,8 +22,6 @@ import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
 import java.nio.channels.Channels
-import java.nio.file.Files
-import java.nio.file.StandardCopyOption
 import java.util.logging.Level
 import java.util.logging.LogRecord
 import kotlin.properties.Delegates
@@ -231,7 +229,6 @@ class HexaEcon : JavaPlugin() {
         val legacyConfigFile = File("$dataFolder/config-legacy.yml")
 
         if (!legacyConfigFile.exists()) {
-            // Copy config-legacy.yml from the JAR to the data folder
             val legacyConfigStream = getResource("config-legacy.yml")
             val outputStream = FileOutputStream(currentConfigFile)
             val channel = outputStream.channel
