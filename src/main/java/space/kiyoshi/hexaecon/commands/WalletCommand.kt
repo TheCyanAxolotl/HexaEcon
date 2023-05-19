@@ -96,7 +96,7 @@ class WalletCommand : CommandExecutor, TabCompleter {
                     }
                 }
                 if (args[0] == "withdraw") {
-                    if(player.hasPermission("hexaecon.permissions.withdraw")) {
+                    if (player.hasPermission("hexaecon.permissions.withdraw")) {
                         try {
                             if (args.size < 2) {
                                 sender.sendMessage(
@@ -155,7 +155,8 @@ class WalletCommand : CommandExecutor, TabCompleter {
                                             YamlConfiguration.loadConfiguration(data_names_mysql)
                                         val somasqlite =
                                             data_names_config_sqlite.getInt("data.${dataeconomyvalue}") - remove
-                                        val somamysql = data_names_config_mysql.getInt("data.${dataeconomyvalue}") - remove
+                                        val somamysql =
+                                            data_names_config_mysql.getInt("data.${dataeconomyvalue}") - remove
                                         if (databasetype == "h2") {
                                             if (data_names_config_sqlite.getInt("data.${dataeconomyvalue}") >= remove) {
                                                 try {
@@ -168,7 +169,10 @@ class WalletCommand : CommandExecutor, TabCompleter {
                                                 }
                                                 try {
                                                     if (databasetype == "h2") {
-                                                        TableFunction.createTableAmountSQLite(player as Player, somasqlite)
+                                                        TableFunction.createTableAmountSQLite(
+                                                            player as Player,
+                                                            somasqlite
+                                                        )
                                                     } else {
                                                         TableFunction.createTableAmount(player as Player, somamysql)
                                                     }
@@ -194,7 +198,10 @@ class WalletCommand : CommandExecutor, TabCompleter {
                                                     Format.hex(
                                                         Format.color(
                                                             IridiumColorAPI.process(
-                                                                walletWithdrawAmount().replace("%amount", remove.toString())
+                                                                walletWithdrawAmount().replace(
+                                                                    "%amount",
+                                                                    remove.toString()
+                                                                )
                                                                     .replace("%valuename", dataeconomyvalue)
                                                             )
                                                         )
@@ -285,7 +292,10 @@ class WalletCommand : CommandExecutor, TabCompleter {
                                                 }
                                                 try {
                                                     if (databasetype == "h2") {
-                                                        TableFunction.createTableAmountSQLite(player as Player, somasqlite)
+                                                        TableFunction.createTableAmountSQLite(
+                                                            player as Player,
+                                                            somasqlite
+                                                        )
                                                     } else {
                                                         TableFunction.createTableAmount(player as Player, somamysql)
                                                     }
@@ -311,7 +321,10 @@ class WalletCommand : CommandExecutor, TabCompleter {
                                                     Format.hex(
                                                         Format.color(
                                                             IridiumColorAPI.process(
-                                                                walletWithdrawAmount().replace("%amount", remove.toString())
+                                                                walletWithdrawAmount().replace(
+                                                                    "%amount",
+                                                                    remove.toString()
+                                                                )
                                                                     .replace("%valuename", dataeconomyvalue)
                                                             )
                                                         )
@@ -437,7 +450,7 @@ class WalletCommand : CommandExecutor, TabCompleter {
                     }
                 }
                 if (args[0] == "remove") {
-                    if(player.hasPermission("hexaecon.permissions.remove")) {
+                    if (player.hasPermission("hexaecon.permissions.remove")) {
                         try {
                             if (args.size < 2) {
                                 sender.sendMessage(
@@ -522,7 +535,8 @@ class WalletCommand : CommandExecutor, TabCompleter {
                                             YamlConfiguration.loadConfiguration(data_names_mysql)
                                         val somasqlite =
                                             data_names_config_sqlite.getInt("data.${dataeconomyvalue}") - remove
-                                        val somamysql = data_names_config_mysql.getInt("data.${dataeconomyvalue}") - remove
+                                        val somamysql =
+                                            data_names_config_mysql.getInt("data.${dataeconomyvalue}") - remove
                                         if (databasetype == "h2") {
                                             if (data_names_config_sqlite.getInt("data.${dataeconomyvalue}") >= remove) {
                                                 try {
@@ -560,7 +574,10 @@ class WalletCommand : CommandExecutor, TabCompleter {
                                                     Format.hex(
                                                         Format.color(
                                                             IridiumColorAPI.process(
-                                                                removedEconFromPlayer().replace("%amount", remove.toString())
+                                                                removedEconFromPlayer().replace(
+                                                                    "%amount",
+                                                                    remove.toString()
+                                                                )
                                                                     .replace("%valuename", dataeconomyvalue)
                                                                     .replace("%p", target.name)
                                                             )
@@ -573,10 +590,17 @@ class WalletCommand : CommandExecutor, TabCompleter {
                                                     Format.hex(
                                                         Format.color(
                                                             IridiumColorAPI.process(
-                                                                cannotRemoveEconFromPlayer().replace("%amount", remove.toString())
+                                                                cannotRemoveEconFromPlayer().replace(
+                                                                    "%amount",
+                                                                    remove.toString()
+                                                                )
                                                                     .replace("%valuename", dataeconomyvalue)
                                                                     .replace("%p", target.name)
-                                                                    .replace("%targetbalance", data_names_config_sqlite.getInt("data.${dataeconomyvalue}").toString())
+                                                                    .replace(
+                                                                        "%targetbalance",
+                                                                        data_names_config_sqlite.getInt("data.${dataeconomyvalue}")
+                                                                            .toString()
+                                                                    )
                                                             )
                                                         )
                                                     )
@@ -619,7 +643,10 @@ class WalletCommand : CommandExecutor, TabCompleter {
                                                     Format.hex(
                                                         Format.color(
                                                             IridiumColorAPI.process(
-                                                                removedEconFromPlayer().replace("%amount", remove.toString())
+                                                                removedEconFromPlayer().replace(
+                                                                    "%amount",
+                                                                    remove.toString()
+                                                                )
                                                                     .replace("%valuename", dataeconomyvalue)
                                                                     .replace("%p", target.name)
                                                             )
@@ -632,10 +659,17 @@ class WalletCommand : CommandExecutor, TabCompleter {
                                                     Format.hex(
                                                         Format.color(
                                                             IridiumColorAPI.process(
-                                                                cannotRemoveEconFromPlayer().replace("%amount", remove.toString())
+                                                                cannotRemoveEconFromPlayer().replace(
+                                                                    "%amount",
+                                                                    remove.toString()
+                                                                )
                                                                     .replace("%valuename", dataeconomyvalue)
                                                                     .replace("%p", target.name)
-                                                                    .replace("%targetbalance", data_names_config_mysql.getInt("data.${dataeconomyvalue}").toString())
+                                                                    .replace(
+                                                                        "%targetbalance",
+                                                                        data_names_config_mysql.getInt("data.${dataeconomyvalue}")
+                                                                            .toString()
+                                                                    )
                                                             )
                                                         )
                                                     )
