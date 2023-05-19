@@ -35,6 +35,9 @@ class HexaEcon : JavaPlugin() {
     private var languageconfig: FileConfiguration = YamlConfiguration.loadConfiguration(languagefile)
     private fun initialize() {
         saveDefaultConfig()
+        if(nms.checkLegacyVersion(nms.getCleanServerVersion())) {
+            replaceLegacyConfig()
+        }
         config.options().copyDefaults(true)
         if (nms.checkServerVersionUp(nms.getCleanServerVersion())) {
             KiyoshiLogger.log(
@@ -157,9 +160,6 @@ class HexaEcon : JavaPlugin() {
     override fun onEnable() {
         initialize()
         configs()
-        if(nms.checkLegacyVersion(nms.getCleanServerVersion())) {
-            replaceLegacyConfig()
-        }
         database()
         events()
         commands()
