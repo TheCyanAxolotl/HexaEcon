@@ -17,6 +17,8 @@ Language:
   WalletWithdrawNoEnoughAmount: '&eyeterli %valuename yok ve &6%amount
     &e%valuename var.'
   PlayerPayed: '&6%p &eadlı oyuncuya &6%amount &e%valuename başarıyla gönderdiniz.'
+  RemovedEconFromPlayer: '&eBaşarıyla &6%p &eadlı oyuncudan &6%amount &e%valuename kaldırıldı'
+  CannotRemoveEconFromPlayer: '&6%p &eadlı oyuncudan &6%amount &e%valuename kaldırılamadı çünkü oyuncu &6%targetbalance &evaluename sahip'
   PlayerPaymentRecived: '&6%p &etarafından &6%amount &e%valuename &ealdınız .'
   CannotPaySelf: '&ekendine atamazsın.'
   UsageFormat: '&eKullanım: %u'
