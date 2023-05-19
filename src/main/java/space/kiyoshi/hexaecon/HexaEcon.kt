@@ -99,7 +99,6 @@ class HexaEcon : JavaPlugin() {
         if(nms.checkLegacyVersion(nms.getCleanServerVersion())){
             if(config.getString("Economy.Physical.Item") == "SUNFLOWER") {
                 config.set("Economy.Physical.Item", "DOUBLE_PLANT")
-                saveConfig()
             }
         }
     }
