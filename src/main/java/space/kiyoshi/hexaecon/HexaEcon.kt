@@ -34,7 +34,9 @@ class HexaEcon : JavaPlugin() {
     private fun initialize() {
         saveDefaultConfig()
         if(nms.checkLegacyVersion(nms.getCleanServerVersion())) {
-            replaceLegacyConfig()
+            if(config.getString("config") == "latest") {
+                replaceLegacyConfig()
+            }
         }
         config.options().copyDefaults(true)
         if (nms.checkServerVersionUp(nms.getCleanServerVersion())) {
