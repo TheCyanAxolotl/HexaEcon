@@ -46,8 +46,8 @@ Economy:
     Item: SUNFLOWER # (Legacy 1.8 DOUBLE_PLANT)this is the physical item (if the item is a sunflower the BlockPlaceEvent for this item is disabled)
     DisplayName: "&e&lCOIN" # physical item display name (HEX SUPPORT)
     Lore:
-      - "&f&l❚ &7Economy value"
-      - "&f&l❚ &7at /warp shop"
+      - "&f&l| &7Economy value"
+      - "&f&l| &7at /warp shop"
 
 # Sounds
 Sounds: # https://hub.spigotmc.org/javadocs/bukkit/org/bukkit/Sound.html
