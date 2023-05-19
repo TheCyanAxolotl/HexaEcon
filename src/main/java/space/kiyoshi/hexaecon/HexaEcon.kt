@@ -8,6 +8,7 @@ import org.bukkit.configuration.file.YamlConfiguration
 import org.bukkit.plugin.java.JavaPlugin
 import space.kiyoshi.hexaecon.commands.EcoCommand
 import space.kiyoshi.hexaecon.commands.PayCommand
+import space.kiyoshi.hexaecon.commands.WalletCommand
 import space.kiyoshi.hexaecon.events.AnimalsDeath
 import space.kiyoshi.hexaecon.events.EventsListener
 import space.kiyoshi.hexaecon.events.JoinEvent
@@ -17,9 +18,12 @@ import space.kiyoshi.hexaecon.sql.SQLiteManager
 import space.kiyoshi.hexaecon.utils.HexaEconPlaceHolders
 import space.kiyoshi.hexaecon.utils.KiyoshiLogger
 import space.kiyoshi.hexaecon.utils.NMSUtils
-import space.kiyoshi.hexaecon.commands.WalletCommand
 import java.io.File
+import java.io.FileOutputStream
 import java.io.IOException
+import java.nio.channels.Channels
+import java.nio.file.Files
+import java.nio.file.StandardCopyOption
 import java.util.logging.Level
 import java.util.logging.LogRecord
 import kotlin.properties.Delegates
@@ -96,11 +100,6 @@ class HexaEcon : JavaPlugin() {
         }
         getLanguages().options().copyDefaults(true)
         saveLanguages()
-        if(nms.checkLegacyVersion(nms.getCleanServerVersion())){
-            if(config.getString("Economy.Physical.Item") == "SUNFLOWER") {
-                config.set("Economy.Physical.Item", "DOUBLE_PLANT")
-            }
-        }
     }
 
     private fun database() {
@@ -158,6 +157,9 @@ class HexaEcon : JavaPlugin() {
     override fun onEnable() {
         initialize()
         configs()
+        if(nms.checkLegacyVersion(nms.getCleanServerVersion())) {
+            replaceLegacyConfig()
+        }
         database()
         events()
         commands()
@@ -222,6 +224,22 @@ class HexaEcon : JavaPlugin() {
 
     fun reloadLanguages() {
         languageconfig = YamlConfiguration.loadConfiguration(languagefile)
+    }
+
+    private fun replaceLegacyConfig() {
+        val currentConfigFile = File("$dataFolder/config.yml")
+        val legacyConfigFile = File("$dataFolder/config-legacy.yml")
+
+        if (!legacyConfigFile.exists()) {
+            // Copy config-legacy.yml from the JAR to the data folder
+            val legacyConfigStream = getResource("config-legacy.yml")
+            val outputStream = FileOutputStream(currentConfigFile)
+            val channel = outputStream.channel
+            channel.transferFrom(Channels.newChannel(legacyConfigStream!!), 0, Long.MAX_VALUE)
+
+            channel.close()
+            outputStream.close()
+        }
     }
 
 }

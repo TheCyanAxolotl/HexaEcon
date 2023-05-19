@@ -18,16 +18,10 @@
       <element id="extracted-dir" path="$USER_HOME$/.gradle/caches/modules-2/files-2.1/com.googlecode.json-simple/json-simple/1.1.1/c9ad4a0850ab676c5c64461a05ca524cdfff59f1/json-simple-1.1.1.jar" path-in-jar="/" />
       <element id="extracted-dir" path="$USER_HOME$/.gradle/caches/modules-2/files-2.1/org.yaml/snakeyaml/1.26/a78a8747147d2c5807683e76ec2b633e95c14fe9/snakeyaml-1.26.jar" path-in-jar="/" />
       <element id="extracted-dir" path="$USER_HOME$/.gradle/caches/modules-2/files-2.1/org.jetbrains.kotlin/kotlin-stdlib/1.8.20-RC2/436a3cf44ea8dc1c65d7a59abda28e232b05d84a/kotlin-stdlib-1.8.20-RC2.jar" path-in-jar="/" />
-      <element id="library" level="project" name="Gradle: org.spigotmc:spigot-api:1.16.1-R0.1-SNAPSHOT" />
       <element id="library" level="project" name="Gradle: org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.8.20-RC2" />
       <element id="library" level="project" name="Gradle: org.jetbrains:annotations:23.0.0" />
       <element id="library" level="project" name="Gradle: com.googlecode.json-simple:json-simple:1.1.1" />
       <element id="library" level="project" name="Gradle: com.iridium:IridiumColorAPI:1.0.6" />
-      <element id="library" level="project" name="Gradle: commons-lang:commons-lang:2.6" />
-      <element id="library" level="project" name="Gradle: net.md-5:bungeecord-chat:1.16-R0.3" />
-      <element id="library" level="project" name="Gradle: com.google.guava:guava:21.0" />
-      <element id="library" level="project" name="Gradle: com.google.code.gson:gson:2.8.0" />
-      <element id="library" level="project" name="Gradle: org.yaml:snakeyaml:1.26" />
       <element id="library" level="project" name="Gradle: org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.8.20-RC2" />
       <element id="library" level="project" name="Gradle: org.jetbrains.kotlin:kotlin-stdlib:1.8.20-RC2" />
       <element id="library" level="project" name="Gradle: junit:junit:4.10" />
@@ -35,6 +29,7 @@
       <element id="library" level="project" name="Gradle: org.hamcrest:hamcrest-core:1.1" />
       <element id="file-copy" path="$PROJECT_DIR$/src/main/resources/config.yml" />
       <element id="file-copy" path="$PROJECT_DIR$/src/main/resources/plugin.yml" />
+      <element id="file-copy" path="$PROJECT_DIR$/src/main/resources/config-legacy.yml" />
     </root>
   </artifact>
 </component>
