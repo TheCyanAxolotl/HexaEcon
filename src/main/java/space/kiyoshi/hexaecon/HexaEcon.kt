@@ -6,7 +6,6 @@ import org.bukkit.Bukkit
 import org.bukkit.configuration.file.FileConfiguration
 import org.bukkit.configuration.file.YamlConfiguration
 import org.bukkit.plugin.java.JavaPlugin
-import space.kiyoshi.hexaecon.api.HexaEconAPI
 import space.kiyoshi.hexaecon.commands.EcoCommand
 import space.kiyoshi.hexaecon.commands.PayCommand
 import space.kiyoshi.hexaecon.commands.WalletCommand
@@ -64,7 +63,6 @@ class HexaEcon : JavaPlugin() {
             config.options().parseComments(true)
         }
         plugin = this
-        api = HexaEconAPI
     }
 
     private fun configs() {
@@ -221,7 +219,6 @@ class HexaEcon : JavaPlugin() {
 
     companion object {
         var plugin: HexaEcon by Delegates.notNull()
-        var api: HexaEconAPI by Delegates.notNull()
         var MySQLManager: MySQLManager? = null
         var SQLiteManager: SQLiteManager? = null
         var PAPI = false
