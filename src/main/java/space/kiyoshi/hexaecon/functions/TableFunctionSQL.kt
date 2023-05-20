@@ -7,7 +7,7 @@ import space.kiyoshi.hexaecon.HexaEcon
 import space.kiyoshi.hexaecon.utils.GetConfig
 import java.sql.SQLException
 
-object TableFunction {
+object TableFunctionSQL {
     private val dataeconomyvalue = GetConfig.main().getString("DataBase.DataEconomyName")!!
 
     @Throws(SQLException::class)

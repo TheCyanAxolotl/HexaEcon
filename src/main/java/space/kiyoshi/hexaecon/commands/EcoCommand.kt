@@ -9,7 +9,8 @@ import org.bukkit.command.CommandExecutor
 import org.bukkit.command.CommandSender
 import org.bukkit.entity.Player
 import space.kiyoshi.hexaecon.HexaEcon
-import space.kiyoshi.hexaecon.functions.TableFunction
+import space.kiyoshi.hexaecon.functions.TableFunctionMongo
+import space.kiyoshi.hexaecon.functions.TableFunctionSQL
 import space.kiyoshi.hexaecon.utils.Format
 import space.kiyoshi.hexaecon.utils.GetConfig
 import space.kiyoshi.hexaecon.utils.Language.accessDenied
@@ -42,7 +43,7 @@ class EcoCommand : CommandExecutor {
                                             dataeconomyvalue
                                         ).replace(
                                             "%amount",
-                                            TableFunction.selectAllFromTableAsStringSQLite(player.name).toString()
+                                            TableFunctionSQL.selectAllFromTableAsStringSQLite(player.name).toString()
                                                 .replace("[", "").replace("]", "")
                                         )
                                     )
@@ -52,7 +53,24 @@ class EcoCommand : CommandExecutor {
                         if (sound != "NONE") {
                             player.playSound(player.location, Sound.valueOf(sound), volume.toFloat(), pitch.toFloat())
                         }
-                    } else {
+                    } else if (databasetype == "MongoDB") {
+                        player.sendMessage(
+                            Format.hex(
+                                Format.color(
+                                    IridiumColorAPI.process(
+                                        bankAmount().replace(
+                                            "%valuename",
+                                            dataeconomyvalue
+                                        ).replace(
+                                            "%amount",
+                                            TableFunctionMongo.selectAllFromCollectionAsString(player.name).toString()
+                                                .replace("[", "").replace("]", "")
+                                        )
+                                    )
+                                )
+                            )
+                        )
+                    } else if (databasetype == "MySQL"){
                         val future = CompletableFuture.supplyAsync {
                             val stmt = HexaEcon.MySQLManager!!.getConnection()!!.createStatement()
                             val SQL = "SELECT * FROM " + player.name

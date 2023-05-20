@@ -23,11 +23,14 @@ object GetConfig {
             File(plugin.dataFolder.toString() + "/data/" + player.name + "_SQLite.txt")
         val data_names_mysql =
             File(plugin.dataFolder.toString() + "/data/" + player.name + "_MySQL.txt")
+        val data_names_mongodb =
+            File(plugin.dataFolder.toString() + "/data/" + player.name + "_MongoDB.txt")
         if (!data.exists()) {
             data.mkdir()
         }
         val data_names_config_sqlite: FileConfiguration = YamlConfiguration.loadConfiguration(data_names_sqlite)
         val data_names_config_mysql: FileConfiguration = YamlConfiguration.loadConfiguration(data_names_mysql)
+        val data_names_config_mongodb: FileConfiguration = YamlConfiguration.loadConfiguration(data_names_mongodb)
         if (databasetype == "h2") {
             if (!data_names_sqlite.exists()) {
                 try {
@@ -40,7 +43,19 @@ object GetConfig {
                 } catch (_: IOException) {
                 }
             }
-        } else {
+        } else if (databasetype == "MongoDB") {
+            if (!data_names_mongodb.exists()) {
+                try {
+                    data_names_mongodb.createNewFile()
+                    data_names_config_mongodb.createSection("data")
+                    if (!data_names_config_mongodb.isSet("data.${dataeconomyvalue}")) {
+                        data_names_config_mongodb["data.${dataeconomyvalue}"] = 0
+                        data_names_config_mongodb.save(data_names_mongodb)
+                    }
+                } catch (_: IOException) {
+                }
+            }
+        } else if (databasetype == "MySQL") {
             if (!data_names_mysql.exists()) {
                 try {
                     data_names_mysql.createNewFile()

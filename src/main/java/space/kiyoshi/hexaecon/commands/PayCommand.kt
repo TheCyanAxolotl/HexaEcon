@@ -16,7 +16,8 @@ import org.bukkit.configuration.file.FileConfiguration
 import org.bukkit.configuration.file.YamlConfiguration
 import org.bukkit.entity.Player
 import space.kiyoshi.hexaecon.HexaEcon.Companion.plugin
-import space.kiyoshi.hexaecon.functions.TableFunction
+import space.kiyoshi.hexaecon.functions.TableFunctionMongo
+import space.kiyoshi.hexaecon.functions.TableFunctionSQL
 import space.kiyoshi.hexaecon.utils.Format
 import space.kiyoshi.hexaecon.utils.GetConfig
 import space.kiyoshi.hexaecon.utils.Language
@@ -186,44 +187,57 @@ class PayCommand : CommandExecutor, TabCompleter {
                                                 File(plugin.dataFolder.toString() + "/data/" + target!!.name + "_SQLite.txt")
                                             val data_names_mysql =
                                                 File(plugin.dataFolder.toString() + "/data/" + target.name + "_MySQL.txt")
+                                            val data_names_mongodb =
+                                                File(plugin.dataFolder.toString() + "/data/" + target.name + "_MongoDB.txt")
 
                                             val data_names_sqlite_self =
                                                 File(plugin.dataFolder.toString() + "/data/" + player.name + "_SQLite.txt")
                                             val data_names_mysql_self =
                                                 File(plugin.dataFolder.toString() + "/data/" + player.name + "_MySQL.txt")
+                                            val data_names_mongodb_self =
+                                                File(plugin.dataFolder.toString() + "/data/" + player.name + "_MongoDB.txt")
 
                                             val data_names_config_sqlite: FileConfiguration =
                                                 YamlConfiguration.loadConfiguration(data_names_sqlite)
                                             val data_names_config_mysql: FileConfiguration =
                                                 YamlConfiguration.loadConfiguration(data_names_mysql)
+                                            val data_names_config_mongodb: FileConfiguration =
+                                                YamlConfiguration.loadConfiguration(data_names_mongodb)
 
                                             val data_names_config_sqlite_self: FileConfiguration =
                                                 YamlConfiguration.loadConfiguration(data_names_sqlite_self)
                                             val data_names_config_mysql_self: FileConfiguration =
                                                 YamlConfiguration.loadConfiguration(data_names_mysql_self)
+                                            val data_names_config_mongodb_self: FileConfiguration =
+                                                YamlConfiguration.loadConfiguration(data_names_mongodb_self)
 
                                             val somasqlitepay =
                                                 data_names_config_sqlite_self.getInt("data.${dataeconomyvalue}") - amount
                                             val somamysqlpay =
                                                 data_names_config_mysql_self.getInt("data.${dataeconomyvalue}") - amount
+                                            val somamongodbpay =
+                                                data_names_config_mongodb_self.getInt("data.${dataeconomyvalue}") - amount
 
                                             val somasqlitepayed =
                                                 data_names_config_sqlite.getInt("data.${dataeconomyvalue}") + amount
                                             val somamysqlpayed =
                                                 data_names_config_mysql.getInt("data.${dataeconomyvalue}") + amount
+                                            val somamongodbpayed =
+                                                data_names_config_mongodb.getInt("data.${dataeconomyvalue}") + amount
+
                                             if (databasetype == "h2") {
                                                 if (data_names_config_sqlite_self.getInt("data.${dataeconomyvalue}") >= amount) {
                                                     try {
-                                                        TableFunction.dropTableSQLite(player as Player)
-                                                        TableFunction.dropTableSQLite(target)
+                                                        TableFunctionSQL.dropTableSQLite(player as Player)
+                                                        TableFunctionSQL.dropTableSQLite(target)
                                                     } catch (_: SQLException) {
                                                     }
                                                     try {
-                                                        TableFunction.createTableAmountSQLite(
+                                                        TableFunctionSQL.createTableAmountSQLite(
                                                             player as Player,
                                                             somasqlitepay
                                                         )
-                                                        TableFunction.createTableAmountSQLite(target, somasqlitepayed)
+                                                        TableFunctionSQL.createTableAmountSQLite(target, somasqlitepayed)
                                                     } catch (_: SQLException) {
                                                     }
                                                     try {
@@ -279,16 +293,80 @@ class PayCommand : CommandExecutor, TabCompleter {
                                                         )
                                                     )
                                                 }
-                                            } else {
+                                            } else if (databasetype == "MongoDB") {
+                                                if (data_names_config_mongodb_self.getInt("data.${dataeconomyvalue}") >= amount) {
+                                                    try {
+                                                        TableFunctionMongo.dropCollection(player.name)
+                                                        TableFunctionMongo.dropCollection(target.name)
+                                                    } catch (_: SQLException) {}
+                                                    try {
+                                                        TableFunctionMongo.createCollectionAmount(
+                                                            player.name,
+                                                            somamongodbpay
+                                                        )
+                                                        TableFunctionMongo.createCollectionAmount(target.name, somamongodbpayed)
+                                                    } catch (_: SQLException) {}
+                                                    try {
+                                                        data_names_config_mongodb_self["data.${dataeconomyvalue}"] =
+                                                            somamongodbpay
+                                                        data_names_config_mongodb["data.${dataeconomyvalue}"] =
+                                                            somamongodbpayed
+                                                    } catch (_: IOException) {}
+                                                    try {
+                                                        data_names_config_mongodb_self.save(data_names_mongodb_self)
+                                                        data_names_config_mongodb.save(data_names_mongodb)
+                                                    } catch (_: IOException) {}
+                                                    plugin.reloadConfig()
+                                                    player.sendMessage(
+                                                        Format.hex(
+                                                            Format.color(
+                                                                IridiumColorAPI.process(
+                                                                    playerpayed().replace("%amount", amount.toString())
+                                                                        .replace("%valuename", dataeconomyvalue)
+                                                                        .replace("%p", target.name)
+                                                                )
+                                                            )
+                                                        )
+                                                    )
+                                                    target.sendMessage(
+                                                        Format.hex(
+                                                            Format.color(
+                                                                IridiumColorAPI.process(
+                                                                    paymentrecived().replace(
+                                                                        "%amount",
+                                                                        amount.toString()
+                                                                    ).replace("%valuename", dataeconomyvalue)
+                                                                        .replace("%p", player.name)
+                                                                )
+                                                            )
+                                                        )
+                                                    )
+                                                } else {
+                                                    player.sendMessage(
+                                                        Format.hex(
+                                                            Format.color(
+                                                                IridiumColorAPI.process(
+                                                                    Language.walletWithdrawNoEnoughAmount()
+                                                                        .replace(
+                                                                            "%amount",
+                                                                            data_names_config_mongodb_self.getInt("data.${dataeconomyvalue}")
+                                                                                .toString()
+                                                                        ).replace("%valuename", dataeconomyvalue)
+                                                                )
+                                                            )
+                                                        )
+                                                    )
+                                                }
+                                            } else if (databasetype == "MySQL") {
                                                 if (data_names_config_mysql_self.getInt("data.${dataeconomyvalue}") >= amount) {
                                                     try {
-                                                        TableFunction.dropTable(player as Player)
-                                                        TableFunction.dropTable(target)
+                                                        TableFunctionSQL.dropTable(player as Player)
+                                                        TableFunctionSQL.dropTable(target)
                                                     } catch (_: SQLException) {
                                                     }
                                                     try {
-                                                        TableFunction.createTableAmount(player as Player, somamysqlpay)
-                                                        TableFunction.createTableAmount(target, somamysqlpayed)
+                                                        TableFunctionSQL.createTableAmount(player as Player, somamysqlpay)
+                                                        TableFunctionSQL.createTableAmount(target, somamysqlpayed)
                                                     } catch (_: SQLException) {
                                                     }
                                                     try {

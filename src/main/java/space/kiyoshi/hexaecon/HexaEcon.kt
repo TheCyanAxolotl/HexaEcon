@@ -13,6 +13,7 @@ import space.kiyoshi.hexaecon.events.AnimalsDeath
 import space.kiyoshi.hexaecon.events.EventsListener
 import space.kiyoshi.hexaecon.events.JoinEvent
 import space.kiyoshi.hexaecon.events.MonsterDeath
+import space.kiyoshi.hexaecon.mongo.MongoDBManager
 import space.kiyoshi.hexaecon.sql.MySQLManager
 import space.kiyoshi.hexaecon.sql.SQLiteManager
 import space.kiyoshi.hexaecon.utils.HexaEconPlaceHolders
@@ -31,6 +32,7 @@ class HexaEcon : JavaPlugin() {
     private var lang = File(dataFolder, "language")
     private var languagefile = File("$dataFolder/language/language.yml")
     private var languageconfig: FileConfiguration = YamlConfiguration.loadConfiguration(languagefile)
+    private val mongohost = config.getString("MongoDB.Host")!!
     private fun initialize() {
         saveDefaultConfig()
         if(nms.checkLegacyVersion(nms.getCleanServerVersion())) {
@@ -128,11 +130,12 @@ class HexaEcon : JavaPlugin() {
                     "HexaEcon"
                 )
             }
+        } else if (databasetype == "MongoDB") {
+            KiyoshiLogger.log(
+                LogRecord(Level.INFO, "[MongoDB] pulling mongodb requests from HexaEcon [OK]"),
+                "HexaEcon"
+            )
         } else if (databasetype == "MySQL") {
-            val worlds = Bukkit.getWorlds()
-            for (world in worlds) {
-                world.save()
-            }
             MySQLManager = MySQLManager()
             MySQLManager?.connect()
             if (MySQLManager?.isConnected == true) {
@@ -181,15 +184,21 @@ class HexaEcon : JavaPlugin() {
         val databasetype = config.getString("DataBase.Type")!!
         MySQLManager = MySQLManager()
         SQLiteManager = SQLiteManager("$dataFolder/data.db")
-        if (databasetype == "h2") {
-            try {
-                SQLiteManager!!.disconnect()
-            } catch (_: ClassNotFoundException) {
+        when (databasetype) {
+            "h2" -> {
+                try {
+                    SQLiteManager!!.disconnect()
+                } catch (_: ClassNotFoundException) {}
             }
-        } else if (databasetype == "MySQL") {
-            try {
-                MySQLManager!!.disconnect()
-            } catch (_: ClassNotFoundException) {
+            "MongoDB" -> {
+                try {
+                    MongoDBManager(mongohost, "hexaecon").close()
+                } catch (_: ClassNotFoundException) {}
+            }
+            "MySQL" -> {
+                try {
+                    MySQLManager!!.disconnect()
+                } catch (_: ClassNotFoundException) {}
             }
         }
     }

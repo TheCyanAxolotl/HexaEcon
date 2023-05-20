@@ -15,7 +15,7 @@
 
 # DataBase Setup
 DataBase:
-  Type: "h2" # h2 / MySQL
+  Type: "h2" # h2 / MySQL / MongoDB
   DataEconomyName: "coins" # Economy Name
 MySQL:
   Host: "" # HostName
@@ -23,6 +23,8 @@ MySQL:
   DataBase: "" # DataBase
   UserName: "" # UserName
   Password: "" # Password
+MongoDB:
+  Host: "mongodb://localhost:27017"
 
 # Modules
 Modules: # Modules

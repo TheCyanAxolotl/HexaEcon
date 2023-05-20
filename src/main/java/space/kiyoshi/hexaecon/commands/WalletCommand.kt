@@ -17,7 +17,8 @@ import org.bukkit.configuration.file.YamlConfiguration
 import org.bukkit.entity.Player
 import space.kiyoshi.hexaecon.HexaEcon
 import space.kiyoshi.hexaecon.HexaEcon.Companion.plugin
-import space.kiyoshi.hexaecon.functions.TableFunction
+import space.kiyoshi.hexaecon.functions.TableFunctionMongo
+import space.kiyoshi.hexaecon.functions.TableFunctionSQL
 import space.kiyoshi.hexaecon.utils.*
 import space.kiyoshi.hexaecon.utils.Language.accessDenied
 import space.kiyoshi.hexaecon.utils.Language.cannotRemoveEconFromPlayer
@@ -149,32 +150,39 @@ class WalletCommand : CommandExecutor, TabCompleter {
                                             File(plugin.dataFolder.toString() + "/data/" + sender.name + "_SQLite.txt")
                                         val data_names_mysql =
                                             File(plugin.dataFolder.toString() + "/data/" + sender.name + "_MySQL.txt")
+                                        val data_names_mongodb =
+                                            File(plugin.dataFolder.toString() + "/data/" + sender.name + "_MongoDB.txt")
                                         val data_names_config_sqlite: FileConfiguration =
                                             YamlConfiguration.loadConfiguration(data_names_sqlite)
                                         val data_names_config_mysql: FileConfiguration =
                                             YamlConfiguration.loadConfiguration(data_names_mysql)
+                                        val data_names_config_mongodb: FileConfiguration =
+                                            YamlConfiguration.loadConfiguration(data_names_mongodb)
                                         val somasqlite =
                                             data_names_config_sqlite.getInt("data.${dataeconomyvalue}") - remove
                                         val somamysql =
                                             data_names_config_mysql.getInt("data.${dataeconomyvalue}") - remove
+                                        val somamongodb =
+                                            data_names_config_mongodb.getInt("data.${dataeconomyvalue}") - remove
+
                                         if (databasetype == "h2") {
                                             if (data_names_config_sqlite.getInt("data.${dataeconomyvalue}") >= remove) {
                                                 try {
                                                     if (databasetype == "h2") {
-                                                        TableFunction.dropTableSQLite(sender as Player)
+                                                        TableFunctionSQL.dropTableSQLite(sender as Player)
                                                     } else {
-                                                        TableFunction.dropTable(sender as Player)
+                                                        TableFunctionSQL.dropTable(sender as Player)
                                                     }
                                                 } catch (_: SQLException) {
                                                 }
                                                 try {
                                                     if (databasetype == "h2") {
-                                                        TableFunction.createTableAmountSQLite(
+                                                        TableFunctionSQL.createTableAmountSQLite(
                                                             player as Player,
                                                             somasqlite
                                                         )
                                                     } else {
-                                                        TableFunction.createTableAmount(player as Player, somamysql)
+                                                        TableFunctionSQL.createTableAmount(player as Player, somamysql)
                                                     }
                                                 } catch (e: SQLException) {
                                                     throw RuntimeException(e)
@@ -280,37 +288,44 @@ class WalletCommand : CommandExecutor, TabCompleter {
                                                     )
                                                 }
                                             }
-                                        } else {
-                                            if (data_names_config_mysql.getInt("data.${dataeconomyvalue}") >= remove) {
+                                        } else if (databasetype == "MongoDB") {
+                                            if (data_names_config_mongodb.getInt("data.${dataeconomyvalue}") >= remove) {
                                                 try {
                                                     if (databasetype == "h2") {
-                                                        TableFunction.dropTableSQLite(sender as Player)
-                                                    } else {
-                                                        TableFunction.dropTable(sender as Player)
+                                                        TableFunctionSQL.dropTableSQLite(sender as Player)
+                                                    } else if (databasetype == "MongoDB") {
+                                                        TableFunctionMongo.dropCollection(sender.name)
+                                                    } else if (databasetype == "MySQL") {
+                                                        TableFunctionSQL.dropTable(sender as Player)
                                                     }
-                                                } catch (_: SQLException) {
-                                                }
+                                                } catch (_: SQLException) {}
                                                 try {
                                                     if (databasetype == "h2") {
-                                                        TableFunction.createTableAmountSQLite(
+                                                        TableFunctionSQL.createTableAmountSQLite(
                                                             player as Player,
                                                             somasqlite
                                                         )
-                                                    } else {
-                                                        TableFunction.createTableAmount(player as Player, somamysql)
+                                                    } else if (databasetype == "MongoDB") {
+                                                        TableFunctionMongo.createCollectionAmount(player.name, somamongodb)
+                                                    } else if (databasetype == "MySQL") {
+                                                        TableFunctionSQL.createTableAmount(player as Player, somamysql)
                                                     }
                                                 } catch (e: SQLException) {
                                                     throw RuntimeException(e)
                                                 }
                                                 if (databasetype == "h2") {
                                                     data_names_config_sqlite["data.${dataeconomyvalue}"] = somasqlite
-                                                } else {
+                                                } else if (databasetype == "MongoDB") {
+                                                    data_names_config_mongodb["data.${dataeconomyvalue}"] = somamongodb
+                                                } else if (databasetype == "MySQL") {
                                                     data_names_config_mysql["data.${dataeconomyvalue}"] = somamysql
                                                 }
                                                 try {
                                                     if (databasetype == "h2") {
                                                         data_names_config_sqlite.save(data_names_sqlite)
-                                                    } else {
+                                                    } else if (databasetype == "MongoDB") {
+                                                        data_names_config_mongodb.save(data_names_mongodb)
+                                                    } else if (databasetype == "MySQL") {
                                                         data_names_config_mysql.save(data_names_mysql)
                                                     }
                                                 } catch (e: IOException) {
@@ -356,7 +371,21 @@ class WalletCommand : CommandExecutor, TabCompleter {
                                                             )
                                                         )
                                                     )
-                                                } else {
+                                                } else if (databasetype == "MongoDB") {
+                                                    player.sendMessage(
+                                                        Format.hex(
+                                                            Format.color(
+                                                                IridiumColorAPI.process(
+                                                                    walletWithdrawRemainingAmount().replace(
+                                                                        "%amount",
+                                                                        data_names_config_mongodb.getInt("data.${dataeconomyvalue}")
+                                                                            .toString()
+                                                                    ).replace("%valuename", dataeconomyvalue)
+                                                                )
+                                                            )
+                                                        )
+                                                    )
+                                                } else if (databasetype == "MySQL") {
                                                     player.sendMessage(
                                                         Format.hex(
                                                             Format.color(
@@ -371,7 +400,7 @@ class WalletCommand : CommandExecutor, TabCompleter {
                                                         )
                                                     )
                                                 }
-                                                player.inventory.addItem(Economy.addEconomy(player, remove))
+                                                (player as Player).inventory.addItem(Economy.addEconomy(player, remove))
                                             } else {
                                                 if (databasetype == "h2") {
                                                     player.sendMessage(
@@ -387,7 +416,183 @@ class WalletCommand : CommandExecutor, TabCompleter {
                                                             )
                                                         )
                                                     )
-                                                } else {
+                                                } else if (databasetype == "MongoDB") {
+                                                    player.sendMessage(
+                                                        Format.hex(
+                                                            Format.color(
+                                                                IridiumColorAPI.process(
+                                                                    walletWithdrawNoEnoughAmount().replace(
+                                                                        "%amount",
+                                                                        data_names_config_mongodb.getInt("data.${dataeconomyvalue}")
+                                                                            .toString()
+                                                                    ).replace("%valuename", dataeconomyvalue)
+                                                                )
+                                                            )
+                                                        )
+                                                    )
+                                                } else if(databasetype == "MySQL") {
+                                                    player.sendMessage(
+                                                        Format.hex(
+                                                            Format.color(
+                                                                IridiumColorAPI.process(
+                                                                    walletWithdrawNoEnoughAmount().replace(
+                                                                        "%amount",
+                                                                        data_names_config_mysql.getInt("data.${dataeconomyvalue}")
+                                                                            .toString()
+                                                                    ).replace("%valuename", dataeconomyvalue)
+                                                                )
+                                                            )
+                                                        )
+                                                    )
+                                                }
+                                            }
+                                        } else if (databasetype == "MySQL") {
+                                            if (data_names_config_mysql.getInt("data.${dataeconomyvalue}") >= remove) {
+                                                try {
+                                                    if (databasetype == "h2") {
+                                                        TableFunctionSQL.dropTableSQLite(sender as Player)
+                                                    } else if (databasetype == "MongoDB") {
+                                                        TableFunctionMongo.dropCollection(sender.name)
+                                                    } else if (databasetype == "MySQL") {
+                                                        TableFunctionSQL.dropTable(sender as Player)
+                                                    }
+                                                } catch (_: SQLException) {
+                                                }
+                                                try {
+                                                    if (databasetype == "h2") {
+                                                        TableFunctionSQL.createTableAmountSQLite(
+                                                            player as Player,
+                                                            somasqlite
+                                                        )
+                                                    } else if (databasetype == "MongoDB") {
+                                                        TableFunctionMongo.createCollectionAmount(
+                                                            player.name,
+                                                            somasqlite
+                                                        )
+                                                    } else if (databasetype == "MySQL") {
+                                                        TableFunctionSQL.createTableAmount(player as Player, somamysql)
+                                                    }
+                                                } catch (e: SQLException) {
+                                                    throw RuntimeException(e)
+                                                }
+                                                if (databasetype == "h2") {
+                                                    data_names_config_sqlite["data.${dataeconomyvalue}"] = somasqlite
+                                                } else if (databasetype == "MongoDB") {
+                                                    data_names_config_mongodb["data.${dataeconomyvalue}"] = somamongodb
+                                                } else if (databasetype == "MySQL") {
+                                                    data_names_config_mysql["data.${dataeconomyvalue}"] = somamysql
+                                                }
+                                                try {
+                                                    if (databasetype == "h2") {
+                                                        data_names_config_sqlite.save(data_names_sqlite)
+                                                    } else if (databasetype == "MongoDB") {
+                                                        data_names_config_mongodb.save(data_names_mongodb)
+                                                    } else if (databasetype == "MySQL") {
+                                                        data_names_config_mysql.save(data_names_mysql)
+                                                    }
+                                                } catch (e: IOException) {
+                                                    throw RuntimeException(e)
+                                                }
+                                                plugin.reloadConfig()
+                                                player.sendMessage(
+                                                    Format.hex(
+                                                        Format.color(
+                                                            IridiumColorAPI.process(
+                                                                walletWithdrawAmount().replace(
+                                                                    "%amount",
+                                                                    remove.toString()
+                                                                )
+                                                                    .replace("%valuename", dataeconomyvalue)
+                                                            )
+                                                        )
+                                                    )
+                                                )
+                                                player.sendMessage(
+                                                    Format.hex(
+                                                        Format.color(
+                                                            IridiumColorAPI.process(
+                                                                walletWithdrawConverted().replace(
+                                                                    "%amount",
+                                                                    remove.toString()
+                                                                ).replace("%valuename", dataeconomyvalue)
+                                                            )
+                                                        )
+                                                    )
+                                                )
+                                                if (databasetype == "h2") {
+                                                    player.sendMessage(
+                                                        Format.hex(
+                                                            Format.color(
+                                                                IridiumColorAPI.process(
+                                                                    walletWithdrawRemainingAmount().replace(
+                                                                        "%amount",
+                                                                        data_names_config_sqlite.getInt("data.${dataeconomyvalue}")
+                                                                            .toString()
+                                                                    ).replace("%valuename", dataeconomyvalue)
+                                                                )
+                                                            )
+                                                        )
+                                                    )
+                                                } else if (databasetype == "MongoDB") {
+                                                    player.sendMessage(
+                                                        Format.hex(
+                                                            Format.color(
+                                                                IridiumColorAPI.process(
+                                                                    walletWithdrawRemainingAmount().replace(
+                                                                        "%amount",
+                                                                        data_names_config_mongodb.getInt("data.${dataeconomyvalue}")
+                                                                            .toString()
+                                                                    ).replace("%valuename", dataeconomyvalue)
+                                                                )
+                                                            )
+                                                        )
+                                                    )
+                                                } else if (databasetype == "MySQL") {
+                                                    player.sendMessage(
+                                                        Format.hex(
+                                                            Format.color(
+                                                                IridiumColorAPI.process(
+                                                                    walletWithdrawRemainingAmount().replace(
+                                                                        "%amount",
+                                                                        data_names_config_mysql.getInt("data.${dataeconomyvalue}")
+                                                                            .toString()
+                                                                    ).replace("%valuename", dataeconomyvalue)
+                                                                )
+                                                            )
+                                                        )
+                                                    )
+                                                }
+                                                (player as Player).inventory.addItem(Economy.addEconomy(player, remove))
+                                            } else {
+                                                if (databasetype == "h2") {
+                                                    player.sendMessage(
+                                                        Format.hex(
+                                                            Format.color(
+                                                                IridiumColorAPI.process(
+                                                                    walletWithdrawNoEnoughAmount().replace(
+                                                                        "%amount",
+                                                                        data_names_config_sqlite.getInt("data.${dataeconomyvalue}")
+                                                                            .toString()
+                                                                    ).replace("%valuename", dataeconomyvalue)
+                                                                )
+                                                            )
+                                                        )
+                                                    )
+                                                } else if (databasetype == "MongoDB") {
+                                                    player.sendMessage(
+                                                        Format.hex(
+                                                            Format.color(
+                                                                IridiumColorAPI.process(
+                                                                    walletWithdrawNoEnoughAmount().replace(
+                                                                        "%amount",
+                                                                        data_names_config_mongodb.getInt("data.${dataeconomyvalue}")
+                                                                            .toString()
+                                                                    ).replace("%valuename", dataeconomyvalue)
+                                                                )
+                                                            )
+                                                        )
+                                                    )
+                                                } else if (databasetype == "MySQL") {
                                                     player.sendMessage(
                                                         Format.hex(
                                                             Format.color(
@@ -529,42 +734,56 @@ class WalletCommand : CommandExecutor, TabCompleter {
                                             File(plugin.dataFolder.toString() + "/data/" + target!!.name + "_SQLite.txt")
                                         val data_names_mysql =
                                             File(plugin.dataFolder.toString() + "/data/" + target.name + "_MySQL.txt")
+                                        val data_names_mongodb =
+                                            File(plugin.dataFolder.toString() + "/data/" + target.name + "_MongoDB.txt")
                                         val data_names_config_sqlite: FileConfiguration =
                                             YamlConfiguration.loadConfiguration(data_names_sqlite)
                                         val data_names_config_mysql: FileConfiguration =
                                             YamlConfiguration.loadConfiguration(data_names_mysql)
+                                        val data_names_config_mongodb: FileConfiguration =
+                                            YamlConfiguration.loadConfiguration(data_names_mongodb)
                                         val somasqlite =
                                             data_names_config_sqlite.getInt("data.${dataeconomyvalue}") - remove
                                         val somamysql =
                                             data_names_config_mysql.getInt("data.${dataeconomyvalue}") - remove
+                                        val somamongodb =
+                                            data_names_config_mongodb.getInt("data.${dataeconomyvalue}") - remove
+
                                         if (databasetype == "h2") {
                                             if (data_names_config_sqlite.getInt("data.${dataeconomyvalue}") >= remove) {
                                                 try {
                                                     if (databasetype == "h2") {
-                                                        TableFunction.dropTableSQLite(target)
-                                                    } else {
-                                                        TableFunction.dropTable(target)
+                                                        TableFunctionSQL.dropTableSQLite(target)
+                                                    } else if (databasetype == "MongoDB") {
+                                                        TableFunctionMongo.dropCollection(target.name)
+                                                    } else if (databasetype == "MySQL") {
+                                                        TableFunctionSQL.dropTable(target)
                                                     }
-                                                } catch (_: SQLException) {
-                                                }
+                                                } catch (_: SQLException) {}
                                                 try {
                                                     if (databasetype == "h2") {
-                                                        TableFunction.createTableAmountSQLite(target, somasqlite)
-                                                    } else {
-                                                        TableFunction.createTableAmount(target, somamysql)
+                                                        TableFunctionSQL.createTableAmountSQLite(target, somasqlite)
+                                                    } else if (databasetype == "MongoDB") {
+                                                        TableFunctionMongo.createCollectionAmount(target.name, somamongodb)
+                                                    } else if (databasetype == "MySQL") {
+                                                        TableFunctionSQL.createTableAmount(target, somamysql)
                                                     }
                                                 } catch (e: SQLException) {
                                                     throw RuntimeException(e)
                                                 }
                                                 if (databasetype == "h2") {
                                                     data_names_config_sqlite["data.${dataeconomyvalue}"] = somasqlite
-                                                } else {
+                                                } else if (databasetype == "MongoDB") {
+                                                    data_names_config_mongodb["data.${dataeconomyvalue}"] = somamongodb
+                                                } else if (databasetype == "MySQL") {
                                                     data_names_config_mysql["data.${dataeconomyvalue}"] = somamysql
                                                 }
                                                 try {
                                                     if (databasetype == "h2") {
                                                         data_names_config_sqlite.save(data_names_sqlite)
-                                                    } else {
+                                                    } else if (databasetype == "MongoDB") {
+                                                        data_names_config_mongodb.save(data_names_mongodb)
+                                                    } else if (databasetype == "MySQL") {
                                                         data_names_config_mysql.save(data_names_mysql)
                                                     }
                                                 } catch (e: IOException) {
@@ -606,34 +825,117 @@ class WalletCommand : CommandExecutor, TabCompleter {
                                                     )
                                                 )
                                             }
-                                        } else {
-                                            if (data_names_config_mysql.getInt("data.${dataeconomyvalue}") >= remove) {
+                                        } else if (databasetype == "MongoDB") {
+                                            if (data_names_config_mongodb.getInt("data.${dataeconomyvalue}") >= remove) {
                                                 try {
                                                     if (databasetype == "h2") {
-                                                        TableFunction.dropTableSQLite(target)
-                                                    } else {
-                                                        TableFunction.dropTable(target)
+                                                        TableFunctionSQL.dropTableSQLite(target)
+                                                    } else if (databasetype == "MongoDB") {
+                                                        TableFunctionMongo.dropCollection(target.name)
+                                                    } else if (databasetype == "MySQL") {
+                                                        TableFunctionSQL.dropTable(target)
                                                     }
-                                                } catch (_: SQLException) {
-                                                }
+                                                } catch (_: SQLException) {}
                                                 try {
                                                     if (databasetype == "h2") {
-                                                        TableFunction.createTableAmountSQLite(target, somasqlite)
-                                                    } else {
-                                                        TableFunction.createTableAmount(target, somamysql)
+                                                        TableFunctionSQL.createTableAmountSQLite(target, somasqlite)
+                                                    } else if (databasetype == "MongoDB") {
+                                                        TableFunctionMongo.createCollectionAmount(target.name, somamongodb)
+                                                    } else if (databasetype == "MySQL") {
+                                                        TableFunctionSQL.createTableAmount(target, somamysql)
                                                     }
                                                 } catch (e: SQLException) {
                                                     throw RuntimeException(e)
                                                 }
                                                 if (databasetype == "h2") {
                                                     data_names_config_sqlite["data.${dataeconomyvalue}"] = somasqlite
-                                                } else {
+                                                } else if (databasetype == "MongoDB") {
+                                                    data_names_config_mongodb["data.${dataeconomyvalue}"] = somamongodb
+                                                } else if (databasetype == "MySQL") {
                                                     data_names_config_mysql["data.${dataeconomyvalue}"] = somamysql
                                                 }
                                                 try {
                                                     if (databasetype == "h2") {
                                                         data_names_config_sqlite.save(data_names_sqlite)
-                                                    } else {
+                                                    } else if (databasetype == "MongoDB") {
+                                                        data_names_config_mongodb.save(data_names_mongodb)
+                                                    } else if (databasetype == "MySQL") {
+                                                        data_names_config_mysql.save(data_names_mysql)
+                                                    }
+                                                } catch (e: IOException) {
+                                                    throw RuntimeException(e)
+                                                }
+                                                sender.sendMessage(
+                                                    Format.hex(
+                                                        Format.color(
+                                                            IridiumColorAPI.process(
+                                                                removedEconFromPlayer().replace(
+                                                                    "%amount",
+                                                                    remove.toString()
+                                                                )
+                                                                    .replace("%valuename", dataeconomyvalue)
+                                                                    .replace("%p", target.name)
+                                                            )
+                                                        )
+                                                    )
+                                                )
+                                                plugin.reloadConfig()
+                                            } else {
+                                                sender.sendMessage(
+                                                    Format.hex(
+                                                        Format.color(
+                                                            IridiumColorAPI.process(
+                                                                cannotRemoveEconFromPlayer().replace(
+                                                                    "%amount",
+                                                                    remove.toString()
+                                                                )
+                                                                    .replace("%valuename", dataeconomyvalue)
+                                                                    .replace("%p", target.name)
+                                                                    .replace(
+                                                                        "%targetbalance",
+                                                                        data_names_config_mongodb.getInt("data.${dataeconomyvalue}")
+                                                                            .toString()
+                                                                    )
+                                                            )
+                                                        )
+                                                    )
+                                                )
+                                            }
+                                        } else if (databasetype == "MySQL") {
+                                            if (data_names_config_mysql.getInt("data.${dataeconomyvalue}") >= remove) {
+                                                try {
+                                                    if (databasetype == "h2") {
+                                                        TableFunctionSQL.dropTableSQLite(target)
+                                                    } else if (databasetype == "MongoDB") {
+                                                        TableFunctionMongo.dropCollection(target.name)
+                                                    } else if (databasetype == "MySQL")  {
+                                                        TableFunctionSQL.dropTable(target)
+                                                    }
+                                                } catch (_: SQLException) {}
+                                                try {
+                                                    if (databasetype == "h2") {
+                                                        TableFunctionSQL.createTableAmountSQLite(target, somasqlite)
+                                                    } else if (databasetype == "MongoDB") {
+                                                        TableFunctionMongo.createCollectionAmount(target.name, somamongodb)
+                                                    } else if (databasetype == "MySQL")  {
+                                                        TableFunctionSQL.createTableAmount(target, somamysql)
+                                                    }
+                                                } catch (e: SQLException) {
+                                                    throw RuntimeException(e)
+                                                }
+                                                if (databasetype == "h2") {
+                                                    data_names_config_sqlite["data.${dataeconomyvalue}"] = somasqlite
+                                                } else if (databasetype == "MongoDB") {
+                                                    data_names_config_mongodb["data.${dataeconomyvalue}"] = somamongodb
+                                                } else if (databasetype == "MySQL")  {
+                                                    data_names_config_mysql["data.${dataeconomyvalue}"] = somamysql
+                                                }
+                                                try {
+                                                    if (databasetype == "h2") {
+                                                        data_names_config_sqlite.save(data_names_sqlite)
+                                                    } else if (databasetype == "MongoDB") {
+                                                        data_names_config_mongodb.save(data_names_mongodb)
+                                                    } else if (databasetype == "MySQL")  {
                                                         data_names_config_mysql.save(data_names_mysql)
                                                     }
                                                 } catch (e: IOException) {
@@ -827,10 +1129,16 @@ class WalletCommand : CommandExecutor, TabCompleter {
                                             File(plugin.dataFolder.toString() + "/data/" + target!!.name + "_SQLite.txt")
                                         val data_names2_mysql =
                                             File(plugin.dataFolder.toString() + "/data/" + target.name + "_MySQL.txt")
+                                        val data_names2_mongodb =
+                                            File(plugin.dataFolder.toString() + "/data/" + target.name + "_MongoDB.txt")
+
                                         val data_names_config2_sqlite: FileConfiguration =
                                             YamlConfiguration.loadConfiguration(data_names2_sqlite)
                                         val data_names_config2_mysql: FileConfiguration =
                                             YamlConfiguration.loadConfiguration(data_names2_mysql)
+                                        val data_names_config2_mongodb: FileConfiguration =
+                                            YamlConfiguration.loadConfiguration(data_names2_mongodb)
+
                                         val data_names_sqlite = File(
                                             plugin.dataFolder.toString() + "/data/" + target
                                                 .name + "_SQLite.txt"
@@ -839,39 +1147,52 @@ class WalletCommand : CommandExecutor, TabCompleter {
                                             plugin.dataFolder.toString() + "/data/" + target
                                                 .name + "_MySQL.txt"
                                         )
+                                        val data_names_mongodb = File(
+                                            plugin.dataFolder.toString() + "/data/" + target
+                                                .name + "_MongoDB.txt"
+                                        )
+
                                         val somasqlite =
                                             data_names_config2_sqlite.getInt("data.${dataeconomyvalue}") + amount
                                         val somamysql =
                                             data_names_config2_mysql.getInt("data.${dataeconomyvalue}") + amount
+                                        val somamongodb =
+                                            data_names_config2_mongodb.getInt("data.${dataeconomyvalue}") + amount
+
                                         try {
                                             if (databasetype == "h2") {
-                                                TableFunction.dropTableSQLite(target)
-                                            } else {
-                                                TableFunction.dropTable(target)
+                                                TableFunctionSQL.dropTableSQLite(target)
+                                            } else if (databasetype == "MongoDB") {
+                                                TableFunctionMongo.dropCollection(target.name)
+                                            } else if (databasetype == "MySQL") {
+                                                TableFunctionSQL.dropTable(target)
                                             }
-                                        } catch (_: SQLException) {
-                                        }
+                                        } catch (_: SQLException) {}
                                         try {
                                             if (databasetype == "h2") {
-                                                TableFunction.createTableAmountSQLite(target, somasqlite)
-                                            } else {
-                                                TableFunction.createTableAmount(target, somamysql)
+                                                TableFunctionSQL.createTableAmountSQLite(target, somasqlite)
+                                            } else if (databasetype == "MongoDB") {
+                                                TableFunctionMongo.createCollectionAmount(target.name, somamongodb)
+                                            } else if (databasetype == "MySQL") {
+                                                TableFunctionSQL.createTableAmount(target, somamysql)
                                             }
-                                        } catch (_: SQLException) {
-                                        }
+                                        } catch (_: SQLException) {}
                                         if (databasetype == "h2") {
                                             data_names_config2_sqlite["data.${dataeconomyvalue}"] = somasqlite
-                                        } else {
+                                        } else if (databasetype == "MongoDB") {
+                                            data_names_config2_mongodb["data.${dataeconomyvalue}"] = somamongodb
+                                        } else if (databasetype == "MySQL") {
                                             data_names_config2_mysql["data.${dataeconomyvalue}"] = somamysql
                                         }
                                         try {
                                             if (databasetype == "h2") {
                                                 data_names_config2_sqlite.save(data_names_sqlite)
-                                            } else {
+                                            } else if (databasetype == "MongoDB") {
+                                                data_names_config2_mongodb.save(data_names_mongodb)
+                                            } else if (databasetype == "MySQL") {
                                                 data_names_config2_mysql.save(data_names_mysql)
                                             }
-                                        } catch (_: IOException) {
-                                        }
+                                        } catch (_: IOException) {}
                                         plugin.reloadConfig()
                                         target.sendMessage(
                                             Format.hex(

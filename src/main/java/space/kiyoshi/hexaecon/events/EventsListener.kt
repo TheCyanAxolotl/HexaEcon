@@ -16,7 +16,8 @@ import org.bukkit.event.player.PlayerPickupItemEvent
 import org.bukkit.inventory.ItemStack
 import org.bukkit.inventory.PlayerInventory
 import space.kiyoshi.hexaecon.HexaEcon
-import space.kiyoshi.hexaecon.functions.TableFunction
+import space.kiyoshi.hexaecon.functions.TableFunctionMongo
+import space.kiyoshi.hexaecon.functions.TableFunctionSQL
 import space.kiyoshi.hexaecon.utils.Economy
 import space.kiyoshi.hexaecon.utils.Format
 import space.kiyoshi.hexaecon.utils.GetConfig
@@ -100,41 +101,56 @@ class EventsListener : Listener {
                         HexaEcon.plugin.dataFolder.toString() + "/data/" + player
                             .name + "_MySQL.txt"
                     )
+                    val data_names_mongodb = File(
+                        HexaEcon.plugin.dataFolder.toString() + "/data/" + player
+                            .name + "_MongoDB.txt"
+                    )
+
                     val data_names_config_sqlite: FileConfiguration =
                         YamlConfiguration.loadConfiguration(data_names_sqlite)
                     val data_names_config_mysql: FileConfiguration =
                         YamlConfiguration.loadConfiguration(data_names_mysql)
+                    val data_names_config_mongodb: FileConfiguration =
+                        YamlConfiguration.loadConfiguration(data_names_mongodb)
+
                     val somasqlite = data_names_config_sqlite.getInt("data.${dataeconomyvalue}") + amount!!
                     val somamysql = data_names_config_mysql.getInt("data.${dataeconomyvalue}") + amount
+                    val somamongodb = data_names_config_mongodb.getInt("data.${dataeconomyvalue}") + amount
+
                     try {
                         if (databasetype == "h2") {
-                            TableFunction.dropTableSQLite(player)
-                        } else {
-                            TableFunction.dropTable(player)
+                            TableFunctionSQL.dropTableSQLite(player)
+                        } else if (databasetype == "MongoDB") {
+                            TableFunctionMongo.dropCollection(player.name)
+                        } else if (databasetype == "MySQL") {
+                            TableFunctionSQL.dropTable(player)
                         }
-                    } catch (_: SQLException) {
-                    }
+                    } catch (_: SQLException) {}
                     try {
                         if (databasetype == "h2") {
-                            TableFunction.createTableAmountSQLite(player, somasqlite)
-                        } else {
-                            TableFunction.createTableAmount(player, somamysql)
+                            TableFunctionSQL.createTableAmountSQLite(player, somasqlite)
+                        } else if (databasetype == "MongoDB") {
+                            TableFunctionMongo.createCollectionAmount(player.name, somamongodb)
+                        } else if (databasetype == "MySQL") {
+                            TableFunctionSQL.createTableAmount(player, somamysql)
                         }
-                    } catch (_: SQLException) {
-                    }
+                    } catch (_: SQLException) {}
                     if (databasetype == "h2") {
                         data_names_config_sqlite["data.${dataeconomyvalue}"] = somasqlite
-                    } else {
+                    } else if (databasetype == "MongoDB") {
+                        data_names_config_mongodb["data.${dataeconomyvalue}"] = somamongodb
+                    } else if (databasetype == "MySQL") {
                         data_names_config_mysql["data.${dataeconomyvalue}"] = somamysql
                     }
                     try {
                         if (databasetype == "h2") {
                             data_names_config_sqlite.save(data_names_sqlite)
-                        } else {
+                        } else if (databasetype == "MongoDB") {
+                            data_names_config_mongodb.save(data_names_mongodb)
+                        } else if (databasetype == "MySQL") {
                             data_names_config_mysql.save(data_names_mysql)
                         }
-                    } catch (_: IOException) {
-                    }
+                    } catch (_: IOException) {}
                     HexaEcon.plugin.reloadConfig()
                     Economy.removeEconomyFromHand(player, amount)
                     player.sendMessage(

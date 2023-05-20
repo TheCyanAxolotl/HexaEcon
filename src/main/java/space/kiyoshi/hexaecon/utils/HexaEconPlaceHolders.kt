@@ -6,7 +6,8 @@ import com.iridium.iridiumcolorapi.IridiumColorAPI
 import me.clip.placeholderapi.expansion.PlaceholderExpansion
 import org.bukkit.entity.Player
 import space.kiyoshi.hexaecon.HexaEcon
-import space.kiyoshi.hexaecon.functions.TableFunction
+import space.kiyoshi.hexaecon.functions.TableFunctionMongo
+import space.kiyoshi.hexaecon.functions.TableFunctionSQL
 import space.kiyoshi.hexaecon.utils.Language.formattedAmount
 import java.util.concurrent.CompletableFuture
 
@@ -59,21 +60,30 @@ class HexaEconPlaceHolders : PlaceholderExpansion() {
     }
 
     private fun getBalance(player: Player): String {
-        return if (databasetype == "h2") {
-            TableFunction.selectAllFromTableAsStringSQLite(player.name).toString().replace("[", "").replace("]", "")
-        } else {
-            val future = CompletableFuture.supplyAsync {
-                val stmt = HexaEcon.MySQLManager!!.getConnection()!!.createStatement()
-                val SQL = "SELECT * FROM " + player.name
-                val rs = stmt.executeQuery(SQL)
-                rs.next()
-                val value = rs.getInt(dataeconomyvalue)
-                rs.close()
-                stmt.close()
-                value
+        return when (databasetype) {
+            "h2" -> {
+                TableFunctionSQL.selectAllFromTableAsStringSQLite(player.name).toString().replace("[", "").replace("]", "")
             }
-            val value = future.get()
-            value.toString()
+            "MongoDB" -> {
+                TableFunctionMongo.selectAllFromCollectionAsString(player.name).toString().replace("[", "").replace("]", "")
+            }
+            "MySQL" -> {
+                val future = CompletableFuture.supplyAsync {
+                    val stmt = HexaEcon.MySQLManager!!.getConnection()!!.createStatement()
+                    val SQL = "SELECT * FROM " + player.name
+                    val rs = stmt.executeQuery(SQL)
+                    rs.next()
+                    val value = rs.getInt(dataeconomyvalue)
+                    rs.close()
+                    stmt.close()
+                    value.toString()
+                }
+                val value = future.get()
+                value.toString()
+            }
+            else -> {
+                return "Unknown DataBaseType"
+            }
         }
     }
 }
