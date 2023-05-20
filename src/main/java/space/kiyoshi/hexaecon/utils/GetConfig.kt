@@ -19,18 +19,25 @@ object GetConfig {
         val databasetype = main().getString("DataBase.Type")!!
         val dataeconomyvalue = main().getString("DataBase.DataEconomyName")!!
         val data = File(plugin.dataFolder, "data")
+        val playerfolder = File(plugin.dataFolder, "data/${player.name}/")
         val data_names_sqlite =
-            File(plugin.dataFolder.toString() + "/data/" + player.name + "_SQLite.txt")
+            File(plugin.dataFolder.toString() + "/data/${player.name}/" + player.name + "_SQLite.txt")
         val data_names_mysql =
-            File(plugin.dataFolder.toString() + "/data/" + player.name + "_MySQL.txt")
+            File(plugin.dataFolder.toString() + "/data/${player.name}/" + player.name + "_MySQL.txt")
         val data_names_mongodb =
-            File(plugin.dataFolder.toString() + "/data/" + player.name + "_MongoDB.txt")
+            File(plugin.dataFolder.toString() + "/data/${player.name}/" + player.name + "_MongoDB.txt")
+        val data_names_redis =
+            File(plugin.dataFolder.toString() + "/data/${player.name}/" + player.name + "_Redis.txt")
         if (!data.exists()) {
             data.mkdir()
+        }
+        if(!playerfolder.exists()) {
+            playerfolder.mkdir()
         }
         val data_names_config_sqlite: FileConfiguration = YamlConfiguration.loadConfiguration(data_names_sqlite)
         val data_names_config_mysql: FileConfiguration = YamlConfiguration.loadConfiguration(data_names_mysql)
         val data_names_config_mongodb: FileConfiguration = YamlConfiguration.loadConfiguration(data_names_mongodb)
+        val data_names_config_redis: FileConfiguration = YamlConfiguration.loadConfiguration(data_names_redis)
         if (databasetype == "h2") {
             if (!data_names_sqlite.exists()) {
                 try {
@@ -40,8 +47,7 @@ object GetConfig {
                         data_names_config_sqlite["data.${dataeconomyvalue}"] = 0
                         data_names_config_sqlite.save(data_names_sqlite)
                     }
-                } catch (_: IOException) {
-                }
+                } catch (_: IOException) {}
             }
         } else if (databasetype == "MongoDB") {
             if (!data_names_mongodb.exists()) {
@@ -52,8 +58,7 @@ object GetConfig {
                         data_names_config_mongodb["data.${dataeconomyvalue}"] = 0
                         data_names_config_mongodb.save(data_names_mongodb)
                     }
-                } catch (_: IOException) {
-                }
+                } catch (_: IOException) {}
             }
         } else if (databasetype == "MySQL") {
             if (!data_names_mysql.exists()) {
@@ -64,8 +69,18 @@ object GetConfig {
                         data_names_config_mysql["data.${dataeconomyvalue}"] = 0
                         data_names_config_mysql.save(data_names_mysql)
                     }
-                } catch (_: IOException) {
-                }
+                } catch (_: IOException) {}
+            }
+        } else if (databasetype == "Redis") {
+            if (!data_names_redis.exists()) {
+                try {
+                    data_names_redis.createNewFile()
+                    data_names_config_redis.createSection("data")
+                    if (!data_names_config_redis.isSet("data.${dataeconomyvalue}")) {
+                        data_names_config_redis["data.${dataeconomyvalue}"] = 0
+                        data_names_config_redis.save(data_names_redis)
+                    }
+                } catch (_: IOException) {}
             }
         }
     }

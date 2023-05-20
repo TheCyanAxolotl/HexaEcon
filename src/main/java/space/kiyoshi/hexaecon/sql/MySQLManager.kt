@@ -11,7 +11,7 @@ import java.sql.SQLException
 class MySQLManager {
     private val nms = NMSUtils
     private val host = GetConfig.main().getString("MySQL.Host")!!
-    private val port = GetConfig.main().getString("MySQL.Port")!!
+    private val port = GetConfig.main().getInt("MySQL.Port")
     private val database = GetConfig.main().getString("MySQL.DataBase")!!
     private val username = GetConfig.main().getString("MySQL.UserName")!!
     private val password = GetConfig.main().getString("MySQL.Password")!!

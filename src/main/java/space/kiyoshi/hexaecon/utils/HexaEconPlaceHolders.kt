@@ -7,6 +7,7 @@ import me.clip.placeholderapi.expansion.PlaceholderExpansion
 import org.bukkit.entity.Player
 import space.kiyoshi.hexaecon.HexaEcon
 import space.kiyoshi.hexaecon.functions.TableFunctionMongo
+import space.kiyoshi.hexaecon.functions.TableFunctionRedis
 import space.kiyoshi.hexaecon.functions.TableFunctionSQL
 import space.kiyoshi.hexaecon.utils.Language.formattedAmount
 import java.util.concurrent.CompletableFuture
@@ -80,6 +81,9 @@ class HexaEconPlaceHolders : PlaceholderExpansion() {
                 }
                 val value = future.get()
                 value.toString()
+            }
+            "Redis" -> {
+                TableFunctionRedis.selectAllFromCollectionAsStringRedis(player.name).toString().replace("[", "").replace("]", "")
             }
             else -> {
                 return "Unknown DataBaseType"

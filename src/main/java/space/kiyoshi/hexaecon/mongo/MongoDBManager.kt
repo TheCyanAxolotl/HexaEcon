@@ -1,3 +1,5 @@
+@file:Suppress("unused", "MemberVisibilityCanBePrivate")
+
 package space.kiyoshi.hexaecon.mongo
 
 import com.mongodb.client.MongoClient

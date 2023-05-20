@@ -1,3 +1,5 @@
+@file:Suppress("unused", "SameParameterValue", "UnnecessaryVariable")
+
 package space.kiyoshi.hexaecon.functions
 
 import com.mongodb.ConnectionString

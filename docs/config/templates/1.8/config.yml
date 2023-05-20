@@ -15,14 +15,19 @@
 
 # DataBase Setup
 DataBase:
-  Type: "h2" # h2 / MySQL
+  Type: "h2" # h2 / MySQL / MongoDB / Redis
   DataEconomyName: "coins" # Economy Name
 MySQL:
   Host: "" # HostName
-  Port: "3306" # Port
+  Port: 3306 # Port
   DataBase: "" # DataBase
   UserName: "" # UserName
   Password: "" # Password
+MongoDB:
+  Host: "mongodb://localhost:27017"
+Redis:
+  Host: "localhost"
+  Port: 6379
 
 # Modules
 Modules: # Modules

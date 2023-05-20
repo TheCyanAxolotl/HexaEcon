@@ -10,6 +10,7 @@ import org.bukkit.command.CommandSender
 import org.bukkit.entity.Player
 import space.kiyoshi.hexaecon.HexaEcon
 import space.kiyoshi.hexaecon.functions.TableFunctionMongo
+import space.kiyoshi.hexaecon.functions.TableFunctionRedis
 import space.kiyoshi.hexaecon.functions.TableFunctionSQL
 import space.kiyoshi.hexaecon.utils.Format
 import space.kiyoshi.hexaecon.utils.GetConfig
@@ -97,6 +98,23 @@ class EcoCommand : CommandExecutor {
                         if (sound != "NONE") {
                             player.playSound(player.location, Sound.valueOf(sound), volume.toFloat(), pitch.toFloat())
                         }
+                    } else if (databasetype == "Redis") {
+                        player.sendMessage(
+                            Format.hex(
+                                Format.color(
+                                    IridiumColorAPI.process(
+                                        bankAmount().replace(
+                                            "%valuename",
+                                            dataeconomyvalue
+                                        ).replace(
+                                            "%amount",
+                                            TableFunctionRedis.selectAllFromCollectionAsStringRedis(player.name).toString()
+                                                .replace("[", "").replace("]", "")
+                                        )
+                                    )
+                                )
+                            )
+                        )
                     }
                 }
             } else {

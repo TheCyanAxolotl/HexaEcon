@@ -52,6 +52,7 @@ dependencies {
     implementation("org.spigotmc:spigot-api:1.19.4-R0.1-SNAPSHOT")
     implementation("org.xerial:sqlite-jdbc:3.41.2.1")
     implementation("org.mongodb:mongo-java-driver:3.12.11")
+    implementation 'redis.clients:jedis:3.7.0'
     implementation 'org.jetbrains:annotations:23.0.0'
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
     implementation("com.googlecode.json-simple:json-simple:1.1.1")

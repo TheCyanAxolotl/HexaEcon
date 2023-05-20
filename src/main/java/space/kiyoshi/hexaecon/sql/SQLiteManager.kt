@@ -1,4 +1,4 @@
-@file:Suppress("RedundantIf", "SpellCheckingInspection")
+@file:Suppress("RedundantIf", "SpellCheckingInspection", "unused")
 
 package space.kiyoshi.hexaecon.sql
 

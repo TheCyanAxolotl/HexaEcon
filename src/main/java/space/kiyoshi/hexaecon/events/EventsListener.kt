@@ -17,6 +17,7 @@ import org.bukkit.inventory.ItemStack
 import org.bukkit.inventory.PlayerInventory
 import space.kiyoshi.hexaecon.HexaEcon
 import space.kiyoshi.hexaecon.functions.TableFunctionMongo
+import space.kiyoshi.hexaecon.functions.TableFunctionRedis
 import space.kiyoshi.hexaecon.functions.TableFunctionSQL
 import space.kiyoshi.hexaecon.utils.Economy
 import space.kiyoshi.hexaecon.utils.Format
@@ -94,16 +95,20 @@ class EventsListener : Listener {
                 event.isCancelled = true
                 if (action == Action.RIGHT_CLICK_AIR || action == Action.RIGHT_CLICK_BLOCK) {
                     val data_names_sqlite = File(
-                        HexaEcon.plugin.dataFolder.toString() + "/data/" + player
+                        HexaEcon.plugin.dataFolder.toString() + "/data/${player.name}/" + player
                             .name + "_SQLite.txt"
                     )
                     val data_names_mysql = File(
-                        HexaEcon.plugin.dataFolder.toString() + "/data/" + player
+                        HexaEcon.plugin.dataFolder.toString() + "/data/${player.name}/" + player
                             .name + "_MySQL.txt"
                     )
                     val data_names_mongodb = File(
-                        HexaEcon.plugin.dataFolder.toString() + "/data/" + player
+                        HexaEcon.plugin.dataFolder.toString() + "/data/${player.name}/" + player
                             .name + "_MongoDB.txt"
+                    )
+                    val data_names_redis = File(
+                        HexaEcon.plugin.dataFolder.toString() + "/data/${player.name}/" + player
+                            .name + "_Redis.txt"
                     )
 
                     val data_names_config_sqlite: FileConfiguration =
@@ -112,43 +117,74 @@ class EventsListener : Listener {
                         YamlConfiguration.loadConfiguration(data_names_mysql)
                     val data_names_config_mongodb: FileConfiguration =
                         YamlConfiguration.loadConfiguration(data_names_mongodb)
+                    val data_names_config_redis: FileConfiguration =
+                        YamlConfiguration.loadConfiguration(data_names_redis)
 
                     val somasqlite = data_names_config_sqlite.getInt("data.${dataeconomyvalue}") + amount!!
                     val somamysql = data_names_config_mysql.getInt("data.${dataeconomyvalue}") + amount
                     val somamongodb = data_names_config_mongodb.getInt("data.${dataeconomyvalue}") + amount
+                    val somaredis = data_names_config_redis.getInt("data.${dataeconomyvalue}") + amount
 
                     try {
-                        if (databasetype == "h2") {
-                            TableFunctionSQL.dropTableSQLite(player)
-                        } else if (databasetype == "MongoDB") {
-                            TableFunctionMongo.dropCollection(player.name)
-                        } else if (databasetype == "MySQL") {
-                            TableFunctionSQL.dropTable(player)
+                        when (databasetype) {
+                            "h2" -> {
+                                TableFunctionSQL.dropTableSQLite(player)
+                            }
+                            "MongoDB" -> {
+                                TableFunctionMongo.dropCollection(player.name)
+                            }
+                            "MySQL" -> {
+                                TableFunctionSQL.dropTable(player)
+                            }
+                            "Redis" -> {
+                                TableFunctionRedis.dropTable(player.name)
+                            }
                         }
                     } catch (_: SQLException) {}
                     try {
-                        if (databasetype == "h2") {
-                            TableFunctionSQL.createTableAmountSQLite(player, somasqlite)
-                        } else if (databasetype == "MongoDB") {
-                            TableFunctionMongo.createCollectionAmount(player.name, somamongodb)
-                        } else if (databasetype == "MySQL") {
-                            TableFunctionSQL.createTableAmount(player, somamysql)
+                        when (databasetype) {
+                            "h2" -> {
+                                TableFunctionSQL.createTableAmountSQLite(player, somasqlite)
+                            }
+                            "MongoDB" -> {
+                                TableFunctionMongo.createCollectionAmount(player.name, somamongodb)
+                            }
+                            "MySQL" -> {
+                                TableFunctionSQL.createTableAmount(player, somamysql)
+                            }
+                            "Redis" -> {
+                                TableFunctionRedis.createTableAmount(player.name, somaredis)
+                            }
                         }
                     } catch (_: SQLException) {}
-                    if (databasetype == "h2") {
-                        data_names_config_sqlite["data.${dataeconomyvalue}"] = somasqlite
-                    } else if (databasetype == "MongoDB") {
-                        data_names_config_mongodb["data.${dataeconomyvalue}"] = somamongodb
-                    } else if (databasetype == "MySQL") {
-                        data_names_config_mysql["data.${dataeconomyvalue}"] = somamysql
+                    when (databasetype) {
+                        "h2" -> {
+                            data_names_config_sqlite["data.${dataeconomyvalue}"] = somasqlite
+                        }
+                        "MongoDB" -> {
+                            data_names_config_mongodb["data.${dataeconomyvalue}"] = somamongodb
+                        }
+                        "MySQL" -> {
+                            data_names_config_mysql["data.${dataeconomyvalue}"] = somamysql
+                        }
+                        "Redis" -> {
+                            data_names_config_redis["data.${dataeconomyvalue}"] = somaredis
+                        }
                     }
                     try {
-                        if (databasetype == "h2") {
-                            data_names_config_sqlite.save(data_names_sqlite)
-                        } else if (databasetype == "MongoDB") {
-                            data_names_config_mongodb.save(data_names_mongodb)
-                        } else if (databasetype == "MySQL") {
-                            data_names_config_mysql.save(data_names_mysql)
+                        when (databasetype) {
+                            "h2" -> {
+                                data_names_config_sqlite.save(data_names_sqlite)
+                            }
+                            "MongoDB" -> {
+                                data_names_config_mongodb.save(data_names_mongodb)
+                            }
+                            "MySQL" -> {
+                                data_names_config_mysql.save(data_names_mysql)
+                            }
+                            "Redis" -> {
+                                data_names_config_redis.save(data_names_redis)
+                            }
                         }
                     } catch (_: IOException) {}
                     HexaEcon.plugin.reloadConfig()

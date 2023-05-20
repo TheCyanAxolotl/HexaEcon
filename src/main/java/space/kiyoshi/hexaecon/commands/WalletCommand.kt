@@ -18,6 +18,7 @@ import org.bukkit.entity.Player
 import space.kiyoshi.hexaecon.HexaEcon
 import space.kiyoshi.hexaecon.HexaEcon.Companion.plugin
 import space.kiyoshi.hexaecon.functions.TableFunctionMongo
+import space.kiyoshi.hexaecon.functions.TableFunctionRedis
 import space.kiyoshi.hexaecon.functions.TableFunctionSQL
 import space.kiyoshi.hexaecon.utils.*
 import space.kiyoshi.hexaecon.utils.Language.accessDenied
@@ -147,56 +148,94 @@ class WalletCommand : CommandExecutor, TabCompleter {
                                     }
                                     if (remove >= 1) {
                                         val data_names_sqlite =
-                                            File(plugin.dataFolder.toString() + "/data/" + sender.name + "_SQLite.txt")
+                                            File(plugin.dataFolder.toString() + "/data/${sender.name}/" + sender.name + "_SQLite.txt")
                                         val data_names_mysql =
-                                            File(plugin.dataFolder.toString() + "/data/" + sender.name + "_MySQL.txt")
+                                            File(plugin.dataFolder.toString() + "/data/${sender.name}/" + sender.name + "_MySQL.txt")
                                         val data_names_mongodb =
-                                            File(plugin.dataFolder.toString() + "/data/" + sender.name + "_MongoDB.txt")
+                                            File(plugin.dataFolder.toString() + "/data/${sender.name}/" + sender.name + "_MongoDB.txt")
+                                        val data_names_redis =
+                                            File(plugin.dataFolder.toString() + "/data/${sender.name}/" + sender.name + "_Redis.txt")
                                         val data_names_config_sqlite: FileConfiguration =
                                             YamlConfiguration.loadConfiguration(data_names_sqlite)
                                         val data_names_config_mysql: FileConfiguration =
                                             YamlConfiguration.loadConfiguration(data_names_mysql)
                                         val data_names_config_mongodb: FileConfiguration =
                                             YamlConfiguration.loadConfiguration(data_names_mongodb)
+                                        val data_names_config_redis: FileConfiguration =
+                                            YamlConfiguration.loadConfiguration(data_names_redis)
                                         val somasqlite =
                                             data_names_config_sqlite.getInt("data.${dataeconomyvalue}") - remove
                                         val somamysql =
                                             data_names_config_mysql.getInt("data.${dataeconomyvalue}") - remove
                                         val somamongodb =
                                             data_names_config_mongodb.getInt("data.${dataeconomyvalue}") - remove
+                                        val somaredis =
+                                            data_names_config_redis.getInt("data.${dataeconomyvalue}") - remove
 
                                         if (databasetype == "h2") {
                                             if (data_names_config_sqlite.getInt("data.${dataeconomyvalue}") >= remove) {
                                                 try {
-                                                    if (databasetype == "h2") {
-                                                        TableFunctionSQL.dropTableSQLite(sender as Player)
-                                                    } else {
-                                                        TableFunctionSQL.dropTable(sender as Player)
+                                                    when (databasetype) {
+                                                        "h2" -> {
+                                                            TableFunctionSQL.dropTableSQLite(sender as Player)
+                                                        }
+                                                        "MongoDB" -> {
+                                                            TableFunctionMongo.dropCollection(sender.name)
+                                                        }
+                                                        "MySQL" -> {
+                                                            TableFunctionSQL.dropTable(sender as Player)
+                                                        }
+                                                        "Redis" -> {
+                                                            TableFunctionRedis.dropTable(sender.name)
+                                                        }
                                                     }
-                                                } catch (_: SQLException) {
-                                                }
+                                                } catch (_: SQLException) {}
                                                 try {
-                                                    if (databasetype == "h2") {
-                                                        TableFunctionSQL.createTableAmountSQLite(
-                                                            player as Player,
-                                                            somasqlite
-                                                        )
-                                                    } else {
-                                                        TableFunctionSQL.createTableAmount(player as Player, somamysql)
+                                                    when (databasetype) {
+                                                        "h2" -> {
+                                                            TableFunctionSQL.createTableAmountSQLite(player as Player, somasqlite)
+                                                        }
+                                                        "MongoDB" -> {
+                                                            TableFunctionMongo.createCollectionAmount(sender.name, somamongodb)
+                                                        }
+                                                        "MySQL" -> {
+                                                            TableFunctionSQL.createTableAmount(player as Player, somamysql)
+                                                        }
+                                                        "Redis" -> {
+                                                            TableFunctionRedis.createTableAmount(sender.name, somaredis)
+                                                        }
                                                     }
                                                 } catch (e: SQLException) {
                                                     throw RuntimeException(e)
                                                 }
-                                                if (databasetype == "h2") {
-                                                    data_names_config_sqlite["data.${dataeconomyvalue}"] = somasqlite
-                                                } else {
-                                                    data_names_config_mysql["data.${dataeconomyvalue}"] = somamysql
+                                                when (databasetype) {
+                                                    "h2" -> {
+                                                        data_names_config_sqlite["data.${dataeconomyvalue}"] = somasqlite
+                                                    }
+                                                    "MongoDB" -> {
+                                                        data_names_config_mongodb["data.${dataeconomyvalue}"] = somamongodb
+                                                    }
+                                                    "MySQL" -> {
+                                                        data_names_config_mysql["data.${dataeconomyvalue}"] = somamysql
+                                                    }
+                                                    "Redis" -> {
+                                                        data_names_config_redis["data.${dataeconomyvalue}"] = somaredis
+                                                    }
                                                 }
                                                 try {
-                                                    if (databasetype == "h2") {
-                                                        data_names_config_sqlite.save(data_names_sqlite)
-                                                    } else {
-                                                        data_names_config_mysql.save(data_names_mysql)
+                                                    when (databasetype) {
+                                                        "h2" -> {
+                                                            data_names_config_sqlite.save(data_names_sqlite)
+                                                        }
+                                                        "MongoDB" -> {
+                                                            data_names_config_mongodb.save(data_names_mongodb)
+                                                        }
+                                                        "MySQL" -> {
+                                                            data_names_config_mysql.save(data_names_mysql)
+                                                        }
+                                                        "Redis" -> {
+                                                            data_names_config_redis.save(data_names_redis)
+                                                        }
                                                     }
                                                 } catch (e: IOException) {
                                                     throw RuntimeException(e)
@@ -227,106 +266,200 @@ class WalletCommand : CommandExecutor, TabCompleter {
                                                         )
                                                     )
                                                 )
-                                                if (databasetype == "h2") {
-                                                    player.sendMessage(
-                                                        Format.hex(
-                                                            Format.color(
-                                                                IridiumColorAPI.process(
-                                                                    walletWithdrawRemainingAmount().replace(
-                                                                        "%amount",
-                                                                        data_names_config_sqlite.getInt("data.${dataeconomyvalue}")
-                                                                            .toString()
-                                                                    ).replace("%valuename", dataeconomyvalue)
+                                                when (databasetype) {
+                                                    "h2" -> {
+                                                        player.sendMessage(
+                                                            Format.hex(
+                                                                Format.color(
+                                                                    IridiumColorAPI.process(
+                                                                        walletWithdrawRemainingAmount().replace(
+                                                                            "%amount",
+                                                                            data_names_config_sqlite.getInt("data.${dataeconomyvalue}")
+                                                                                .toString()
+                                                                        ).replace("%valuename", dataeconomyvalue)
+                                                                    )
                                                                 )
                                                             )
                                                         )
-                                                    )
-                                                } else {
-                                                    player.sendMessage(
-                                                        Format.hex(
-                                                            Format.color(
-                                                                IridiumColorAPI.process(
-                                                                    walletWithdrawRemainingAmount().replace(
-                                                                        "%amount",
-                                                                        data_names_config_mysql.getInt("data.${dataeconomyvalue}")
-                                                                            .toString()
-                                                                    ).replace("%valuename", dataeconomyvalue)
+                                                    }
+                                                    "MongoDB" -> {
+                                                        player.sendMessage(
+                                                            Format.hex(
+                                                                Format.color(
+                                                                    IridiumColorAPI.process(
+                                                                        walletWithdrawRemainingAmount().replace(
+                                                                            "%amount",
+                                                                            data_names_config_mongodb.getInt("data.${dataeconomyvalue}")
+                                                                                .toString()
+                                                                        ).replace("%valuename", dataeconomyvalue)
+                                                                    )
                                                                 )
                                                             )
                                                         )
-                                                    )
+                                                    }
+                                                    "MySQL" -> {
+                                                        player.sendMessage(
+                                                            Format.hex(
+                                                                Format.color(
+                                                                    IridiumColorAPI.process(
+                                                                        walletWithdrawRemainingAmount().replace(
+                                                                            "%amount",
+                                                                            data_names_config_mysql.getInt("data.${dataeconomyvalue}")
+                                                                                .toString()
+                                                                        ).replace("%valuename", dataeconomyvalue)
+                                                                    )
+                                                                )
+                                                            )
+                                                        )
+                                                    }
+                                                    "Redis" -> {
+                                                        player.sendMessage(
+                                                            Format.hex(
+                                                                Format.color(
+                                                                    IridiumColorAPI.process(
+                                                                        walletWithdrawRemainingAmount().replace(
+                                                                            "%amount",
+                                                                            data_names_config_redis.getInt("data.${dataeconomyvalue}")
+                                                                                .toString()
+                                                                        ).replace("%valuename", dataeconomyvalue)
+                                                                    )
+                                                                )
+                                                            )
+                                                        )
+                                                    }
                                                 }
-                                                player.inventory.addItem(Economy.addEconomy(player, remove))
+                                                (player as Player).inventory.addItem(Economy.addEconomy(player, remove))
                                             } else {
-                                                if (databasetype == "h2") {
-                                                    player.sendMessage(
-                                                        Format.hex(
-                                                            Format.color(
-                                                                IridiumColorAPI.process(
-                                                                    walletWithdrawNoEnoughAmount().replace(
-                                                                        "%amount",
-                                                                        data_names_config_sqlite.getInt("data.${dataeconomyvalue}")
-                                                                            .toString()
-                                                                    ).replace("%valuename", dataeconomyvalue)
+                                                when (databasetype) {
+                                                    "h2" -> {
+                                                        player.sendMessage(
+                                                            Format.hex(
+                                                                Format.color(
+                                                                    IridiumColorAPI.process(
+                                                                        walletWithdrawNoEnoughAmount().replace(
+                                                                            "%amount",
+                                                                            data_names_config_sqlite.getInt("data.${dataeconomyvalue}")
+                                                                                .toString()
+                                                                        ).replace("%valuename", dataeconomyvalue)
+                                                                    )
                                                                 )
                                                             )
                                                         )
-                                                    )
-                                                } else {
-                                                    player.sendMessage(
-                                                        Format.hex(
-                                                            Format.color(
-                                                                IridiumColorAPI.process(
-                                                                    walletWithdrawNoEnoughAmount().replace(
-                                                                        "%amount",
-                                                                        data_names_config_mysql.getInt("data.${dataeconomyvalue}")
-                                                                            .toString()
-                                                                    ).replace("%valuename", dataeconomyvalue)
+                                                    }
+                                                    "MongoDB" -> {
+                                                        player.sendMessage(
+                                                            Format.hex(
+                                                                Format.color(
+                                                                    IridiumColorAPI.process(
+                                                                        walletWithdrawNoEnoughAmount().replace(
+                                                                            "%amount",
+                                                                            data_names_config_mongodb.getInt("data.${dataeconomyvalue}")
+                                                                                .toString()
+                                                                        ).replace("%valuename", dataeconomyvalue)
+                                                                    )
                                                                 )
                                                             )
                                                         )
-                                                    )
+                                                    }
+                                                    "MySQL" -> {
+                                                        player.sendMessage(
+                                                            Format.hex(
+                                                                Format.color(
+                                                                    IridiumColorAPI.process(
+                                                                        walletWithdrawNoEnoughAmount().replace(
+                                                                            "%amount",
+                                                                            data_names_config_mysql.getInt("data.${dataeconomyvalue}")
+                                                                                .toString()
+                                                                        ).replace("%valuename", dataeconomyvalue)
+                                                                    )
+                                                                )
+                                                            )
+                                                        )
+                                                    }
+                                                    "Redis" -> {
+                                                        player.sendMessage(
+                                                            Format.hex(
+                                                                Format.color(
+                                                                    IridiumColorAPI.process(
+                                                                        walletWithdrawNoEnoughAmount().replace(
+                                                                            "%amount",
+                                                                            data_names_config_redis.getInt("data.${dataeconomyvalue}")
+                                                                                .toString()
+                                                                        ).replace("%valuename", dataeconomyvalue)
+                                                                    )
+                                                                )
+                                                            )
+                                                        )
+                                                    }
                                                 }
                                             }
                                         } else if (databasetype == "MongoDB") {
                                             if (data_names_config_mongodb.getInt("data.${dataeconomyvalue}") >= remove) {
                                                 try {
-                                                    if (databasetype == "h2") {
-                                                        TableFunctionSQL.dropTableSQLite(sender as Player)
-                                                    } else if (databasetype == "MongoDB") {
-                                                        TableFunctionMongo.dropCollection(sender.name)
-                                                    } else if (databasetype == "MySQL") {
-                                                        TableFunctionSQL.dropTable(sender as Player)
+                                                    when (databasetype) {
+                                                        "h2" -> {
+                                                            TableFunctionSQL.dropTableSQLite(sender as Player)
+                                                        }
+                                                        "MongoDB" -> {
+                                                            TableFunctionMongo.dropCollection(sender.name)
+                                                        }
+                                                        "MySQL" -> {
+                                                            TableFunctionSQL.dropTable(sender as Player)
+                                                        }
+                                                        "Redis" -> {
+                                                            TableFunctionRedis.dropTable(sender.name)
+                                                        }
                                                     }
                                                 } catch (_: SQLException) {}
                                                 try {
-                                                    if (databasetype == "h2") {
-                                                        TableFunctionSQL.createTableAmountSQLite(
-                                                            player as Player,
-                                                            somasqlite
-                                                        )
-                                                    } else if (databasetype == "MongoDB") {
-                                                        TableFunctionMongo.createCollectionAmount(player.name, somamongodb)
-                                                    } else if (databasetype == "MySQL") {
-                                                        TableFunctionSQL.createTableAmount(player as Player, somamysql)
+                                                    when (databasetype) {
+                                                        "h2" -> {
+                                                            TableFunctionSQL.createTableAmountSQLite(
+                                                                player as Player,
+                                                                somasqlite
+                                                            )
+                                                        }
+                                                        "MongoDB" -> {
+                                                            TableFunctionMongo.createCollectionAmount(player.name, somamongodb)
+                                                        }
+                                                        "MySQL" -> {
+                                                            TableFunctionSQL.createTableAmount(player as Player, somamysql)
+                                                        }
+                                                        "Redis" -> {
+                                                            TableFunctionRedis.createTableAmount(player.name, somaredis)
+                                                        }
                                                     }
                                                 } catch (e: SQLException) {
                                                     throw RuntimeException(e)
                                                 }
-                                                if (databasetype == "h2") {
-                                                    data_names_config_sqlite["data.${dataeconomyvalue}"] = somasqlite
-                                                } else if (databasetype == "MongoDB") {
-                                                    data_names_config_mongodb["data.${dataeconomyvalue}"] = somamongodb
-                                                } else if (databasetype == "MySQL") {
-                                                    data_names_config_mysql["data.${dataeconomyvalue}"] = somamysql
+                                                when (databasetype) {
+                                                    "h2" -> {
+                                                        data_names_config_sqlite["data.${dataeconomyvalue}"] = somasqlite
+                                                    }
+                                                    "MongoDB" -> {
+                                                        data_names_config_mongodb["data.${dataeconomyvalue}"] = somamongodb
+                                                    }
+                                                    "MySQL" -> {
+                                                        data_names_config_mysql["data.${dataeconomyvalue}"] = somamysql
+                                                    }
+                                                    "Redis" -> {
+                                                        data_names_config_redis["data.${dataeconomyvalue}"] = somaredis
+                                                    }
                                                 }
                                                 try {
-                                                    if (databasetype == "h2") {
-                                                        data_names_config_sqlite.save(data_names_sqlite)
-                                                    } else if (databasetype == "MongoDB") {
-                                                        data_names_config_mongodb.save(data_names_mongodb)
-                                                    } else if (databasetype == "MySQL") {
-                                                        data_names_config_mysql.save(data_names_mysql)
+                                                    when (databasetype) {
+                                                        "h2" -> {
+                                                            data_names_config_sqlite.save(data_names_sqlite)
+                                                        }
+                                                        "MongoDB" -> {
+                                                            data_names_config_mongodb.save(data_names_mongodb)
+                                                        }
+                                                        "MySQL" -> {
+                                                            data_names_config_mysql.save(data_names_mysql)
+                                                        }
+                                                        "Redis" -> {
+                                                            data_names_config_redis.save(data_names_redis)
+                                                        }
                                                     }
                                                 } catch (e: IOException) {
                                                     throw RuntimeException(e)
@@ -357,138 +490,205 @@ class WalletCommand : CommandExecutor, TabCompleter {
                                                         )
                                                     )
                                                 )
-                                                if (databasetype == "h2") {
-                                                    player.sendMessage(
-                                                        Format.hex(
-                                                            Format.color(
-                                                                IridiumColorAPI.process(
-                                                                    walletWithdrawRemainingAmount().replace(
-                                                                        "%amount",
-                                                                        data_names_config_sqlite.getInt("data.${dataeconomyvalue}")
-                                                                            .toString()
-                                                                    ).replace("%valuename", dataeconomyvalue)
+                                                when (databasetype) {
+                                                    "h2" -> {
+                                                        player.sendMessage(
+                                                            Format.hex(
+                                                                Format.color(
+                                                                    IridiumColorAPI.process(
+                                                                        walletWithdrawRemainingAmount().replace(
+                                                                            "%amount",
+                                                                            data_names_config_sqlite.getInt("data.${dataeconomyvalue}")
+                                                                                .toString()
+                                                                        ).replace("%valuename", dataeconomyvalue)
+                                                                    )
                                                                 )
                                                             )
                                                         )
-                                                    )
-                                                } else if (databasetype == "MongoDB") {
-                                                    player.sendMessage(
-                                                        Format.hex(
-                                                            Format.color(
-                                                                IridiumColorAPI.process(
-                                                                    walletWithdrawRemainingAmount().replace(
-                                                                        "%amount",
-                                                                        data_names_config_mongodb.getInt("data.${dataeconomyvalue}")
-                                                                            .toString()
-                                                                    ).replace("%valuename", dataeconomyvalue)
+                                                    }
+                                                    "MongoDB" -> {
+                                                        player.sendMessage(
+                                                            Format.hex(
+                                                                Format.color(
+                                                                    IridiumColorAPI.process(
+                                                                        walletWithdrawRemainingAmount().replace(
+                                                                            "%amount",
+                                                                            data_names_config_mongodb.getInt("data.${dataeconomyvalue}")
+                                                                                .toString()
+                                                                        ).replace("%valuename", dataeconomyvalue)
+                                                                    )
                                                                 )
                                                             )
                                                         )
-                                                    )
-                                                } else if (databasetype == "MySQL") {
-                                                    player.sendMessage(
-                                                        Format.hex(
-                                                            Format.color(
-                                                                IridiumColorAPI.process(
-                                                                    walletWithdrawRemainingAmount().replace(
-                                                                        "%amount",
-                                                                        data_names_config_mysql.getInt("data.${dataeconomyvalue}")
-                                                                            .toString()
-                                                                    ).replace("%valuename", dataeconomyvalue)
+                                                    }
+                                                    "MySQL" -> {
+                                                        player.sendMessage(
+                                                            Format.hex(
+                                                                Format.color(
+                                                                    IridiumColorAPI.process(
+                                                                        walletWithdrawRemainingAmount().replace(
+                                                                            "%amount",
+                                                                            data_names_config_mysql.getInt("data.${dataeconomyvalue}")
+                                                                                .toString()
+                                                                        ).replace("%valuename", dataeconomyvalue)
+                                                                    )
                                                                 )
                                                             )
                                                         )
-                                                    )
+                                                    }
+                                                    "Redis" -> {
+                                                        player.sendMessage(
+                                                            Format.hex(
+                                                                Format.color(
+                                                                    IridiumColorAPI.process(
+                                                                        walletWithdrawRemainingAmount().replace(
+                                                                            "%amount",
+                                                                            data_names_config_redis.getInt("data.${dataeconomyvalue}")
+                                                                                .toString()
+                                                                        ).replace("%valuename", dataeconomyvalue)
+                                                                    )
+                                                                )
+                                                            )
+                                                        )
+                                                    }
                                                 }
-                                                (player as Player).inventory.addItem(Economy.addEconomy(player, remove))
+                                                if(sender is Player) {
+                                                    sender.inventory.addItem(Economy.addEconomy(sender, remove))
+                                                }
                                             } else {
-                                                if (databasetype == "h2") {
-                                                    player.sendMessage(
-                                                        Format.hex(
-                                                            Format.color(
-                                                                IridiumColorAPI.process(
-                                                                    walletWithdrawNoEnoughAmount().replace(
-                                                                        "%amount",
-                                                                        data_names_config_sqlite.getInt("data.${dataeconomyvalue}")
-                                                                            .toString()
-                                                                    ).replace("%valuename", dataeconomyvalue)
+                                                when (databasetype) {
+                                                    "h2" -> {
+                                                        player.sendMessage(
+                                                            Format.hex(
+                                                                Format.color(
+                                                                    IridiumColorAPI.process(
+                                                                        walletWithdrawNoEnoughAmount().replace(
+                                                                            "%amount",
+                                                                            data_names_config_sqlite.getInt("data.${dataeconomyvalue}")
+                                                                                .toString()
+                                                                        ).replace("%valuename", dataeconomyvalue)
+                                                                    )
                                                                 )
                                                             )
                                                         )
-                                                    )
-                                                } else if (databasetype == "MongoDB") {
-                                                    player.sendMessage(
-                                                        Format.hex(
-                                                            Format.color(
-                                                                IridiumColorAPI.process(
-                                                                    walletWithdrawNoEnoughAmount().replace(
-                                                                        "%amount",
-                                                                        data_names_config_mongodb.getInt("data.${dataeconomyvalue}")
-                                                                            .toString()
-                                                                    ).replace("%valuename", dataeconomyvalue)
+                                                    }
+                                                    "MongoDB" -> {
+                                                        player.sendMessage(
+                                                            Format.hex(
+                                                                Format.color(
+                                                                    IridiumColorAPI.process(
+                                                                        walletWithdrawNoEnoughAmount().replace(
+                                                                            "%amount",
+                                                                            data_names_config_mongodb.getInt("data.${dataeconomyvalue}")
+                                                                                .toString()
+                                                                        ).replace("%valuename", dataeconomyvalue)
+                                                                    )
                                                                 )
                                                             )
                                                         )
-                                                    )
-                                                } else if(databasetype == "MySQL") {
-                                                    player.sendMessage(
-                                                        Format.hex(
-                                                            Format.color(
-                                                                IridiumColorAPI.process(
-                                                                    walletWithdrawNoEnoughAmount().replace(
-                                                                        "%amount",
-                                                                        data_names_config_mysql.getInt("data.${dataeconomyvalue}")
-                                                                            .toString()
-                                                                    ).replace("%valuename", dataeconomyvalue)
+                                                    }
+                                                    "MySQL" -> {
+                                                        player.sendMessage(
+                                                            Format.hex(
+                                                                Format.color(
+                                                                    IridiumColorAPI.process(
+                                                                        walletWithdrawNoEnoughAmount().replace(
+                                                                            "%amount",
+                                                                            data_names_config_mysql.getInt("data.${dataeconomyvalue}")
+                                                                                .toString()
+                                                                        ).replace("%valuename", dataeconomyvalue)
+                                                                    )
                                                                 )
                                                             )
                                                         )
-                                                    )
+                                                    }
+                                                    "Redis" -> {
+                                                        player.sendMessage(
+                                                            Format.hex(
+                                                                Format.color(
+                                                                    IridiumColorAPI.process(
+                                                                        walletWithdrawNoEnoughAmount().replace(
+                                                                            "%amount",
+                                                                            data_names_config_redis.getInt("data.${dataeconomyvalue}")
+                                                                                .toString()
+                                                                        ).replace("%valuename", dataeconomyvalue)
+                                                                    )
+                                                                )
+                                                            )
+                                                        )
+                                                    }
                                                 }
                                             }
                                         } else if (databasetype == "MySQL") {
                                             if (data_names_config_mysql.getInt("data.${dataeconomyvalue}") >= remove) {
                                                 try {
-                                                    if (databasetype == "h2") {
-                                                        TableFunctionSQL.dropTableSQLite(sender as Player)
-                                                    } else if (databasetype == "MongoDB") {
-                                                        TableFunctionMongo.dropCollection(sender.name)
-                                                    } else if (databasetype == "MySQL") {
-                                                        TableFunctionSQL.dropTable(sender as Player)
+                                                    when (databasetype) {
+                                                        "h2" -> {
+                                                            TableFunctionSQL.dropTableSQLite(sender as Player)
+                                                        }
+                                                        "MongoDB" -> {
+                                                            TableFunctionMongo.dropCollection(sender.name)
+                                                        }
+                                                        "MySQL" -> {
+                                                            TableFunctionSQL.dropTable(sender as Player)
+                                                        }
+                                                        "Redis" -> {
+                                                            TableFunctionRedis.dropTable(sender.name)
+                                                        }
                                                     }
-                                                } catch (_: SQLException) {
-                                                }
+                                                } catch (_: SQLException) {}
                                                 try {
-                                                    if (databasetype == "h2") {
-                                                        TableFunctionSQL.createTableAmountSQLite(
-                                                            player as Player,
-                                                            somasqlite
-                                                        )
-                                                    } else if (databasetype == "MongoDB") {
-                                                        TableFunctionMongo.createCollectionAmount(
-                                                            player.name,
-                                                            somasqlite
-                                                        )
-                                                    } else if (databasetype == "MySQL") {
-                                                        TableFunctionSQL.createTableAmount(player as Player, somamysql)
+                                                    when (databasetype) {
+                                                        "h2" -> {
+                                                            TableFunctionSQL.createTableAmountSQLite(
+                                                                player as Player,
+                                                                somasqlite
+                                                            )
+                                                        }
+                                                        "MongoDB" -> {
+                                                            TableFunctionMongo.createCollectionAmount(
+                                                                player.name,
+                                                                somasqlite
+                                                            )
+                                                        }
+                                                        "MySQL" -> {
+                                                            TableFunctionSQL.createTableAmount(player as Player, somamysql)
+                                                        }
+                                                        "Redis" -> {
+                                                            TableFunctionRedis.createTableAmount(player.name, somaredis)
+                                                        }
                                                     }
                                                 } catch (e: SQLException) {
                                                     throw RuntimeException(e)
                                                 }
-                                                if (databasetype == "h2") {
-                                                    data_names_config_sqlite["data.${dataeconomyvalue}"] = somasqlite
-                                                } else if (databasetype == "MongoDB") {
-                                                    data_names_config_mongodb["data.${dataeconomyvalue}"] = somamongodb
-                                                } else if (databasetype == "MySQL") {
-                                                    data_names_config_mysql["data.${dataeconomyvalue}"] = somamysql
+                                                when (databasetype) {
+                                                    "h2" -> {
+                                                        data_names_config_sqlite["data.${dataeconomyvalue}"] = somasqlite
+                                                    }
+                                                    "MongoDB" -> {
+                                                        data_names_config_mongodb["data.${dataeconomyvalue}"] = somamongodb
+                                                    }
+                                                    "MySQL" -> {
+                                                        data_names_config_mysql["data.${dataeconomyvalue}"] = somamysql
+                                                    }
+                                                    "Redis" -> {
+                                                        data_names_config_redis["data.${dataeconomyvalue}"] = somaredis
+                                                    }
                                                 }
                                                 try {
-                                                    if (databasetype == "h2") {
-                                                        data_names_config_sqlite.save(data_names_sqlite)
-                                                    } else if (databasetype == "MongoDB") {
-                                                        data_names_config_mongodb.save(data_names_mongodb)
-                                                    } else if (databasetype == "MySQL") {
-                                                        data_names_config_mysql.save(data_names_mysql)
+                                                    when (databasetype) {
+                                                        "h2" -> {
+                                                            data_names_config_sqlite.save(data_names_sqlite)
+                                                        }
+                                                        "MongoDB" -> {
+                                                            data_names_config_mongodb.save(data_names_mongodb)
+                                                        }
+                                                        "MySQL" -> {
+                                                            data_names_config_mysql.save(data_names_mysql)
+                                                        }
+                                                        "Redis" -> {
+                                                            data_names_config_redis.save(data_names_redis)
+                                                        }
                                                     }
                                                 } catch (e: IOException) {
                                                     throw RuntimeException(e)
@@ -519,93 +719,359 @@ class WalletCommand : CommandExecutor, TabCompleter {
                                                         )
                                                     )
                                                 )
-                                                if (databasetype == "h2") {
-                                                    player.sendMessage(
-                                                        Format.hex(
-                                                            Format.color(
-                                                                IridiumColorAPI.process(
-                                                                    walletWithdrawRemainingAmount().replace(
-                                                                        "%amount",
-                                                                        data_names_config_sqlite.getInt("data.${dataeconomyvalue}")
-                                                                            .toString()
-                                                                    ).replace("%valuename", dataeconomyvalue)
+                                                when (databasetype) {
+                                                    "h2" -> {
+                                                        player.sendMessage(
+                                                            Format.hex(
+                                                                Format.color(
+                                                                    IridiumColorAPI.process(
+                                                                        walletWithdrawRemainingAmount().replace(
+                                                                            "%amount",
+                                                                            data_names_config_sqlite.getInt("data.${dataeconomyvalue}")
+                                                                                .toString()
+                                                                        ).replace("%valuename", dataeconomyvalue)
+                                                                    )
                                                                 )
                                                             )
                                                         )
-                                                    )
-                                                } else if (databasetype == "MongoDB") {
-                                                    player.sendMessage(
-                                                        Format.hex(
-                                                            Format.color(
-                                                                IridiumColorAPI.process(
-                                                                    walletWithdrawRemainingAmount().replace(
-                                                                        "%amount",
-                                                                        data_names_config_mongodb.getInt("data.${dataeconomyvalue}")
-                                                                            .toString()
-                                                                    ).replace("%valuename", dataeconomyvalue)
+                                                    }
+                                                    "MongoDB" -> {
+                                                        player.sendMessage(
+                                                            Format.hex(
+                                                                Format.color(
+                                                                    IridiumColorAPI.process(
+                                                                        walletWithdrawRemainingAmount().replace(
+                                                                            "%amount",
+                                                                            data_names_config_mongodb.getInt("data.${dataeconomyvalue}")
+                                                                                .toString()
+                                                                        ).replace("%valuename", dataeconomyvalue)
+                                                                    )
                                                                 )
                                                             )
                                                         )
-                                                    )
-                                                } else if (databasetype == "MySQL") {
-                                                    player.sendMessage(
-                                                        Format.hex(
-                                                            Format.color(
-                                                                IridiumColorAPI.process(
-                                                                    walletWithdrawRemainingAmount().replace(
-                                                                        "%amount",
-                                                                        data_names_config_mysql.getInt("data.${dataeconomyvalue}")
-                                                                            .toString()
-                                                                    ).replace("%valuename", dataeconomyvalue)
+                                                    }
+                                                    "MySQL" -> {
+                                                        player.sendMessage(
+                                                            Format.hex(
+                                                                Format.color(
+                                                                    IridiumColorAPI.process(
+                                                                        walletWithdrawRemainingAmount().replace(
+                                                                            "%amount",
+                                                                            data_names_config_mysql.getInt("data.${dataeconomyvalue}")
+                                                                                .toString()
+                                                                        ).replace("%valuename", dataeconomyvalue)
+                                                                    )
                                                                 )
                                                             )
                                                         )
-                                                    )
+                                                    }
+                                                    "Redis" -> {
+                                                        player.sendMessage(
+                                                            Format.hex(
+                                                                Format.color(
+                                                                    IridiumColorAPI.process(
+                                                                        walletWithdrawRemainingAmount().replace(
+                                                                            "%amount",
+                                                                            data_names_config_redis.getInt("data.${dataeconomyvalue}")
+                                                                                .toString()
+                                                                        ).replace("%valuename", dataeconomyvalue)
+                                                                    )
+                                                                )
+                                                            )
+                                                        )
+                                                    }
                                                 }
-                                                (player as Player).inventory.addItem(Economy.addEconomy(player, remove))
+                                                if(sender is Player) {
+                                                    sender.inventory.addItem(Economy.addEconomy(sender, remove))
+                                                }
                                             } else {
-                                                if (databasetype == "h2") {
-                                                    player.sendMessage(
-                                                        Format.hex(
-                                                            Format.color(
-                                                                IridiumColorAPI.process(
-                                                                    walletWithdrawNoEnoughAmount().replace(
-                                                                        "%amount",
-                                                                        data_names_config_sqlite.getInt("data.${dataeconomyvalue}")
-                                                                            .toString()
-                                                                    ).replace("%valuename", dataeconomyvalue)
+                                                when (databasetype) {
+                                                    "h2" -> {
+                                                        player.sendMessage(
+                                                            Format.hex(
+                                                                Format.color(
+                                                                    IridiumColorAPI.process(
+                                                                        walletWithdrawNoEnoughAmount().replace(
+                                                                            "%amount",
+                                                                            data_names_config_sqlite.getInt("data.${dataeconomyvalue}")
+                                                                                .toString()
+                                                                        ).replace("%valuename", dataeconomyvalue)
+                                                                    )
                                                                 )
                                                             )
                                                         )
-                                                    )
-                                                } else if (databasetype == "MongoDB") {
-                                                    player.sendMessage(
-                                                        Format.hex(
-                                                            Format.color(
-                                                                IridiumColorAPI.process(
-                                                                    walletWithdrawNoEnoughAmount().replace(
-                                                                        "%amount",
-                                                                        data_names_config_mongodb.getInt("data.${dataeconomyvalue}")
-                                                                            .toString()
-                                                                    ).replace("%valuename", dataeconomyvalue)
+                                                    }
+                                                    "MongoDB" -> {
+                                                        player.sendMessage(
+                                                            Format.hex(
+                                                                Format.color(
+                                                                    IridiumColorAPI.process(
+                                                                        walletWithdrawNoEnoughAmount().replace(
+                                                                            "%amount",
+                                                                            data_names_config_mongodb.getInt("data.${dataeconomyvalue}")
+                                                                                .toString()
+                                                                        ).replace("%valuename", dataeconomyvalue)
+                                                                    )
                                                                 )
                                                             )
                                                         )
-                                                    )
-                                                } else if (databasetype == "MySQL") {
-                                                    player.sendMessage(
-                                                        Format.hex(
-                                                            Format.color(
-                                                                IridiumColorAPI.process(
-                                                                    walletWithdrawNoEnoughAmount().replace(
-                                                                        "%amount",
-                                                                        data_names_config_mysql.getInt("data.${dataeconomyvalue}")
-                                                                            .toString()
-                                                                    ).replace("%valuename", dataeconomyvalue)
+                                                    }
+                                                    "MySQL" -> {
+                                                        player.sendMessage(
+                                                            Format.hex(
+                                                                Format.color(
+                                                                    IridiumColorAPI.process(
+                                                                        walletWithdrawNoEnoughAmount().replace(
+                                                                            "%amount",
+                                                                            data_names_config_mysql.getInt("data.${dataeconomyvalue}")
+                                                                                .toString()
+                                                                        ).replace("%valuename", dataeconomyvalue)
+                                                                    )
                                                                 )
                                                             )
                                                         )
+                                                    }
+                                                    "Redis" -> {
+                                                        player.sendMessage(
+                                                            Format.hex(
+                                                                Format.color(
+                                                                    IridiumColorAPI.process(
+                                                                        walletWithdrawNoEnoughAmount().replace(
+                                                                            "%amount",
+                                                                            data_names_config_redis.getInt("data.${dataeconomyvalue}")
+                                                                                .toString()
+                                                                        ).replace("%valuename", dataeconomyvalue)
+                                                                    )
+                                                                )
+                                                            )
+                                                        )
+                                                    }
+                                                }
+                                            }
+                                        } else if (databasetype == "Redis") {
+                                            if (data_names_config_redis.getInt("data.${dataeconomyvalue}") >= remove) {
+                                                try {
+                                                    when (databasetype) {
+                                                        "h2" -> {
+                                                            TableFunctionSQL.dropTableSQLite(sender as Player)
+                                                        }
+                                                        "MongoDB" -> {
+                                                            TableFunctionMongo.dropCollection(sender.name)
+                                                        }
+                                                        "MySQL" -> {
+                                                            TableFunctionSQL.dropTable(sender as Player)
+                                                        }
+                                                        "Redis" -> {
+                                                            TableFunctionRedis.dropTable(sender.name)
+                                                        }
+                                                    }
+                                                } catch (_: SQLException) {}
+                                                try {
+                                                    when (databasetype) {
+                                                        "h2" -> {
+                                                            TableFunctionSQL.createTableAmountSQLite(
+                                                                player as Player,
+                                                                somasqlite
+                                                            )
+                                                        }
+                                                        "MongoDB" -> {
+                                                            TableFunctionMongo.createCollectionAmount(player.name, somamongodb)
+                                                        }
+                                                        "MySQL" -> {
+                                                            TableFunctionSQL.createTableAmount(player as Player, somamysql)
+                                                        }
+                                                        "Redis" -> {
+                                                            TableFunctionRedis.createTableAmount(player.name, somaredis)
+                                                        }
+                                                    }
+                                                } catch (e: SQLException) {
+                                                    throw RuntimeException(e)
+                                                }
+                                                when (databasetype) {
+                                                    "h2" -> {
+                                                        data_names_config_sqlite["data.${dataeconomyvalue}"] = somasqlite
+                                                    }
+                                                    "MongoDB" -> {
+                                                        data_names_config_mongodb["data.${dataeconomyvalue}"] = somamongodb
+                                                    }
+                                                    "MySQL" -> {
+                                                        data_names_config_mysql["data.${dataeconomyvalue}"] = somamysql
+                                                    }
+                                                    "Redis" -> {
+                                                        data_names_config_redis["data.${dataeconomyvalue}"] = somaredis
+                                                    }
+                                                }
+                                                try {
+                                                    when (databasetype) {
+                                                        "h2" -> {
+                                                            data_names_config_sqlite.save(data_names_sqlite)
+                                                        }
+                                                        "MongoDB" -> {
+                                                            data_names_config_mongodb.save(data_names_mongodb)
+                                                        }
+                                                        "MySQL" -> {
+                                                            data_names_config_mysql.save(data_names_mysql)
+                                                        }
+                                                        "Redis" -> {
+                                                            data_names_config_redis.save(data_names_redis)
+                                                        }
+                                                    }
+                                                } catch (e: IOException) {
+                                                    throw RuntimeException(e)
+                                                }
+                                                plugin.reloadConfig()
+                                                player.sendMessage(
+                                                    Format.hex(
+                                                        Format.color(
+                                                            IridiumColorAPI.process(
+                                                                walletWithdrawAmount().replace(
+                                                                    "%amount",
+                                                                    remove.toString()
+                                                                )
+                                                                    .replace("%valuename", dataeconomyvalue)
+                                                            )
+                                                        )
                                                     )
+                                                )
+                                                player.sendMessage(
+                                                    Format.hex(
+                                                        Format.color(
+                                                            IridiumColorAPI.process(
+                                                                walletWithdrawConverted().replace(
+                                                                    "%amount",
+                                                                    remove.toString()
+                                                                ).replace("%valuename", dataeconomyvalue)
+                                                            )
+                                                        )
+                                                    )
+                                                )
+                                                when (databasetype) {
+                                                    "h2" -> {
+                                                        player.sendMessage(
+                                                            Format.hex(
+                                                                Format.color(
+                                                                    IridiumColorAPI.process(
+                                                                        walletWithdrawRemainingAmount().replace(
+                                                                            "%amount",
+                                                                            data_names_config_sqlite.getInt("data.${dataeconomyvalue}")
+                                                                                .toString()
+                                                                        ).replace("%valuename", dataeconomyvalue)
+                                                                    )
+                                                                )
+                                                            )
+                                                        )
+                                                    }
+                                                    "MongoDB" -> {
+                                                        player.sendMessage(
+                                                            Format.hex(
+                                                                Format.color(
+                                                                    IridiumColorAPI.process(
+                                                                        walletWithdrawRemainingAmount().replace(
+                                                                            "%amount",
+                                                                            data_names_config_mongodb.getInt("data.${dataeconomyvalue}")
+                                                                                .toString()
+                                                                        ).replace("%valuename", dataeconomyvalue)
+                                                                    )
+                                                                )
+                                                            )
+                                                        )
+                                                    }
+                                                    "MySQL" -> {
+                                                        player.sendMessage(
+                                                            Format.hex(
+                                                                Format.color(
+                                                                    IridiumColorAPI.process(
+                                                                        walletWithdrawRemainingAmount().replace(
+                                                                            "%amount",
+                                                                            data_names_config_mysql.getInt("data.${dataeconomyvalue}")
+                                                                                .toString()
+                                                                        ).replace("%valuename", dataeconomyvalue)
+                                                                    )
+                                                                )
+                                                            )
+                                                        )
+                                                    }
+                                                    "Redis" -> {
+                                                        player.sendMessage(
+                                                            Format.hex(
+                                                                Format.color(
+                                                                    IridiumColorAPI.process(
+                                                                        walletWithdrawRemainingAmount().replace(
+                                                                            "%amount",
+                                                                            data_names_config_redis.getInt("data.${dataeconomyvalue}")
+                                                                                .toString()
+                                                                        ).replace("%valuename", dataeconomyvalue)
+                                                                    )
+                                                                )
+                                                            )
+                                                        )
+                                                    }
+                                                }
+                                                if(sender is Player) {
+                                                    sender.inventory.addItem(Economy.addEconomy(sender, remove))
+                                                }
+                                            } else {
+                                                when (databasetype) {
+                                                    "h2" -> {
+                                                        player.sendMessage(
+                                                            Format.hex(
+                                                                Format.color(
+                                                                    IridiumColorAPI.process(
+                                                                        walletWithdrawNoEnoughAmount().replace(
+                                                                            "%amount",
+                                                                            data_names_config_sqlite.getInt("data.${dataeconomyvalue}")
+                                                                                .toString()
+                                                                        ).replace("%valuename", dataeconomyvalue)
+                                                                    )
+                                                                )
+                                                            )
+                                                        )
+                                                    }
+                                                    "MongoDB" -> {
+                                                        player.sendMessage(
+                                                            Format.hex(
+                                                                Format.color(
+                                                                    IridiumColorAPI.process(
+                                                                        walletWithdrawNoEnoughAmount().replace(
+                                                                            "%amount",
+                                                                            data_names_config_mongodb.getInt("data.${dataeconomyvalue}")
+                                                                                .toString()
+                                                                        ).replace("%valuename", dataeconomyvalue)
+                                                                    )
+                                                                )
+                                                            )
+                                                        )
+                                                    }
+                                                    "MySQL" -> {
+                                                        player.sendMessage(
+                                                            Format.hex(
+                                                                Format.color(
+                                                                    IridiumColorAPI.process(
+                                                                        walletWithdrawNoEnoughAmount().replace(
+                                                                            "%amount",
+                                                                            data_names_config_mysql.getInt("data.${dataeconomyvalue}")
+                                                                                .toString()
+                                                                        ).replace("%valuename", dataeconomyvalue)
+                                                                    )
+                                                                )
+                                                            )
+                                                        )
+                                                    }
+                                                    "Redis" -> {
+                                                        player.sendMessage(
+                                                            Format.hex(
+                                                                Format.color(
+                                                                    IridiumColorAPI.process(
+                                                                        walletWithdrawNoEnoughAmount().replace(
+                                                                            "%amount",
+                                                                            data_names_config_redis.getInt("data.${dataeconomyvalue}")
+                                                                                .toString()
+                                                                        ).replace("%valuename", dataeconomyvalue)
+                                                                    )
+                                                                )
+                                                            )
+                                                        )
+                                                    }
                                                 }
                                             }
                                         }
@@ -731,60 +1197,94 @@ class WalletCommand : CommandExecutor, TabCompleter {
                                             return false
                                         }
                                         val data_names_sqlite =
-                                            File(plugin.dataFolder.toString() + "/data/" + target!!.name + "_SQLite.txt")
+                                            File(plugin.dataFolder.toString() + "/data/${target!!.name}/" + target.name + "_SQLite.txt")
                                         val data_names_mysql =
-                                            File(plugin.dataFolder.toString() + "/data/" + target.name + "_MySQL.txt")
+                                            File(plugin.dataFolder.toString() + "/data/${target.name}/" + target.name + "_MySQL.txt")
                                         val data_names_mongodb =
-                                            File(plugin.dataFolder.toString() + "/data/" + target.name + "_MongoDB.txt")
+                                            File(plugin.dataFolder.toString() + "/data/${target.name}/" + target.name + "_MongoDB.txt")
+                                        val data_names_redis =
+                                            File(plugin.dataFolder.toString() + "/data/${target.name}/" + target.name + "_Redis.txt")
                                         val data_names_config_sqlite: FileConfiguration =
                                             YamlConfiguration.loadConfiguration(data_names_sqlite)
                                         val data_names_config_mysql: FileConfiguration =
                                             YamlConfiguration.loadConfiguration(data_names_mysql)
                                         val data_names_config_mongodb: FileConfiguration =
                                             YamlConfiguration.loadConfiguration(data_names_mongodb)
+                                        val data_names_config_redis: FileConfiguration =
+                                            YamlConfiguration.loadConfiguration(data_names_redis)
                                         val somasqlite =
                                             data_names_config_sqlite.getInt("data.${dataeconomyvalue}") - remove
                                         val somamysql =
                                             data_names_config_mysql.getInt("data.${dataeconomyvalue}") - remove
                                         val somamongodb =
                                             data_names_config_mongodb.getInt("data.${dataeconomyvalue}") - remove
+                                        val somaredis =
+                                            data_names_config_redis.getInt("data.${dataeconomyvalue}") - remove
 
                                         if (databasetype == "h2") {
                                             if (data_names_config_sqlite.getInt("data.${dataeconomyvalue}") >= remove) {
                                                 try {
-                                                    if (databasetype == "h2") {
-                                                        TableFunctionSQL.dropTableSQLite(target)
-                                                    } else if (databasetype == "MongoDB") {
-                                                        TableFunctionMongo.dropCollection(target.name)
-                                                    } else if (databasetype == "MySQL") {
-                                                        TableFunctionSQL.dropTable(target)
+                                                    when (databasetype) {
+                                                        "h2" -> {
+                                                            TableFunctionSQL.dropTableSQLite(target)
+                                                        }
+                                                        "MongoDB" -> {
+                                                            TableFunctionMongo.dropCollection(target.name)
+                                                        }
+                                                        "MySQL" -> {
+                                                            TableFunctionSQL.dropTable(target)
+                                                        }
+                                                        "Redis" -> {
+                                                            TableFunctionRedis.dropTable(target.name)
+                                                        }
                                                     }
                                                 } catch (_: SQLException) {}
                                                 try {
-                                                    if (databasetype == "h2") {
-                                                        TableFunctionSQL.createTableAmountSQLite(target, somasqlite)
-                                                    } else if (databasetype == "MongoDB") {
-                                                        TableFunctionMongo.createCollectionAmount(target.name, somamongodb)
-                                                    } else if (databasetype == "MySQL") {
-                                                        TableFunctionSQL.createTableAmount(target, somamysql)
+                                                    when (databasetype) {
+                                                        "h2" -> {
+                                                            TableFunctionSQL.createTableAmountSQLite(target, somasqlite)
+                                                        }
+                                                        "MongoDB" -> {
+                                                            TableFunctionMongo.createCollectionAmount(target.name, somamongodb)
+                                                        }
+                                                        "MySQL" -> {
+                                                            TableFunctionSQL.createTableAmount(target, somamysql)
+                                                        }
+                                                        "Redis" -> {
+                                                            TableFunctionRedis.createTableAmount(target.name, somaredis)
+                                                        }
                                                     }
                                                 } catch (e: SQLException) {
                                                     throw RuntimeException(e)
                                                 }
-                                                if (databasetype == "h2") {
-                                                    data_names_config_sqlite["data.${dataeconomyvalue}"] = somasqlite
-                                                } else if (databasetype == "MongoDB") {
-                                                    data_names_config_mongodb["data.${dataeconomyvalue}"] = somamongodb
-                                                } else if (databasetype == "MySQL") {
-                                                    data_names_config_mysql["data.${dataeconomyvalue}"] = somamysql
+                                                when (databasetype) {
+                                                    "h2" -> {
+                                                        data_names_config_sqlite["data.${dataeconomyvalue}"] = somasqlite
+                                                    }
+                                                    "MongoDB" -> {
+                                                        data_names_config_mongodb["data.${dataeconomyvalue}"] = somamongodb
+                                                    }
+                                                    "MySQL" -> {
+                                                        data_names_config_mysql["data.${dataeconomyvalue}"] = somamysql
+                                                    }
+                                                    "Redis" -> {
+                                                        data_names_config_redis["data.${dataeconomyvalue}"] = somaredis
+                                                    }
                                                 }
                                                 try {
-                                                    if (databasetype == "h2") {
-                                                        data_names_config_sqlite.save(data_names_sqlite)
-                                                    } else if (databasetype == "MongoDB") {
-                                                        data_names_config_mongodb.save(data_names_mongodb)
-                                                    } else if (databasetype == "MySQL") {
-                                                        data_names_config_mysql.save(data_names_mysql)
+                                                    when (databasetype) {
+                                                        "h2" -> {
+                                                            data_names_config_sqlite.save(data_names_sqlite)
+                                                        }
+                                                        "MongoDB" -> {
+                                                            data_names_config_mongodb.save(data_names_mongodb)
+                                                        }
+                                                        "MySQL" -> {
+                                                            data_names_config_mysql.save(data_names_mysql)
+                                                        }
+                                                        "Redis" -> {
+                                                            data_names_config_redis.save(data_names_redis)
+                                                        }
                                                     }
                                                 } catch (e: IOException) {
                                                     throw RuntimeException(e)
@@ -828,39 +1328,67 @@ class WalletCommand : CommandExecutor, TabCompleter {
                                         } else if (databasetype == "MongoDB") {
                                             if (data_names_config_mongodb.getInt("data.${dataeconomyvalue}") >= remove) {
                                                 try {
-                                                    if (databasetype == "h2") {
-                                                        TableFunctionSQL.dropTableSQLite(target)
-                                                    } else if (databasetype == "MongoDB") {
-                                                        TableFunctionMongo.dropCollection(target.name)
-                                                    } else if (databasetype == "MySQL") {
-                                                        TableFunctionSQL.dropTable(target)
+                                                    when (databasetype) {
+                                                        "h2" -> {
+                                                            TableFunctionSQL.dropTableSQLite(target)
+                                                        }
+                                                        "MongoDB" -> {
+                                                            TableFunctionMongo.dropCollection(target.name)
+                                                        }
+                                                        "MySQL" -> {
+                                                            TableFunctionSQL.dropTable(target)
+                                                        }
+                                                        "Redis" -> {
+                                                            TableFunctionRedis.dropTable(target.name)
+                                                        }
                                                     }
                                                 } catch (_: SQLException) {}
                                                 try {
-                                                    if (databasetype == "h2") {
-                                                        TableFunctionSQL.createTableAmountSQLite(target, somasqlite)
-                                                    } else if (databasetype == "MongoDB") {
-                                                        TableFunctionMongo.createCollectionAmount(target.name, somamongodb)
-                                                    } else if (databasetype == "MySQL") {
-                                                        TableFunctionSQL.createTableAmount(target, somamysql)
+                                                    when (databasetype) {
+                                                        "h2" -> {
+                                                            TableFunctionSQL.createTableAmountSQLite(target, somasqlite)
+                                                        }
+                                                        "MongoDB" -> {
+                                                            TableFunctionMongo.createCollectionAmount(target.name, somamongodb)
+                                                        }
+                                                        "MySQL" -> {
+                                                            TableFunctionSQL.createTableAmount(target, somamysql)
+                                                        }
+                                                        "Redis" -> {
+                                                            TableFunctionRedis.createTableAmount(target.name, somaredis)
+                                                        }
                                                     }
                                                 } catch (e: SQLException) {
                                                     throw RuntimeException(e)
                                                 }
-                                                if (databasetype == "h2") {
-                                                    data_names_config_sqlite["data.${dataeconomyvalue}"] = somasqlite
-                                                } else if (databasetype == "MongoDB") {
-                                                    data_names_config_mongodb["data.${dataeconomyvalue}"] = somamongodb
-                                                } else if (databasetype == "MySQL") {
-                                                    data_names_config_mysql["data.${dataeconomyvalue}"] = somamysql
+                                                when (databasetype) {
+                                                    "h2" -> {
+                                                        data_names_config_sqlite["data.${dataeconomyvalue}"] = somasqlite
+                                                    }
+                                                    "MongoDB" -> {
+                                                        data_names_config_mongodb["data.${dataeconomyvalue}"] = somamongodb
+                                                    }
+                                                    "MySQL" -> {
+                                                        data_names_config_mysql["data.${dataeconomyvalue}"] = somamysql
+                                                    }
+                                                    "Redis" -> {
+                                                        data_names_config_redis["data.${dataeconomyvalue}"] = somaredis
+                                                    }
                                                 }
                                                 try {
-                                                    if (databasetype == "h2") {
-                                                        data_names_config_sqlite.save(data_names_sqlite)
-                                                    } else if (databasetype == "MongoDB") {
-                                                        data_names_config_mongodb.save(data_names_mongodb)
-                                                    } else if (databasetype == "MySQL") {
-                                                        data_names_config_mysql.save(data_names_mysql)
+                                                    when (databasetype) {
+                                                        "h2" -> {
+                                                            data_names_config_sqlite.save(data_names_sqlite)
+                                                        }
+                                                        "MongoDB" -> {
+                                                            data_names_config_mongodb.save(data_names_mongodb)
+                                                        }
+                                                        "MySQL" -> {
+                                                            data_names_config_mysql.save(data_names_mysql)
+                                                        }
+                                                        "Redis" -> {
+                                                            data_names_config_redis.save(data_names_redis)
+                                                        }
                                                     }
                                                 } catch (e: IOException) {
                                                     throw RuntimeException(e)
@@ -904,39 +1432,67 @@ class WalletCommand : CommandExecutor, TabCompleter {
                                         } else if (databasetype == "MySQL") {
                                             if (data_names_config_mysql.getInt("data.${dataeconomyvalue}") >= remove) {
                                                 try {
-                                                    if (databasetype == "h2") {
-                                                        TableFunctionSQL.dropTableSQLite(target)
-                                                    } else if (databasetype == "MongoDB") {
-                                                        TableFunctionMongo.dropCollection(target.name)
-                                                    } else if (databasetype == "MySQL")  {
-                                                        TableFunctionSQL.dropTable(target)
+                                                    when (databasetype) {
+                                                        "h2" -> {
+                                                            TableFunctionSQL.dropTableSQLite(target)
+                                                        }
+                                                        "MongoDB" -> {
+                                                            TableFunctionMongo.dropCollection(target.name)
+                                                        }
+                                                        "MySQL" -> {
+                                                            TableFunctionSQL.dropTable(target)
+                                                        }
+                                                        "Redis" -> {
+                                                            TableFunctionRedis.dropTable(target.name)
+                                                        }
                                                     }
                                                 } catch (_: SQLException) {}
                                                 try {
-                                                    if (databasetype == "h2") {
-                                                        TableFunctionSQL.createTableAmountSQLite(target, somasqlite)
-                                                    } else if (databasetype == "MongoDB") {
-                                                        TableFunctionMongo.createCollectionAmount(target.name, somamongodb)
-                                                    } else if (databasetype == "MySQL")  {
-                                                        TableFunctionSQL.createTableAmount(target, somamysql)
+                                                    when (databasetype) {
+                                                        "h2" -> {
+                                                            TableFunctionSQL.createTableAmountSQLite(target, somasqlite)
+                                                        }
+                                                        "MongoDB" -> {
+                                                            TableFunctionMongo.createCollectionAmount(target.name, somamongodb)
+                                                        }
+                                                        "MySQL" -> {
+                                                            TableFunctionSQL.createTableAmount(target, somamysql)
+                                                        }
+                                                        "Redis" -> {
+                                                            TableFunctionRedis.createTableAmount(target.name, somaredis)
+                                                        }
                                                     }
                                                 } catch (e: SQLException) {
                                                     throw RuntimeException(e)
                                                 }
-                                                if (databasetype == "h2") {
-                                                    data_names_config_sqlite["data.${dataeconomyvalue}"] = somasqlite
-                                                } else if (databasetype == "MongoDB") {
-                                                    data_names_config_mongodb["data.${dataeconomyvalue}"] = somamongodb
-                                                } else if (databasetype == "MySQL")  {
-                                                    data_names_config_mysql["data.${dataeconomyvalue}"] = somamysql
+                                                when (databasetype) {
+                                                    "h2" -> {
+                                                        data_names_config_sqlite["data.${dataeconomyvalue}"] = somasqlite
+                                                    }
+                                                    "MongoDB" -> {
+                                                        data_names_config_mongodb["data.${dataeconomyvalue}"] = somamongodb
+                                                    }
+                                                    "MySQL" -> {
+                                                        data_names_config_mysql["data.${dataeconomyvalue}"] = somamysql
+                                                    }
+                                                    "Redis" -> {
+                                                        data_names_config_redis["data.${dataeconomyvalue}"] = somaredis
+                                                    }
                                                 }
                                                 try {
-                                                    if (databasetype == "h2") {
-                                                        data_names_config_sqlite.save(data_names_sqlite)
-                                                    } else if (databasetype == "MongoDB") {
-                                                        data_names_config_mongodb.save(data_names_mongodb)
-                                                    } else if (databasetype == "MySQL")  {
-                                                        data_names_config_mysql.save(data_names_mysql)
+                                                    when (databasetype) {
+                                                        "h2" -> {
+                                                            data_names_config_sqlite.save(data_names_sqlite)
+                                                        }
+                                                        "MongoDB" -> {
+                                                            data_names_config_mongodb.save(data_names_mongodb)
+                                                        }
+                                                        "MySQL" -> {
+                                                            data_names_config_mysql.save(data_names_mysql)
+                                                        }
+                                                        "Redis" -> {
+                                                            data_names_config_redis.save(data_names_redis)
+                                                        }
                                                     }
                                                 } catch (e: IOException) {
                                                     throw RuntimeException(e)
@@ -970,6 +1526,110 @@ class WalletCommand : CommandExecutor, TabCompleter {
                                                                     .replace(
                                                                         "%targetbalance",
                                                                         data_names_config_mysql.getInt("data.${dataeconomyvalue}")
+                                                                            .toString()
+                                                                    )
+                                                            )
+                                                        )
+                                                    )
+                                                )
+                                            }
+                                        } else if (databasetype == "Redis") {
+                                            if (data_names_config_redis.getInt("data.${dataeconomyvalue}") >= remove) {
+                                                try {
+                                                    when (databasetype) {
+                                                        "h2" -> {
+                                                            TableFunctionSQL.dropTableSQLite(target)
+                                                        }
+                                                        "MongoDB" -> {
+                                                            TableFunctionMongo.dropCollection(target.name)
+                                                        }
+                                                        "MySQL" -> {
+                                                            TableFunctionSQL.dropTable(target)
+                                                        }
+                                                        "Redis" -> {
+                                                            TableFunctionRedis.dropTable(target.name)
+                                                        }
+                                                    }
+                                                } catch (_: SQLException) {}
+                                                try {
+                                                    when (databasetype) {
+                                                        "h2" -> {
+                                                            TableFunctionSQL.createTableAmountSQLite(target, somasqlite)
+                                                        }
+                                                        "MongoDB" -> {
+                                                            TableFunctionMongo.createCollectionAmount(target.name, somamongodb)
+                                                        }
+                                                        "MySQL" -> {
+                                                            TableFunctionSQL.createTableAmount(target, somamysql)
+                                                        }
+                                                        "Redis" -> {
+                                                            TableFunctionRedis.createTableAmount(target.name, somaredis)
+                                                        }
+                                                    }
+                                                } catch (e: SQLException) {
+                                                    throw RuntimeException(e)
+                                                }
+                                                when (databasetype) {
+                                                    "h2" -> {
+                                                        data_names_config_sqlite["data.${dataeconomyvalue}"] = somasqlite
+                                                    }
+                                                    "MongoDB" -> {
+                                                        data_names_config_mongodb["data.${dataeconomyvalue}"] = somamongodb
+                                                    }
+                                                    "MySQL" -> {
+                                                        data_names_config_mysql["data.${dataeconomyvalue}"] = somamysql
+                                                    }
+                                                    "Redis" -> {
+                                                        data_names_config_redis["data.${dataeconomyvalue}"] = somaredis
+                                                    }
+                                                }
+                                                try {
+                                                    when (databasetype) {
+                                                        "h2" -> {
+                                                            data_names_config_sqlite.save(data_names_sqlite)
+                                                        }
+                                                        "MongoDB" -> {
+                                                            data_names_config_mongodb.save(data_names_mongodb)
+                                                        }
+                                                        "MySQL" -> {
+                                                            data_names_config_mysql.save(data_names_mysql)
+                                                        }
+                                                        "Redis" -> {
+                                                            data_names_config_redis.save(data_names_redis)
+                                                        }
+                                                    }
+                                                } catch (e: IOException) {
+                                                    throw RuntimeException(e)
+                                                }
+                                                sender.sendMessage(
+                                                    Format.hex(
+                                                        Format.color(
+                                                            IridiumColorAPI.process(
+                                                                removedEconFromPlayer().replace(
+                                                                    "%amount",
+                                                                    remove.toString()
+                                                                )
+                                                                    .replace("%valuename", dataeconomyvalue)
+                                                                    .replace("%p", target.name)
+                                                            )
+                                                        )
+                                                    )
+                                                )
+                                                plugin.reloadConfig()
+                                            } else {
+                                                sender.sendMessage(
+                                                    Format.hex(
+                                                        Format.color(
+                                                            IridiumColorAPI.process(
+                                                                cannotRemoveEconFromPlayer().replace(
+                                                                    "%amount",
+                                                                    remove.toString()
+                                                                )
+                                                                    .replace("%valuename", dataeconomyvalue)
+                                                                    .replace("%p", target.name)
+                                                                    .replace(
+                                                                        "%targetbalance",
+                                                                        data_names_config_mongodb.getInt("data.${dataeconomyvalue}")
                                                                             .toString()
                                                                     )
                                                             )
@@ -1126,71 +1786,105 @@ class WalletCommand : CommandExecutor, TabCompleter {
                                             return false
                                         }
                                         val data_names2_sqlite =
-                                            File(plugin.dataFolder.toString() + "/data/" + target!!.name + "_SQLite.txt")
+                                            File(plugin.dataFolder.toString() + "/data/${target!!.name}/" + target.name + "_SQLite.txt")
                                         val data_names2_mysql =
-                                            File(plugin.dataFolder.toString() + "/data/" + target.name + "_MySQL.txt")
+                                            File(plugin.dataFolder.toString() + "/data/${target.name}/" + target.name + "_MySQL.txt")
                                         val data_names2_mongodb =
-                                            File(plugin.dataFolder.toString() + "/data/" + target.name + "_MongoDB.txt")
-
+                                            File(plugin.dataFolder.toString() + "/data/${target.name}/" + target.name + "_MongoDB.txt")
+                                        val data_names2_redis =
+                                            File(plugin.dataFolder.toString() + "/data/${target.name}/" + target.name + "_Redis.txt")
                                         val data_names_config2_sqlite: FileConfiguration =
                                             YamlConfiguration.loadConfiguration(data_names2_sqlite)
                                         val data_names_config2_mysql: FileConfiguration =
                                             YamlConfiguration.loadConfiguration(data_names2_mysql)
                                         val data_names_config2_mongodb: FileConfiguration =
                                             YamlConfiguration.loadConfiguration(data_names2_mongodb)
-
+                                        val data_names_config2_redis: FileConfiguration =
+                                            YamlConfiguration.loadConfiguration(data_names2_redis)
                                         val data_names_sqlite = File(
-                                            plugin.dataFolder.toString() + "/data/" + target
+                                            plugin.dataFolder.toString() + "/data/${target.name}/" + target
                                                 .name + "_SQLite.txt"
                                         )
                                         val data_names_mysql = File(
-                                            plugin.dataFolder.toString() + "/data/" + target
+                                            plugin.dataFolder.toString() + "/data/${target.name}/" + target
                                                 .name + "_MySQL.txt"
                                         )
                                         val data_names_mongodb = File(
-                                            plugin.dataFolder.toString() + "/data/" + target
+                                            plugin.dataFolder.toString() + "/data/${target.name}/" + target
                                                 .name + "_MongoDB.txt"
                                         )
-
+                                        val data_names_redis = File(
+                                            plugin.dataFolder.toString() + "/data/${target.name}/" + target
+                                                .name + "_Redis.txt"
+                                        )
                                         val somasqlite =
                                             data_names_config2_sqlite.getInt("data.${dataeconomyvalue}") + amount
                                         val somamysql =
                                             data_names_config2_mysql.getInt("data.${dataeconomyvalue}") + amount
                                         val somamongodb =
                                             data_names_config2_mongodb.getInt("data.${dataeconomyvalue}") + amount
-
+                                        val somaredis =
+                                            data_names_config2_redis.getInt("data.${dataeconomyvalue}") + amount
                                         try {
-                                            if (databasetype == "h2") {
-                                                TableFunctionSQL.dropTableSQLite(target)
-                                            } else if (databasetype == "MongoDB") {
-                                                TableFunctionMongo.dropCollection(target.name)
-                                            } else if (databasetype == "MySQL") {
-                                                TableFunctionSQL.dropTable(target)
+                                            when (databasetype) {
+                                                "h2" -> {
+                                                    TableFunctionSQL.dropTableSQLite(target)
+                                                }
+                                                "MongoDB" -> {
+                                                    TableFunctionMongo.dropCollection(target.name)
+                                                }
+                                                "MySQL" -> {
+                                                    TableFunctionSQL.dropTable(target)
+                                                }
+                                                "Redis" -> {
+                                                    TableFunctionRedis.dropTable(target.name)
+                                                }
                                             }
                                         } catch (_: SQLException) {}
                                         try {
-                                            if (databasetype == "h2") {
-                                                TableFunctionSQL.createTableAmountSQLite(target, somasqlite)
-                                            } else if (databasetype == "MongoDB") {
-                                                TableFunctionMongo.createCollectionAmount(target.name, somamongodb)
-                                            } else if (databasetype == "MySQL") {
-                                                TableFunctionSQL.createTableAmount(target, somamysql)
+                                            when (databasetype) {
+                                                "h2" -> {
+                                                    TableFunctionSQL.createTableAmountSQLite(target, somasqlite)
+                                                }
+                                                "MongoDB" -> {
+                                                    TableFunctionMongo.createCollectionAmount(target.name, somamongodb)
+                                                }
+                                                "MySQL" -> {
+                                                    TableFunctionSQL.createTableAmount(target, somamysql)
+                                                }
+                                                "Redis" -> {
+                                                    TableFunctionRedis.createTableAmount(target.name, somaredis)
+                                                }
                                             }
                                         } catch (_: SQLException) {}
-                                        if (databasetype == "h2") {
-                                            data_names_config2_sqlite["data.${dataeconomyvalue}"] = somasqlite
-                                        } else if (databasetype == "MongoDB") {
-                                            data_names_config2_mongodb["data.${dataeconomyvalue}"] = somamongodb
-                                        } else if (databasetype == "MySQL") {
-                                            data_names_config2_mysql["data.${dataeconomyvalue}"] = somamysql
+                                        when (databasetype) {
+                                            "h2" -> {
+                                                data_names_config2_sqlite["data.${dataeconomyvalue}"] = somasqlite
+                                            }
+                                            "MongoDB" -> {
+                                                data_names_config2_mongodb["data.${dataeconomyvalue}"] = somamongodb
+                                            }
+                                            "MySQL" -> {
+                                                data_names_config2_mysql["data.${dataeconomyvalue}"] = somamysql
+                                            }
+                                            "Redis" -> {
+                                                data_names_config2_redis["data.${dataeconomyvalue}"] = somaredis
+                                            }
                                         }
                                         try {
-                                            if (databasetype == "h2") {
-                                                data_names_config2_sqlite.save(data_names_sqlite)
-                                            } else if (databasetype == "MongoDB") {
-                                                data_names_config2_mongodb.save(data_names_mongodb)
-                                            } else if (databasetype == "MySQL") {
-                                                data_names_config2_mysql.save(data_names_mysql)
+                                            when (databasetype) {
+                                                "h2" -> {
+                                                    data_names_config2_sqlite.save(data_names_sqlite)
+                                                }
+                                                "MongoDB" -> {
+                                                    data_names_config2_mongodb.save(data_names_mongodb)
+                                                }
+                                                "MySQL" -> {
+                                                    data_names_config2_mysql.save(data_names_mysql)
+                                                }
+                                                "Redis" -> {
+                                                    data_names_config2_redis.save(data_names_redis)
+                                                }
                                             }
                                         } catch (_: IOException) {}
                                         plugin.reloadConfig()

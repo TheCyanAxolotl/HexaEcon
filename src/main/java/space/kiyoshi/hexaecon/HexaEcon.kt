@@ -14,6 +14,7 @@ import space.kiyoshi.hexaecon.events.EventsListener
 import space.kiyoshi.hexaecon.events.JoinEvent
 import space.kiyoshi.hexaecon.events.MonsterDeath
 import space.kiyoshi.hexaecon.mongo.MongoDBManager
+import space.kiyoshi.hexaecon.redis.RedisManager
 import space.kiyoshi.hexaecon.sql.MySQLManager
 import space.kiyoshi.hexaecon.sql.SQLiteManager
 import space.kiyoshi.hexaecon.utils.HexaEconPlaceHolders
@@ -33,6 +34,8 @@ class HexaEcon : JavaPlugin() {
     private var languagefile = File("$dataFolder/language/language.yml")
     private var languageconfig: FileConfiguration = YamlConfiguration.loadConfiguration(languagefile)
     private val mongohost = config.getString("MongoDB.Host")!!
+    private val redishost = config.getString("Redis.Host")!!
+    private val redisport = config.getInt("Redis.Port")
     private fun initialize() {
         saveDefaultConfig()
         if(nms.checkLegacyVersion(nms.getCleanServerVersion())) {
@@ -144,6 +147,12 @@ class HexaEcon : JavaPlugin() {
                     "HexaEcon"
                 )
             }
+        } else if (databasetype == "Redis") {
+            KiyoshiLogger.log(
+                LogRecord(Level.INFO, "[Redis] pulling redis requests from HexaEcon [OK]"),
+                "HexaEcon"
+            )
+            RedisManager(redishost, redisport)
         }
     }
 
@@ -198,6 +207,11 @@ class HexaEcon : JavaPlugin() {
             "MySQL" -> {
                 try {
                     MySQLManager!!.disconnect()
+                } catch (_: ClassNotFoundException) {}
+            }
+            "Redis" -> {
+                try {
+                    RedisManager(redishost, redisport).disconnect()
                 } catch (_: ClassNotFoundException) {}
             }
         }

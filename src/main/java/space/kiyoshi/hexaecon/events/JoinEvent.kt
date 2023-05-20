@@ -6,6 +6,7 @@ import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
 import org.bukkit.event.player.PlayerJoinEvent
 import space.kiyoshi.hexaecon.functions.TableFunctionMongo
+import space.kiyoshi.hexaecon.functions.TableFunctionRedis
 import space.kiyoshi.hexaecon.functions.TableFunctionSQL
 import space.kiyoshi.hexaecon.utils.GetConfig
 import java.sql.SQLException
@@ -18,12 +19,19 @@ class JoinEvent : Listener {
     @EventHandler
     fun onJoin(event: PlayerJoinEvent) {
         try {
-            if (databasetype == "h2") {
-                TableFunctionSQL.createTableSQLite(event.player)
-            } else if (databasetype == "MongoDB") {
-                TableFunctionMongo.createCollection(event.player.name)
-            } else if (databasetype == "MySQL") {
-                TableFunctionSQL.createTable(event.player)
+            when (databasetype) {
+                "h2" -> {
+                    TableFunctionSQL.createTableSQLite(event.player)
+                }
+                "MongoDB" -> {
+                    TableFunctionMongo.createCollection(event.player.name)
+                }
+                "MySQL" -> {
+                    TableFunctionSQL.createTable(event.player)
+                }
+                "Redis" -> {
+                    TableFunctionRedis.createTable(event.player.name)
+                }
             }
         } catch (_: SQLException) {}
         GetConfig.generatePlayerConfig(event.player)

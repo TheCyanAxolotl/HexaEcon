@@ -17,6 +17,7 @@ import org.bukkit.configuration.file.YamlConfiguration
 import org.bukkit.entity.Player
 import space.kiyoshi.hexaecon.HexaEcon.Companion.plugin
 import space.kiyoshi.hexaecon.functions.TableFunctionMongo
+import space.kiyoshi.hexaecon.functions.TableFunctionRedis
 import space.kiyoshi.hexaecon.functions.TableFunctionSQL
 import space.kiyoshi.hexaecon.utils.Format
 import space.kiyoshi.hexaecon.utils.GetConfig
@@ -184,18 +185,22 @@ class PayCommand : CommandExecutor, TabCompleter {
                                     ) {
                                         if (amount >= 1) {
                                             val data_names_sqlite =
-                                                File(plugin.dataFolder.toString() + "/data/" + target!!.name + "_SQLite.txt")
+                                                File(plugin.dataFolder.toString() + "/data/${target!!.name}/" + target.name + "_SQLite.txt")
                                             val data_names_mysql =
-                                                File(plugin.dataFolder.toString() + "/data/" + target.name + "_MySQL.txt")
+                                                File(plugin.dataFolder.toString() + "/data/${target.name}/" + target.name + "_MySQL.txt")
                                             val data_names_mongodb =
-                                                File(plugin.dataFolder.toString() + "/data/" + target.name + "_MongoDB.txt")
+                                                File(plugin.dataFolder.toString() + "/data/${target.name}/" + target.name + "_MongoDB.txt")
+                                            val data_names_redis =
+                                                File(plugin.dataFolder.toString() + "/data/${target.name}/" + target.name + "_Redis.txt")
 
                                             val data_names_sqlite_self =
-                                                File(plugin.dataFolder.toString() + "/data/" + player.name + "_SQLite.txt")
+                                                File(plugin.dataFolder.toString() + "/data/${player.name}/" + player.name + "_SQLite.txt")
                                             val data_names_mysql_self =
-                                                File(plugin.dataFolder.toString() + "/data/" + player.name + "_MySQL.txt")
+                                                File(plugin.dataFolder.toString() + "/data/${player.name}/" + player.name + "_MySQL.txt")
                                             val data_names_mongodb_self =
-                                                File(plugin.dataFolder.toString() + "/data/" + player.name + "_MongoDB.txt")
+                                                File(plugin.dataFolder.toString() + "/data/${player.name}/" + player.name + "_MongoDB.txt")
+                                            val data_names_redis_self =
+                                                File(plugin.dataFolder.toString() + "/data/${player.name}/" + player.name + "_MongoDB.txt")
 
                                             val data_names_config_sqlite: FileConfiguration =
                                                 YamlConfiguration.loadConfiguration(data_names_sqlite)
@@ -203,6 +208,8 @@ class PayCommand : CommandExecutor, TabCompleter {
                                                 YamlConfiguration.loadConfiguration(data_names_mysql)
                                             val data_names_config_mongodb: FileConfiguration =
                                                 YamlConfiguration.loadConfiguration(data_names_mongodb)
+                                            val data_names_config_redis: FileConfiguration =
+                                                YamlConfiguration.loadConfiguration(data_names_redis)
 
                                             val data_names_config_sqlite_self: FileConfiguration =
                                                 YamlConfiguration.loadConfiguration(data_names_sqlite_self)
@@ -210,6 +217,8 @@ class PayCommand : CommandExecutor, TabCompleter {
                                                 YamlConfiguration.loadConfiguration(data_names_mysql_self)
                                             val data_names_config_mongodb_self: FileConfiguration =
                                                 YamlConfiguration.loadConfiguration(data_names_mongodb_self)
+                                            val data_names_config_redis_self: FileConfiguration =
+                                                YamlConfiguration.loadConfiguration(data_names_redis_self)
 
                                             val somasqlitepay =
                                                 data_names_config_sqlite_self.getInt("data.${dataeconomyvalue}") - amount
@@ -217,6 +226,8 @@ class PayCommand : CommandExecutor, TabCompleter {
                                                 data_names_config_mysql_self.getInt("data.${dataeconomyvalue}") - amount
                                             val somamongodbpay =
                                                 data_names_config_mongodb_self.getInt("data.${dataeconomyvalue}") - amount
+                                            val somaredispay =
+                                                data_names_config_redis_self.getInt("data.${dataeconomyvalue}") - amount
 
                                             val somasqlitepayed =
                                                 data_names_config_sqlite.getInt("data.${dataeconomyvalue}") + amount
@@ -224,6 +235,8 @@ class PayCommand : CommandExecutor, TabCompleter {
                                                 data_names_config_mysql.getInt("data.${dataeconomyvalue}") + amount
                                             val somamongodbpayed =
                                                 data_names_config_mongodb.getInt("data.${dataeconomyvalue}") + amount
+                                            val somaredispayed =
+                                                data_names_config_redis.getInt("data.${dataeconomyvalue}") + amount
 
                                             if (databasetype == "h2") {
                                                 if (data_names_config_sqlite_self.getInt("data.${dataeconomyvalue}") >= amount) {
@@ -415,6 +428,70 @@ class PayCommand : CommandExecutor, TabCompleter {
                                                                         .replace(
                                                                             "%amount",
                                                                             data_names_config_mysql_self.getInt("data.${dataeconomyvalue}")
+                                                                                .toString()
+                                                                        ).replace("%valuename", dataeconomyvalue)
+                                                                )
+                                                            )
+                                                        )
+                                                    )
+                                                }
+                                            } else if (databasetype == "Redis") {
+                                                if (data_names_config_redis_self.getInt("data.${dataeconomyvalue}") >= amount) {
+                                                    try {
+                                                        TableFunctionRedis.dropTable(player.name)
+                                                        TableFunctionRedis.dropTable(target.name)
+                                                    } catch (_: SQLException) {}
+                                                    try {
+                                                        TableFunctionRedis.createTableAmount(
+                                                            player.name,
+                                                            somaredispay
+                                                        )
+                                                        TableFunctionRedis.createTableAmount(target.name, somaredispayed)
+                                                    } catch (_: SQLException) {}
+                                                    try {
+                                                        data_names_config_redis_self["data.${dataeconomyvalue}"] =
+                                                            somaredispay
+                                                        data_names_config_redis["data.${dataeconomyvalue}"] =
+                                                            somaredispayed
+                                                    } catch (_: IOException) {}
+                                                    try {
+                                                        data_names_config_redis_self.save(data_names_redis_self)
+                                                        data_names_config_redis.save(data_names_redis)
+                                                    } catch (_: IOException) {}
+                                                    plugin.reloadConfig()
+                                                    player.sendMessage(
+                                                        Format.hex(
+                                                            Format.color(
+                                                                IridiumColorAPI.process(
+                                                                    playerpayed().replace("%amount", amount.toString())
+                                                                        .replace("%valuename", dataeconomyvalue)
+                                                                        .replace("%p", target.name)
+                                                                )
+                                                            )
+                                                        )
+                                                    )
+                                                    target.sendMessage(
+                                                        Format.hex(
+                                                            Format.color(
+                                                                IridiumColorAPI.process(
+                                                                    paymentrecived().replace(
+                                                                        "%amount",
+                                                                        amount.toString()
+                                                                    ).replace("%valuename", dataeconomyvalue)
+                                                                        .replace("%p", player.name)
+                                                                )
+                                                            )
+                                                        )
+                                                    )
+                                                } else {
+                                                    player.sendMessage(
+                                                        Format.hex(
+                                                            Format.color(
+                                                                IridiumColorAPI.process(
+                                                                    Language.walletWithdrawNoEnoughAmount()
+                                                                        .replace(
+                                                                            "%amount",
+                                                                            data_names_config_redis_self.getInt("data.${dataeconomyvalue}")
                                                                                 .toString()
                                                                         ).replace("%valuename", dataeconomyvalue)
                                                                 )
