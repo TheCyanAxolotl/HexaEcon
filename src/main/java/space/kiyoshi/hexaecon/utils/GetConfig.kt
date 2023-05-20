@@ -84,4 +84,17 @@ object GetConfig {
             }
         }
     }
+
+    fun deletePlayerConfig(player: Player) {
+        val dataFolder = File(plugin.dataFolder, "data")
+        val playerFolder = File(plugin.dataFolder, "data/${player.name}")
+
+        if (playerFolder.exists()) {
+            playerFolder.deleteRecursively()
+        }
+
+        if (dataFolder.exists() && dataFolder.listFiles()!!.isEmpty()) {
+            dataFolder.delete()
+        }
+    }
 }
