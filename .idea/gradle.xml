@@ -11,6 +11,14 @@
           </set>
         </option>
       </GradleProjectSettings>
+      <GradleProjectSettings>
+        <option name="externalProjectPath" value="$PROJECT_DIR$/HexaEconAPI" />
+        <option name="modules">
+          <set>
+            <option value="$PROJECT_DIR$/HexaEconAPI" />
+          </set>
+        </option>
+      </GradleProjectSettings>
     </option>
   </component>
 </project>

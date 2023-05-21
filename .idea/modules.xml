@@ -4,6 +4,7 @@
     <modules>
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/HexaEcon.main.iml" filepath="$PROJECT_DIR$/.idea/modules/HexaEcon.main.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/HexaEcon.test.iml" filepath="$PROJECT_DIR$/.idea/modules/HexaEcon.test.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/HexaEconAPI.main.iml" filepath="$PROJECT_DIR$/.idea/modules/HexaEconAPI.main.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/space.kiyoshi.HexaEcon.test.iml" filepath="$PROJECT_DIR$/.idea/modules/space.kiyoshi.HexaEcon.test.iml" />
     </modules>
   </component>
