@@ -1,4 +1,4 @@
-@file:Suppress("LocalVariableName", "SpellCheckingInspection")
+@file:Suppress("LocalVariableName", "SpellCheckingInspection", "unused")
 
 package space.kiyoshi.hexaecon.utils
 
