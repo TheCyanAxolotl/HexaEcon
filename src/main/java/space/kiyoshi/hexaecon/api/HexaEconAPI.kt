@@ -6,8 +6,9 @@ import space.kiyoshi.hexaecon.functions.TableFunctionRedis
 import space.kiyoshi.hexaecon.functions.TableFunctionSQL
 import space.kiyoshi.hexaecon.utils.GetConfig
 
-class HexaEconAPI {
+object HexaEconAPI {
 
+    @JvmStatic
     fun createBankAccount(player: Player, value: Int) {
         val databasetype = GetConfig.main().getString("DataBase.Type")!!
         GetConfig.generatePlayerConfig(player)
