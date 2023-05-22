@@ -15,6 +15,7 @@ import java.text.DecimalFormatSymbols
 
 object Economy {
     private val itemtype = GetConfig.main().getString("Economy.Physical.Item")!!
+    private val pattern = GetConfig.main().getString("Economy.Pattern")!!
     private val itemdisplayname = GetConfig.main().getString("Economy.Physical.DisplayName")!!
     private val itemnbtvalue = GetConfig.main().getInt("Economy.Physical.NBT.Value")
     private val itemlore: List<String> = GetConfig.main().getStringList("Economy.Physical.Lore")
@@ -127,7 +128,7 @@ object Economy {
             groupingSeparator = '.'
             decimalSeparator = ','
         }
-        val decimalFormat = DecimalFormat("#,##0.##", decimalFormatSymbols)
+        val decimalFormat = DecimalFormat(pattern, decimalFormatSymbols)
 
         val formattedBalance = decimalFormat.format(formattedValue)
 

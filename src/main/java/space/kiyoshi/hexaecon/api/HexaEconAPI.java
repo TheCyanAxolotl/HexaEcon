@@ -364,6 +364,7 @@ public class HexaEconAPI {
 
 
     public static String formatBalance(String balance) {
+        String pattern = GetConfig.INSTANCE.main().getString("Economy.Pattern");
         Long value = Long.parseLong(balance);
 
         String[] suffixes = {
@@ -410,7 +411,7 @@ public class HexaEconAPI {
         decimalFormatSymbols.setGroupingSeparator('.');
         decimalFormatSymbols.setDecimalSeparator(',');
 
-        DecimalFormat decimalFormat = new DecimalFormat("#,##0.##", decimalFormatSymbols);
+        DecimalFormat decimalFormat = new DecimalFormat(pattern, decimalFormatSymbols);
 
         String formattedBalance = decimalFormat.format(formattedValue);
 

@@ -44,6 +44,7 @@ Modules: # Modules
   OnKillAnimals: false
 
 Economy:
+  Pattern: "#,##0.##" # Currency Pattern
   Events:
     OnKillMonsters:
       StrikeEffect: false # if this is enabled the OnKillMonsters sound is disabled
