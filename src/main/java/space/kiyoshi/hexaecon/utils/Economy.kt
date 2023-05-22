@@ -9,6 +9,8 @@ import org.bukkit.Material
 import org.bukkit.entity.Player
 import org.bukkit.inventory.ItemFlag
 import org.bukkit.inventory.ItemStack
+import java.text.DecimalFormat
+import java.text.DecimalFormatSymbols
 
 
 object Economy {
@@ -80,9 +82,9 @@ object Economy {
             "",
             "k",
             "m",
+            "b",
             "t",
             "q",
-            "a",
             "aa",
             "ab",
             "ac",
@@ -109,26 +111,26 @@ object Economy {
             "ax",
             "ay",
             "az"
-            // Add more suffixes as needed
+            // Add more suffixes if needed
         )
 
         val suffixIndex = (Math.floor(Math.log10(value.toDouble())) / 3).toInt()
-
-        // Handle out-of-bounds suffixIndex
         val formattedValue = if (suffixIndex in suffixes.indices) {
             value / Math.pow(10.0, (suffixIndex * 3).toDouble())
         } else {
             value.toDouble()
         }
 
-        val formattedString = "%.1f%s".format(formattedValue, suffixes.getOrElse(suffixIndex) { "" })
+        val suffix = suffixes.getOrElse(suffixIndex) { "" }
 
-        return if (value == 0L) {
-            "0"
-        } else {
-            formattedString
+        val decimalFormatSymbols = DecimalFormatSymbols.getInstance().apply {
+            groupingSeparator = '.'
+            decimalSeparator = ','
         }
+        val decimalFormat = DecimalFormat("#,##0.##", decimalFormatSymbols)
+
+        val formattedBalance = decimalFormat.format(formattedValue)
+
+        return "$formattedBalance$suffix"
     }
-
-
 }

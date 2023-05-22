@@ -14,8 +14,8 @@ import java.io.File;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.Arrays;
-import java.util.List;
+import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
 
 @SuppressWarnings("ALL")
 public class HexaEconAPI {
@@ -362,16 +362,17 @@ public class HexaEconAPI {
         return NMSUtils.INSTANCE.checkServerVersionUp(NMSUtils.INSTANCE.getCleanServerVersion());
     }
 
+
     public static String formatBalance(String balance) {
         Long value = Long.parseLong(balance);
 
-        List<String> suffixes = Arrays.asList(
+        String[] suffixes = {
                 "",
                 "k",
                 "m",
+                "b",
                 "t",
                 "q",
-                "a",
                 "aa",
                 "ab",
                 "ac",
@@ -398,15 +399,22 @@ public class HexaEconAPI {
                 "ax",
                 "ay",
                 "az"
-        );
+                // Add more suffixes if needed
+        };
 
         int suffixIndex = (int) (Math.floor(Math.log10(value.doubleValue())) / 3);
+        double formattedValue = suffixIndex < suffixes.length ? value / Math.pow(10.0, suffixIndex * 3) : value.doubleValue();
+        String suffix = suffixes[Math.min(suffixIndex, suffixes.length - 1)];
 
-        double formattedValue = suffixIndex >= 0 && suffixIndex < suffixes.size() ?
-                value / Math.pow(10.0, suffixIndex * 3) : value.doubleValue();
+        DecimalFormatSymbols decimalFormatSymbols = new DecimalFormatSymbols();
+        decimalFormatSymbols.setGroupingSeparator('.');
+        decimalFormatSymbols.setDecimalSeparator(',');
 
-        String formattedString = String.format("%.1f%s", formattedValue, suffixes.get(suffixIndex));
+        DecimalFormat decimalFormat = new DecimalFormat("#,##0.##", decimalFormatSymbols);
 
-        return value == 0L ? "0" : formattedString;
+        String formattedBalance = decimalFormat.format(formattedValue);
+
+        return formattedBalance + suffix;
     }
+
 }
