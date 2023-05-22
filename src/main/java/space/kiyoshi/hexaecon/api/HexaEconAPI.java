@@ -336,12 +336,7 @@ public class HexaEconAPI {
     }
 
     public static String formatBalance(String balance) {
-        long value;
-        try {
-            value = Long.parseLong(balance);
-        } catch (NumberFormatException e) {
-            return balance;
-        }
+        Long value = Long.parseLong(balance);
 
         List<String> suffixes = Arrays.asList(
                 "",
@@ -378,19 +373,13 @@ public class HexaEconAPI {
                 "az"
         );
 
-        int suffixIndex = (int) (Math.floor(Math.log10(value) / 3));
+        int suffixIndex = (int) (Math.floor(Math.log10(value.doubleValue())) / 3);
 
-        double formattedValue;
-        if (suffixIndex >= 0 && suffixIndex < suffixes.size()) {
-            formattedValue = value / Math.pow(10.0, suffixIndex * 3);
-        } else {
-            formattedValue = value;
-        }
+        double formattedValue = suffixIndex >= 0 && suffixIndex < suffixes.size() ?
+                value / Math.pow(10.0, suffixIndex * 3) : value.doubleValue();
 
-        return String.format("%.1f%s", formattedValue, suffixes.get(suffixIndex));
+        String formattedString = String.format("%.1f%s", formattedValue, suffixes.get(suffixIndex));
+
+        return value == 0L ? "0" : formattedString;
     }
-
-
-
-
 }
