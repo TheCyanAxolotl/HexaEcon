@@ -1,28 +1,28 @@
 # Created by TheUwUaxolotl
 Formatted:
-  Amount: '&e%amount&6%symbol'
+  Amount: '&e%amountformatted%'
 Language:
   Prefix: '&e[&9HexaEcon&e]&r '
   IsConsolePlayer: '&enon puoi eseguire questo comando in console.'
-  BankAmount: '&ehai &6%amount &e%valuename.'
-  GenericEarn: '&e+ &6%amount &e%valuename.'
+  BankAmount: '&ehai &6%amountformatted% &e%valuename%.'
+  GenericEarn: '&e+ &6%amountformatted% &e%valuename%.'
   ConfigurationReloaded: '&econfig ricaricato con successo.'
-  GenerateToOther: '&e+ &6%amount &e%valuename generati da &6%p'
-  AccessDenied: '&enon hai il permesso per eseguire questo comando, permesso richiesto: &6%perm'
-  InvalidAmount: '&evalore minimo richiesto &61 &e%valuename &eo controlla che la sintassi sia corretta.'
-  WalletWithdrawAmount: '&e- &6%amount &e%valuename.'
-  PlayerNotFound: '&eplayer &6%p &enon trovato o non online.'
-  WalletWithdrawConverted: '&6%amount &e%valuename convertiti.'
-  WalletWithdrawRemaningAmount: '&eti rimangono %valuename &6%amount.'
-  WalletWithdrawNoEnoughAmount: '&enon hai abbastanza %valuename, hai &6%amount
-    &e%valuename.'
-  PlayerPayed: '&eHai inviato con successo a &6%p &6%amount &e%valuename.'
-  RemovedEconFromPlayer: '&eHai rimosso con successo &6%amount &e%valuename da
-    &6%p.'
-  CannotRemoveEconFromPlayer: '&eImpossibile rimuovere &6%amount &e%valuename da &6%p &eperchè il player ha &6%targetbalance &e%valuename.'
-  PlayerPaymentRecived: '&eHai ricevuto un pagamento di &6%amount &e%valuename &eda &6%p.'
+  GenerateToOther: '&e+ &6%amountformatted% &e%valuename% generati da &6%p%'
+  AccessDenied: '&enon hai il permesso per eseguire questo comando, permesso richiesto: &6%perm%'
+  InvalidAmount: '&evalore minimo richiesto &61 &e%valuename% &eo controlla che la sintassi sia corretta.'
+  WalletWithdrawAmount: '&e- &6%amountformatted% &e%valuename%.'
+  PlayerNotFound: '&eplayer &6%p% &enon trovato o non online.'
+  WalletWithdrawConverted: '&6%amountformatted% &e%valuename% convertiti.'
+  WalletWithdrawRemaningAmount: '&eti rimangono %valuename% &6%amountformatted%.'
+  WalletWithdrawNoEnoughAmount: '&enon hai abbastanza %valuename%, hai &6%amountformatted%
+    &e%valuename%.'
+  PlayerPayed: '&eHai inviato con successo a &6%p% &6%amountformatted% &e%valuename%.'
+  RemovedEconFromPlayer: '&eHai rimosso con successo &6%amountformatted% &e%valuename% da
+    &6%p%.'
+  CannotRemoveEconFromPlayer: '&eImpossibile rimuovere &6%amountformatted% &e%valuename% da &6%p% &eperchè il player ha &6%targetbalance% &e%valuename%.'
+  PlayerPaymentRecived: '&eHai ricevuto un pagamento di &6%amountformatted% &e%valuename% &eda &6%p%.'
   CannotPaySelf: '&eNon puoi inviare denaro a te stesso.'
-  UsageFormat: '&eUtilizzo: %u'
+  UsageFormat: '&eUtilizzo: %u%'
 Usages:
   EconConvertDeposit: '&e/wallet <generate/withdraw/remove> <amount> <player>'
   Pay: '&e/pay <amount> <player>'

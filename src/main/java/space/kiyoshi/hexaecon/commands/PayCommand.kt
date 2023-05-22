@@ -19,6 +19,7 @@ import space.kiyoshi.hexaecon.HexaEcon.Companion.plugin
 import space.kiyoshi.hexaecon.functions.TableFunctionMongo
 import space.kiyoshi.hexaecon.functions.TableFunctionRedis
 import space.kiyoshi.hexaecon.functions.TableFunctionSQL
+import space.kiyoshi.hexaecon.utils.Economy
 import space.kiyoshi.hexaecon.utils.Format
 import space.kiyoshi.hexaecon.utils.GetConfig
 import space.kiyoshi.hexaecon.utils.Language
@@ -69,7 +70,7 @@ class PayCommand : CommandExecutor, TabCompleter {
                 if (player.hasPermission("hexaecon.permissions.pay")) {
                     try {
                         if (args.size < 1) {
-                            player.sendMessage(Format.hex(Format.color(usageFormat().replace("%u", usagePayment()!!))))
+                            player.sendMessage(Format.hex(Format.color(usageFormat().replace("%u%", usagePayment()!!))))
                             if (sound != "NONE") {
                                 if (sender is Player) {
                                     sender.playSound(
@@ -87,7 +88,7 @@ class PayCommand : CommandExecutor, TabCompleter {
                                         Format.color(
                                             IridiumColorAPI.process(
                                                 usageFormat().replace(
-                                                    "%u",
+                                                    "%u%",
                                                     usagePayment()!!
                                                 )
                                             )
@@ -105,7 +106,7 @@ class PayCommand : CommandExecutor, TabCompleter {
                                     }
                                 }
                             } else {
-                                val amount = args[0].toInt()
+                                val amount = args[0].toLong()
                                 val targetname = args[1]
                                 val target = Bukkit.getPlayer(targetname)
                                 try {
@@ -115,7 +116,7 @@ class PayCommand : CommandExecutor, TabCompleter {
                                                 Format.color(
                                                     IridiumColorAPI.process(
                                                         invalidAmount().replace(
-                                                            "%valuename",
+                                                            "%valuename%",
                                                             dataeconomyvalue
                                                         )
                                                     )
@@ -124,13 +125,13 @@ class PayCommand : CommandExecutor, TabCompleter {
                                         )
                                         return true
                                     }
-                                    if (amount == 0) {
+                                    if (amount == 0L) {
                                         player.sendMessage(
                                             Format.hex(
                                                 Format.color(
                                                     IridiumColorAPI.process(
                                                         invalidAmount().replace(
-                                                            "%valuename",
+                                                            "%valuename%",
                                                             dataeconomyvalue
                                                         )
                                                     )
@@ -145,7 +146,7 @@ class PayCommand : CommandExecutor, TabCompleter {
                                             Format.hex(
                                                 Format.color(
                                                     IridiumColorAPI.process(
-                                                        playerNotFound().replace("%p", args[2])
+                                                        playerNotFound().replace("%p%", args[2])
                                                     )
                                                 )
                                             )
@@ -221,25 +222,25 @@ class PayCommand : CommandExecutor, TabCompleter {
                                                 YamlConfiguration.loadConfiguration(data_names_redis_self)
 
                                             val somasqlitepay =
-                                                data_names_config_sqlite_self.getInt("data.${dataeconomyvalue}") - amount
+                                                data_names_config_sqlite_self.getLong("data.${dataeconomyvalue}") - amount
                                             val somamysqlpay =
-                                                data_names_config_mysql_self.getInt("data.${dataeconomyvalue}") - amount
+                                                data_names_config_mysql_self.getLong("data.${dataeconomyvalue}") - amount
                                             val somamongodbpay =
-                                                data_names_config_mongodb_self.getInt("data.${dataeconomyvalue}") - amount
+                                                data_names_config_mongodb_self.getLong("data.${dataeconomyvalue}") - amount
                                             val somaredispay =
-                                                data_names_config_redis_self.getInt("data.${dataeconomyvalue}") - amount
+                                                data_names_config_redis_self.getLong("data.${dataeconomyvalue}") - amount
 
                                             val somasqlitepayed =
-                                                data_names_config_sqlite.getInt("data.${dataeconomyvalue}") + amount
+                                                data_names_config_sqlite.getLong("data.${dataeconomyvalue}") + amount
                                             val somamysqlpayed =
-                                                data_names_config_mysql.getInt("data.${dataeconomyvalue}") + amount
+                                                data_names_config_mysql.getLong("data.${dataeconomyvalue}") + amount
                                             val somamongodbpayed =
-                                                data_names_config_mongodb.getInt("data.${dataeconomyvalue}") + amount
+                                                data_names_config_mongodb.getLong("data.${dataeconomyvalue}") + amount
                                             val somaredispayed =
-                                                data_names_config_redis.getInt("data.${dataeconomyvalue}") + amount
+                                                data_names_config_redis.getLong("data.${dataeconomyvalue}") + amount
 
                                             if (databasetype == "h2") {
-                                                if (data_names_config_sqlite_self.getInt("data.${dataeconomyvalue}") >= amount) {
+                                                if (data_names_config_sqlite_self.getLong("data.${dataeconomyvalue}") >= amount) {
                                                     try {
                                                         TableFunctionSQL.dropTableSQLite(player as Player)
                                                         TableFunctionSQL.dropTableSQLite(target)
@@ -250,7 +251,9 @@ class PayCommand : CommandExecutor, TabCompleter {
                                                             player as Player,
                                                             somasqlitepay
                                                         )
-                                                        TableFunctionSQL.createTableAmountSQLite(target, somasqlitepayed)
+                                                        TableFunctionSQL.createTableAmountSQLite(target,
+                                                            somasqlitepayed
+                                                        )
                                                     } catch (_: SQLException) {
                                                     }
                                                     try {
@@ -270,9 +273,10 @@ class PayCommand : CommandExecutor, TabCompleter {
                                                         Format.hex(
                                                             Format.color(
                                                                 IridiumColorAPI.process(
-                                                                    playerpayed().replace("%amount", amount.toString())
-                                                                        .replace("%valuename", dataeconomyvalue)
-                                                                        .replace("%p", target.name)
+                                                                    playerpayed().replace("%amountformatted%", Economy.formatBalance(amount.toString()))
+                                                                        .replace("%valuename%", dataeconomyvalue)
+                                                                        .replace("%p%", target.name)
+                                                                        .replace("%amount%", amount.toString())
                                                                 )
                                                             )
                                                         )
@@ -282,10 +286,11 @@ class PayCommand : CommandExecutor, TabCompleter {
                                                             Format.color(
                                                                 IridiumColorAPI.process(
                                                                     paymentrecived().replace(
-                                                                        "%amount",
-                                                                        amount.toString()
-                                                                    ).replace("%valuename", dataeconomyvalue)
-                                                                        .replace("%p", player.name)
+                                                                        "%amountformatted%",
+                                                                        Economy.formatBalance(amount.toString())
+                                                                    ).replace("%valuename%", dataeconomyvalue)
+                                                                        .replace("%p%", player.name)
+                                                                        .replace("%amount%", amount.toString())
                                                                 )
                                                             )
                                                         )
@@ -297,17 +302,19 @@ class PayCommand : CommandExecutor, TabCompleter {
                                                                 IridiumColorAPI.process(
                                                                     Language.walletWithdrawNoEnoughAmount()
                                                                         .replace(
-                                                                            "%amount",
-                                                                            data_names_config_sqlite_self.getInt("data.${dataeconomyvalue}")
-                                                                                .toString()
-                                                                        ).replace("%valuename", dataeconomyvalue)
+                                                                            "%amountformatted%",
+                                                                            Economy.formatBalance(data_names_config_sqlite_self.getLong("data.${dataeconomyvalue}")
+                                                                                .toString())
+                                                                        ).replace("%valuename%", dataeconomyvalue)
+                                                                        .replace("%amount%", data_names_config_sqlite_self.getLong("data.${dataeconomyvalue}")
+                                                                            .toString())
                                                                 )
                                                             )
                                                         )
                                                     )
                                                 }
                                             } else if (databasetype == "MongoDB") {
-                                                if (data_names_config_mongodb_self.getInt("data.${dataeconomyvalue}") >= amount) {
+                                                if (data_names_config_mongodb_self.getLong("data.${dataeconomyvalue}") >= amount) {
                                                     try {
                                                         TableFunctionMongo.dropCollection(player.name)
                                                         TableFunctionMongo.dropCollection(target.name)
@@ -334,9 +341,10 @@ class PayCommand : CommandExecutor, TabCompleter {
                                                         Format.hex(
                                                             Format.color(
                                                                 IridiumColorAPI.process(
-                                                                    playerpayed().replace("%amount", amount.toString())
-                                                                        .replace("%valuename", dataeconomyvalue)
-                                                                        .replace("%p", target.name)
+                                                                    playerpayed().replace("%amountformatted%", Economy.formatBalance(amount.toString()))
+                                                                        .replace("%valuename%", dataeconomyvalue)
+                                                                        .replace("%p%", target.name)
+                                                                        .replace("%amount%", amount.toString())
                                                                 )
                                                             )
                                                         )
@@ -346,10 +354,11 @@ class PayCommand : CommandExecutor, TabCompleter {
                                                             Format.color(
                                                                 IridiumColorAPI.process(
                                                                     paymentrecived().replace(
-                                                                        "%amount",
-                                                                        amount.toString()
-                                                                    ).replace("%valuename", dataeconomyvalue)
-                                                                        .replace("%p", player.name)
+                                                                        "%amountformatted%",
+                                                                        Economy.formatBalance(amount.toString())
+                                                                    ).replace("%valuename%", dataeconomyvalue)
+                                                                        .replace("%p%", player.name)
+                                                                        .replace("%amount%", amount.toString())
                                                                 )
                                                             )
                                                         )
@@ -361,25 +370,31 @@ class PayCommand : CommandExecutor, TabCompleter {
                                                                 IridiumColorAPI.process(
                                                                     Language.walletWithdrawNoEnoughAmount()
                                                                         .replace(
-                                                                            "%amount",
-                                                                            data_names_config_mongodb_self.getInt("data.${dataeconomyvalue}")
-                                                                                .toString()
-                                                                        ).replace("%valuename", dataeconomyvalue)
+                                                                            "%amountformatted%",
+                                                                            Economy.formatBalance(data_names_config_mongodb_self.getLong("data.${dataeconomyvalue}")
+                                                                                .toString())
+                                                                        ).replace("%valuename%", dataeconomyvalue)
+                                                                        .replace("%amount%", data_names_config_mongodb_self.getLong("data.${dataeconomyvalue}")
+                                                                            .toString())
                                                                 )
                                                             )
                                                         )
                                                     )
                                                 }
                                             } else if (databasetype == "MySQL") {
-                                                if (data_names_config_mysql_self.getInt("data.${dataeconomyvalue}") >= amount) {
+                                                if (data_names_config_mysql_self.getLong("data.${dataeconomyvalue}") >= amount) {
                                                     try {
                                                         TableFunctionSQL.dropTable(player as Player)
                                                         TableFunctionSQL.dropTable(target)
                                                     } catch (_: SQLException) {
                                                     }
                                                     try {
-                                                        TableFunctionSQL.createTableAmount(player as Player, somamysqlpay)
-                                                        TableFunctionSQL.createTableAmount(target, somamysqlpayed)
+                                                        TableFunctionSQL.createTableAmount(player as Player,
+                                                            somamysqlpay
+                                                        )
+                                                        TableFunctionSQL.createTableAmount(target,
+                                                            somamysqlpayed
+                                                        )
                                                     } catch (_: SQLException) {
                                                     }
                                                     try {
@@ -399,9 +414,10 @@ class PayCommand : CommandExecutor, TabCompleter {
                                                         Format.hex(
                                                             Format.color(
                                                                 IridiumColorAPI.process(
-                                                                    playerpayed().replace("%amount", amount.toString())
-                                                                        .replace("%valuename", dataeconomyvalue)
-                                                                        .replace("%p", target.name)
+                                                                    playerpayed().replace("%amountformatted%", Economy.formatBalance(amount.toString()))
+                                                                        .replace("%valuename%", dataeconomyvalue)
+                                                                        .replace("%p%", target.name)
+                                                                        .replace("%amount%", amount.toString())
                                                                 )
                                                             )
                                                         )
@@ -411,10 +427,11 @@ class PayCommand : CommandExecutor, TabCompleter {
                                                             Format.color(
                                                                 IridiumColorAPI.process(
                                                                     paymentrecived().replace(
-                                                                        "%amount",
-                                                                        amount.toString()
-                                                                    ).replace("%valuename", dataeconomyvalue)
-                                                                        .replace("%p", player.name)
+                                                                        "%amountformatted%",
+                                                                        Economy.formatBalance(amount.toString())
+                                                                    ).replace("%valuename%", dataeconomyvalue)
+                                                                        .replace("%p%", player.name)
+                                                                        .replace("%amount%", amount.toString())
                                                                 )
                                                             )
                                                         )
@@ -426,17 +443,19 @@ class PayCommand : CommandExecutor, TabCompleter {
                                                                 IridiumColorAPI.process(
                                                                     Language.walletWithdrawNoEnoughAmount()
                                                                         .replace(
-                                                                            "%amount",
-                                                                            data_names_config_mysql_self.getInt("data.${dataeconomyvalue}")
-                                                                                .toString()
-                                                                        ).replace("%valuename", dataeconomyvalue)
+                                                                            "%amountformatted%",
+                                                                            Economy.formatBalance(data_names_config_mysql_self.getLong("data.${dataeconomyvalue}")
+                                                                                .toString())
+                                                                        ).replace("%valuename%", dataeconomyvalue)
+                                                                        .replace("%amount%", data_names_config_mysql_self.getLong("data.${dataeconomyvalue}")
+                                                                            .toString())
                                                                 )
                                                             )
                                                         )
                                                     )
                                                 }
                                             } else if (databasetype == "Redis") {
-                                                if (data_names_config_redis_self.getInt("data.${dataeconomyvalue}") >= amount) {
+                                                if (data_names_config_redis_self.getLong("data.${dataeconomyvalue}") >= amount) {
                                                     try {
                                                         TableFunctionRedis.dropTable(player.name)
                                                         TableFunctionRedis.dropTable(target.name)
@@ -463,9 +482,10 @@ class PayCommand : CommandExecutor, TabCompleter {
                                                         Format.hex(
                                                             Format.color(
                                                                 IridiumColorAPI.process(
-                                                                    playerpayed().replace("%amount", amount.toString())
-                                                                        .replace("%valuename", dataeconomyvalue)
-                                                                        .replace("%p", target.name)
+                                                                    playerpayed().replace("%amountformatted%", Economy.formatBalance(amount.toString()))
+                                                                        .replace("%valuename%", dataeconomyvalue)
+                                                                        .replace("%p%", target.name)
+                                                                        .replace("%amount%", amount.toString())
                                                                 )
                                                             )
                                                         )
@@ -475,10 +495,11 @@ class PayCommand : CommandExecutor, TabCompleter {
                                                             Format.color(
                                                                 IridiumColorAPI.process(
                                                                     paymentrecived().replace(
-                                                                        "%amount",
-                                                                        amount.toString()
-                                                                    ).replace("%valuename", dataeconomyvalue)
-                                                                        .replace("%p", player.name)
+                                                                        "%amountformatted%",
+                                                                        Economy.formatBalance(amount.toString())
+                                                                    ).replace("%valuename%", dataeconomyvalue)
+                                                                        .replace("%p%", player.name)
+                                                                        .replace("%amount%", amount.toString())
                                                                 )
                                                             )
                                                         )
@@ -490,10 +511,12 @@ class PayCommand : CommandExecutor, TabCompleter {
                                                                 IridiumColorAPI.process(
                                                                     Language.walletWithdrawNoEnoughAmount()
                                                                         .replace(
-                                                                            "%amount",
-                                                                            data_names_config_redis_self.getInt("data.${dataeconomyvalue}")
-                                                                                .toString()
-                                                                        ).replace("%valuename", dataeconomyvalue)
+                                                                            "%amountformatted%",
+                                                                            Economy.formatBalance(data_names_config_redis_self.getLong("data.${dataeconomyvalue}")
+                                                                                .toString())
+                                                                        ).replace("%valuename%", dataeconomyvalue)
+                                                                        .replace("%amount%", data_names_config_redis_self.getLong("data.${dataeconomyvalue}")
+                                                                            .toString())
                                                                 )
                                                             )
                                                         )
@@ -505,7 +528,7 @@ class PayCommand : CommandExecutor, TabCompleter {
                                                 Format.hex(
                                                     Format.color(
                                                         IridiumColorAPI.process(
-                                                            invalidAmount().replace("%valuename", dataeconomyvalue)
+                                                            invalidAmount().replace("%valuename%", dataeconomyvalue)
                                                         )
                                                     )
                                                 )
@@ -519,7 +542,7 @@ class PayCommand : CommandExecutor, TabCompleter {
                                             Format.color(
                                                 IridiumColorAPI.process(
                                                     invalidAmount().replace(
-                                                        "%valuename",
+                                                        "%valuename%",
                                                         dataeconomyvalue
                                                     )
                                                 )
@@ -535,7 +558,7 @@ class PayCommand : CommandExecutor, TabCompleter {
                                 Format.color(
                                     IridiumColorAPI.process(
                                         invalidAmount().replace(
-                                            "%valuename",
+                                            "%valuename%",
                                             dataeconomyvalue
                                         )
                                     )
@@ -549,7 +572,7 @@ class PayCommand : CommandExecutor, TabCompleter {
                             Format.color(
                                 IridiumColorAPI.process(
                                     accessDenied().replace(
-                                        "%perm",
+                                        "%perm%",
                                         "hexaecon.permissions.pay"
                                     )
                                 )
@@ -567,16 +590,17 @@ class PayCommand : CommandExecutor, TabCompleter {
     }
 
     override fun onTabComplete(arg0: CommandSender, arg1: Command, arg2: String, args: Array<String>): List<String>? {
-        val s: MutableList<String> = mutableListOf()
         if (arg1.name == "pay") {
             if (args.size == 1) {
+                val s: MutableList<String> = mutableListOf()
                 for (i in 1..100) {
                     a(s, args[0], i.toString())
                 }
-                s.sort()
-                return s + mutableListOf()
+                s.sortBy { it.toInt() }
+                return s
             }
         }
         return null
     }
+
 }

@@ -12,6 +12,7 @@ import space.kiyoshi.hexaecon.HexaEcon
 import space.kiyoshi.hexaecon.functions.TableFunctionMongo
 import space.kiyoshi.hexaecon.functions.TableFunctionRedis
 import space.kiyoshi.hexaecon.functions.TableFunctionSQL
+import space.kiyoshi.hexaecon.utils.Economy
 import space.kiyoshi.hexaecon.utils.Format
 import space.kiyoshi.hexaecon.utils.GetConfig
 import space.kiyoshi.hexaecon.utils.Language.accessDenied
@@ -40,13 +41,15 @@ class EcoCommand : CommandExecutor {
                                 Format.color(
                                     IridiumColorAPI.process(
                                         bankAmount().replace(
-                                            "%valuename",
+                                            "%valuename%",
                                             dataeconomyvalue
                                         ).replace(
-                                            "%amount",
+                                            "%amountformatted%",
+                                            Economy.formatBalance(TableFunctionSQL.selectAllFromTableAsStringSQLite(player.name).toString()
+                                                .replace("[", "").replace("]", ""))
+                                        ).replace("%amount%",
                                             TableFunctionSQL.selectAllFromTableAsStringSQLite(player.name).toString()
-                                                .replace("[", "").replace("]", "")
-                                        )
+                                                .replace("[", "").replace("]", ""))
                                     )
                                 )
                             )
@@ -60,13 +63,15 @@ class EcoCommand : CommandExecutor {
                                 Format.color(
                                     IridiumColorAPI.process(
                                         bankAmount().replace(
-                                            "%valuename",
+                                            "%valuename%",
                                             dataeconomyvalue
                                         ).replace(
-                                            "%amount",
+                                            "%amountformatted%",
+                                            Economy.formatBalance(TableFunctionMongo.selectAllFromCollectionAsString(player.name).toString()
+                                                .replace("[", "").replace("]", ""))
+                                        ).replace("%amount%",
                                             TableFunctionMongo.selectAllFromCollectionAsString(player.name).toString()
-                                                .replace("[", "").replace("]", "")
-                                        )
+                                                .replace("[", "").replace("]", ""))
                                     )
                                 )
                             )
@@ -77,7 +82,7 @@ class EcoCommand : CommandExecutor {
                             val SQL = "SELECT * FROM " + player.name
                             val rs = stmt.executeQuery(SQL)
                             rs.next()
-                            val value = rs.getInt(dataeconomyvalue)
+                            val value = rs.getLong(dataeconomyvalue)
                             rs.close()
                             stmt.close()
                             value
@@ -88,9 +93,10 @@ class EcoCommand : CommandExecutor {
                                 Format.color(
                                     IridiumColorAPI.process(
                                         bankAmount().replace(
-                                            "%valuename",
+                                            "%valuename%",
                                             dataeconomyvalue
-                                        ).replace("%amount", value.toString())
+                                        ).replace("%amountformatted%", Economy.formatBalance(value.toString()))
+                                            .replace("%amount%", value.toString())
                                     )
                                 )
                             )
@@ -104,13 +110,14 @@ class EcoCommand : CommandExecutor {
                                 Format.color(
                                     IridiumColorAPI.process(
                                         bankAmount().replace(
-                                            "%valuename",
+                                            "%valuename%",
                                             dataeconomyvalue
                                         ).replace(
-                                            "%amount",
-                                            TableFunctionRedis.selectAllFromCollectionAsStringRedis(player.name).toString()
-                                                .replace("[", "").replace("]", "")
-                                        )
+                                            "%amountformatted%",
+                                            Economy.formatBalance(TableFunctionRedis.selectAllFromCollectionAsStringRedis(player.name).toString()
+                                                .replace("[", "").replace("]", ""))
+                                        ).replace("%amount%",
+                                            TableFunctionRedis.selectAllFromCollectionAsStringRedis(player.name).toString())
                                     )
                                 )
                             )
@@ -123,7 +130,7 @@ class EcoCommand : CommandExecutor {
                         Format.color(
                             IridiumColorAPI.process(
                                 accessDenied().replace(
-                                    "%perm",
+                                    "%perm%",
                                     "hexaecon.permissions.balance"
                                 )
                             )

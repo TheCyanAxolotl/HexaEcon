@@ -15,20 +15,24 @@ object TableFunctionRedis {
     @JvmStatic
     fun createTable(name: String) {
         val tableName = name
-        val defaultValue = "0"
-        if (!Jedis(redishost, redisport).exists(tableName)) {
-            jedis.setValue(tableName, defaultValue)
+        val defaultValue = 0L
+        val jedis = Jedis(redishost, redisport)
+        if (!jedis.exists(tableName)) {
+            jedis.set(tableName, defaultValue.toString())
         }
     }
+
 
     @JvmStatic
-    fun createTableAmount(name: String, value: Int) {
+    fun createTableAmount(name: String, value: Long) {
         val tableName = name
 
-        if (!Jedis(redishost, redisport).exists(tableName)) {
-            jedis.setValue(tableName, value.toString())
+        val jedis = Jedis(redishost, redisport)
+        if (!jedis.exists(tableName)) {
+            jedis.set(tableName, value.toString())
         }
     }
+
 
     @JvmStatic
     fun dropTable(name: String) {

@@ -58,7 +58,7 @@ class WalletCommand : CommandExecutor, TabCompleter {
                         Format.color(
                             IridiumColorAPI.process(
                                 usageFormat().replace(
-                                    "%u",
+                                    "%u%",
                                     usageConvertDeposit()!!
                                 )
                             )
@@ -88,7 +88,7 @@ class WalletCommand : CommandExecutor, TabCompleter {
                                 Format.color(
                                     IridiumColorAPI.process(
                                         accessDenied().replace(
-                                            "%perm",
+                                            "%perm%",
                                             "hexaecon.permissions.reload"
                                         )
                                     )
@@ -106,7 +106,7 @@ class WalletCommand : CommandExecutor, TabCompleter {
                                         Format.color(
                                             IridiumColorAPI.process(
                                                 usageFormat().replace(
-                                                    "%u",
+                                                    "%u%",
                                                     usageConvertDeposit()!!
                                                 )
                                             )
@@ -131,14 +131,14 @@ class WalletCommand : CommandExecutor, TabCompleter {
                                             Format.hasSpecial(args[1]) ||
                                             Format.hasLetter(args[1]))
                                 ) {
-                                    val remove = args[1].toInt()
-                                    if (remove == 0) {
+                                    val remove = args[1].toLong()
+                                    if (remove == 0L) {
                                         sender.sendMessage(
                                             Format.hex(
                                                 IridiumColorAPI.process(
                                                     Format.color(
                                                         invalidAmount().replace(
-                                                            "%valuename",
+                                                            "%valuename%",
                                                             dataeconomyvalue
                                                         )
                                                     )
@@ -164,16 +164,16 @@ class WalletCommand : CommandExecutor, TabCompleter {
                                         val data_names_config_redis: FileConfiguration =
                                             YamlConfiguration.loadConfiguration(data_names_redis)
                                         val somasqlite =
-                                            data_names_config_sqlite.getInt("data.${dataeconomyvalue}") - remove
+                                            data_names_config_sqlite.getLong("data.${dataeconomyvalue}") - remove
                                         val somamysql =
-                                            data_names_config_mysql.getInt("data.${dataeconomyvalue}") - remove
+                                            data_names_config_mysql.getLong("data.${dataeconomyvalue}") - remove
                                         val somamongodb =
-                                            data_names_config_mongodb.getInt("data.${dataeconomyvalue}") - remove
+                                            data_names_config_mongodb.getLong("data.${dataeconomyvalue}") - remove
                                         val somaredis =
-                                            data_names_config_redis.getInt("data.${dataeconomyvalue}") - remove
+                                            data_names_config_redis.getLong("data.${dataeconomyvalue}") - remove
 
                                         if (databasetype == "h2") {
-                                            if (data_names_config_sqlite.getInt("data.${dataeconomyvalue}") >= remove) {
+                                            if (data_names_config_sqlite.getLong("data.${dataeconomyvalue}") >= remove) {
                                                 try {
                                                     when (databasetype) {
                                                         "h2" -> {
@@ -193,13 +193,17 @@ class WalletCommand : CommandExecutor, TabCompleter {
                                                 try {
                                                     when (databasetype) {
                                                         "h2" -> {
-                                                            TableFunctionSQL.createTableAmountSQLite(player as Player, somasqlite)
+                                                            TableFunctionSQL.createTableAmountSQLite(player as Player,
+                                                                somasqlite
+                                                            )
                                                         }
                                                         "MongoDB" -> {
                                                             TableFunctionMongo.createCollectionAmount(sender.name, somamongodb)
                                                         }
                                                         "MySQL" -> {
-                                                            TableFunctionSQL.createTableAmount(player as Player, somamysql)
+                                                            TableFunctionSQL.createTableAmount(player as Player,
+                                                                somamysql
+                                                            )
                                                         }
                                                         "Redis" -> {
                                                             TableFunctionRedis.createTableAmount(sender.name, somaredis)
@@ -246,10 +250,11 @@ class WalletCommand : CommandExecutor, TabCompleter {
                                                         Format.color(
                                                             IridiumColorAPI.process(
                                                                 walletWithdrawAmount().replace(
-                                                                    "%amount",
-                                                                    remove.toString()
+                                                                    "%amountformatted%",
+                                                                    Economy.formatBalance(remove.toString())
                                                                 )
-                                                                    .replace("%valuename", dataeconomyvalue)
+                                                                    .replace("%valuename%", dataeconomyvalue)
+                                                                    .replace("%amount%", remove.toString())
                                                             )
                                                         )
                                                     )
@@ -259,9 +264,10 @@ class WalletCommand : CommandExecutor, TabCompleter {
                                                         Format.color(
                                                             IridiumColorAPI.process(
                                                                 walletWithdrawConverted().replace(
-                                                                    "%amount",
+                                                                    "%amount%",
                                                                     remove.toString()
-                                                                ).replace("%valuename", dataeconomyvalue)
+                                                                ).replace("%valuename%", dataeconomyvalue)
+                                                                    .replace("%amountformatted%", Economy.formatBalance(remove.toString()))
                                                             )
                                                         )
                                                     )
@@ -273,10 +279,12 @@ class WalletCommand : CommandExecutor, TabCompleter {
                                                                 Format.color(
                                                                     IridiumColorAPI.process(
                                                                         walletWithdrawRemainingAmount().replace(
-                                                                            "%amount",
-                                                                            data_names_config_sqlite.getInt("data.${dataeconomyvalue}")
+                                                                            "%amount%",
+                                                                            data_names_config_sqlite.getLong("data.${dataeconomyvalue}")
                                                                                 .toString()
-                                                                        ).replace("%valuename", dataeconomyvalue)
+                                                                        ).replace("%valuename%", dataeconomyvalue)
+                                                                            .replace("%amountformatted%", Economy.formatBalance(data_names_config_sqlite.getLong("data.${dataeconomyvalue}")
+                                                                                .toString()))
                                                                     )
                                                                 )
                                                             )
@@ -288,10 +296,12 @@ class WalletCommand : CommandExecutor, TabCompleter {
                                                                 Format.color(
                                                                     IridiumColorAPI.process(
                                                                         walletWithdrawRemainingAmount().replace(
-                                                                            "%amount",
-                                                                            data_names_config_mongodb.getInt("data.${dataeconomyvalue}")
+                                                                            "%amount%",
+                                                                            data_names_config_mongodb.getLong("data.${dataeconomyvalue}")
                                                                                 .toString()
-                                                                        ).replace("%valuename", dataeconomyvalue)
+                                                                        ).replace("%valuename%", dataeconomyvalue)
+                                                                            .replace("%amountformatted%", Economy.formatBalance(data_names_config_mongodb.getLong("data.${dataeconomyvalue}")
+                                                                                .toString()))
                                                                     )
                                                                 )
                                                             )
@@ -303,10 +313,12 @@ class WalletCommand : CommandExecutor, TabCompleter {
                                                                 Format.color(
                                                                     IridiumColorAPI.process(
                                                                         walletWithdrawRemainingAmount().replace(
-                                                                            "%amount",
-                                                                            data_names_config_mysql.getInt("data.${dataeconomyvalue}")
+                                                                            "%amount%",
+                                                                            data_names_config_mysql.getLong("data.${dataeconomyvalue}")
                                                                                 .toString()
-                                                                        ).replace("%valuename", dataeconomyvalue)
+                                                                        ).replace("%valuename%", dataeconomyvalue)
+                                                                            .replace("%amountformatted%", Economy.formatBalance(data_names_config_mysql.getLong("data.${dataeconomyvalue}")
+                                                                                .toString()))
                                                                     )
                                                                 )
                                                             )
@@ -318,17 +330,19 @@ class WalletCommand : CommandExecutor, TabCompleter {
                                                                 Format.color(
                                                                     IridiumColorAPI.process(
                                                                         walletWithdrawRemainingAmount().replace(
-                                                                            "%amount",
-                                                                            data_names_config_redis.getInt("data.${dataeconomyvalue}")
+                                                                            "%amount%",
+                                                                            data_names_config_redis.getLong("data.${dataeconomyvalue}")
                                                                                 .toString()
-                                                                        ).replace("%valuename", dataeconomyvalue)
+                                                                        ).replace("%valuename%", dataeconomyvalue)
+                                                                            .replace("%amountformatted%", Economy.formatBalance(data_names_config_redis.getLong("data.${dataeconomyvalue}")
+                                                                                .toString()))
                                                                     )
                                                                 )
                                                             )
                                                         )
                                                     }
                                                 }
-                                                (player as Player).inventory.addItem(Economy.addEconomy(player, remove))
+                                                (player as Player).inventory.addItem(Economy.addEconomy(player, remove.toInt()))
                                             } else {
                                                 when (databasetype) {
                                                     "h2" -> {
@@ -337,10 +351,12 @@ class WalletCommand : CommandExecutor, TabCompleter {
                                                                 Format.color(
                                                                     IridiumColorAPI.process(
                                                                         walletWithdrawNoEnoughAmount().replace(
-                                                                            "%amount",
-                                                                            data_names_config_sqlite.getInt("data.${dataeconomyvalue}")
+                                                                            "%amount%",
+                                                                            data_names_config_sqlite.getLong("data.${dataeconomyvalue}")
                                                                                 .toString()
-                                                                        ).replace("%valuename", dataeconomyvalue)
+                                                                        ).replace("%valuename%", dataeconomyvalue)
+                                                                            .replace("%amountformatted%", Economy.formatBalance(data_names_config_sqlite.getLong("data.${dataeconomyvalue}")
+                                                                                .toString()))
                                                                     )
                                                                 )
                                                             )
@@ -352,10 +368,12 @@ class WalletCommand : CommandExecutor, TabCompleter {
                                                                 Format.color(
                                                                     IridiumColorAPI.process(
                                                                         walletWithdrawNoEnoughAmount().replace(
-                                                                            "%amount",
-                                                                            data_names_config_mongodb.getInt("data.${dataeconomyvalue}")
+                                                                            "%amount%",
+                                                                            data_names_config_mongodb.getLong("data.${dataeconomyvalue}")
                                                                                 .toString()
-                                                                        ).replace("%valuename", dataeconomyvalue)
+                                                                        ).replace("%valuename%", dataeconomyvalue)
+                                                                            .replace("%amountformatted%", Economy.formatBalance(data_names_config_mongodb.getLong("data.${dataeconomyvalue}")
+                                                                                .toString()))
                                                                     )
                                                                 )
                                                             )
@@ -367,10 +385,12 @@ class WalletCommand : CommandExecutor, TabCompleter {
                                                                 Format.color(
                                                                     IridiumColorAPI.process(
                                                                         walletWithdrawNoEnoughAmount().replace(
-                                                                            "%amount",
-                                                                            data_names_config_mysql.getInt("data.${dataeconomyvalue}")
+                                                                            "%amount%",
+                                                                            data_names_config_mysql.getLong("data.${dataeconomyvalue}")
                                                                                 .toString()
-                                                                        ).replace("%valuename", dataeconomyvalue)
+                                                                        ).replace("%valuename%", dataeconomyvalue)
+                                                                            .replace("%amountformatted%", Economy.formatBalance(data_names_config_mysql.getLong("data.${dataeconomyvalue}")
+                                                                                .toString()))
                                                                     )
                                                                 )
                                                             )
@@ -382,10 +402,12 @@ class WalletCommand : CommandExecutor, TabCompleter {
                                                                 Format.color(
                                                                     IridiumColorAPI.process(
                                                                         walletWithdrawNoEnoughAmount().replace(
-                                                                            "%amount",
-                                                                            data_names_config_redis.getInt("data.${dataeconomyvalue}")
+                                                                            "%amount%",
+                                                                            data_names_config_redis.getLong("data.${dataeconomyvalue}")
                                                                                 .toString()
-                                                                        ).replace("%valuename", dataeconomyvalue)
+                                                                        ).replace("%valuename%", dataeconomyvalue)
+                                                                            .replace("%amountformatted%", Economy.formatBalance(data_names_config_redis.getLong("data.${dataeconomyvalue}")
+                                                                                .toString()))
                                                                     )
                                                                 )
                                                             )
@@ -394,7 +416,7 @@ class WalletCommand : CommandExecutor, TabCompleter {
                                                 }
                                             }
                                         } else if (databasetype == "MongoDB") {
-                                            if (data_names_config_mongodb.getInt("data.${dataeconomyvalue}") >= remove) {
+                                            if (data_names_config_mongodb.getLong("data.${dataeconomyvalue}") >= remove) {
                                                 try {
                                                     when (databasetype) {
                                                         "h2" -> {
@@ -470,10 +492,11 @@ class WalletCommand : CommandExecutor, TabCompleter {
                                                         Format.color(
                                                             IridiumColorAPI.process(
                                                                 walletWithdrawAmount().replace(
-                                                                    "%amount",
+                                                                    "%amount%",
                                                                     remove.toString()
                                                                 )
-                                                                    .replace("%valuename", dataeconomyvalue)
+                                                                    .replace("%valuename%", dataeconomyvalue)
+                                                                    .replace("%amountformatted%", Economy.formatBalance(remove.toString()))
                                                             )
                                                         )
                                                     )
@@ -483,9 +506,10 @@ class WalletCommand : CommandExecutor, TabCompleter {
                                                         Format.color(
                                                             IridiumColorAPI.process(
                                                                 walletWithdrawConverted().replace(
-                                                                    "%amount",
+                                                                    "%amount%",
                                                                     remove.toString()
-                                                                ).replace("%valuename", dataeconomyvalue)
+                                                                ).replace("%valuename%", dataeconomyvalue)
+                                                                    .replace("%amountformatted%", Economy.formatBalance(remove.toString()))
                                                             )
                                                         )
                                                     )
@@ -497,10 +521,12 @@ class WalletCommand : CommandExecutor, TabCompleter {
                                                                 Format.color(
                                                                     IridiumColorAPI.process(
                                                                         walletWithdrawRemainingAmount().replace(
-                                                                            "%amount",
-                                                                            data_names_config_sqlite.getInt("data.${dataeconomyvalue}")
+                                                                            "%amount%",
+                                                                            data_names_config_sqlite.getLong("data.${dataeconomyvalue}")
                                                                                 .toString()
-                                                                        ).replace("%valuename", dataeconomyvalue)
+                                                                        ).replace("%valuename%", dataeconomyvalue)
+                                                                            .replace("%amountformatted%", Economy.formatBalance(data_names_config_sqlite.getLong("data.${dataeconomyvalue}")
+                                                                                .toString()))
                                                                     )
                                                                 )
                                                             )
@@ -512,10 +538,12 @@ class WalletCommand : CommandExecutor, TabCompleter {
                                                                 Format.color(
                                                                     IridiumColorAPI.process(
                                                                         walletWithdrawRemainingAmount().replace(
-                                                                            "%amount",
-                                                                            data_names_config_mongodb.getInt("data.${dataeconomyvalue}")
+                                                                            "%amount%",
+                                                                            data_names_config_mongodb.getLong("data.${dataeconomyvalue}")
                                                                                 .toString()
-                                                                        ).replace("%valuename", dataeconomyvalue)
+                                                                        ).replace("%valuename%", dataeconomyvalue)
+                                                                            .replace("%amountformatted%", Economy.formatBalance(data_names_config_mongodb.getLong("data.${dataeconomyvalue}")
+                                                                                .toString()))
                                                                     )
                                                                 )
                                                             )
@@ -527,10 +555,12 @@ class WalletCommand : CommandExecutor, TabCompleter {
                                                                 Format.color(
                                                                     IridiumColorAPI.process(
                                                                         walletWithdrawRemainingAmount().replace(
-                                                                            "%amount",
-                                                                            data_names_config_mysql.getInt("data.${dataeconomyvalue}")
+                                                                            "%amount%",
+                                                                            data_names_config_mysql.getLong("data.${dataeconomyvalue}")
                                                                                 .toString()
-                                                                        ).replace("%valuename", dataeconomyvalue)
+                                                                        ).replace("%valuename%", dataeconomyvalue)
+                                                                            .replace("%amountformatted%", Economy.formatBalance(data_names_config_mysql.getLong("data.${dataeconomyvalue}")
+                                                                                .toString()))
                                                                     )
                                                                 )
                                                             )
@@ -542,10 +572,12 @@ class WalletCommand : CommandExecutor, TabCompleter {
                                                                 Format.color(
                                                                     IridiumColorAPI.process(
                                                                         walletWithdrawRemainingAmount().replace(
-                                                                            "%amount",
-                                                                            data_names_config_redis.getInt("data.${dataeconomyvalue}")
+                                                                            "%amount%",
+                                                                            data_names_config_redis.getLong("data.${dataeconomyvalue}")
                                                                                 .toString()
-                                                                        ).replace("%valuename", dataeconomyvalue)
+                                                                        ).replace("%valuename%", dataeconomyvalue)
+                                                                            .replace("%amountformatted%", Economy.formatBalance(data_names_config_redis.getLong("data.${dataeconomyvalue}")
+                                                                                .toString()))
                                                                     )
                                                                 )
                                                             )
@@ -553,7 +585,7 @@ class WalletCommand : CommandExecutor, TabCompleter {
                                                     }
                                                 }
                                                 if(sender is Player) {
-                                                    sender.inventory.addItem(Economy.addEconomy(sender, remove))
+                                                    sender.inventory.addItem(Economy.addEconomy(sender, remove.toInt()))
                                                 }
                                             } else {
                                                 when (databasetype) {
@@ -563,10 +595,12 @@ class WalletCommand : CommandExecutor, TabCompleter {
                                                                 Format.color(
                                                                     IridiumColorAPI.process(
                                                                         walletWithdrawNoEnoughAmount().replace(
-                                                                            "%amount",
-                                                                            data_names_config_sqlite.getInt("data.${dataeconomyvalue}")
+                                                                            "%amount%",
+                                                                            data_names_config_sqlite.getLong("data.${dataeconomyvalue}")
                                                                                 .toString()
-                                                                        ).replace("%valuename", dataeconomyvalue)
+                                                                        ).replace("%valuename%", dataeconomyvalue)
+                                                                            .replace("%amountformatted%", Economy.formatBalance(data_names_config_sqlite.getLong("data.${dataeconomyvalue}")
+                                                                                .toString()))
                                                                     )
                                                                 )
                                                             )
@@ -578,10 +612,12 @@ class WalletCommand : CommandExecutor, TabCompleter {
                                                                 Format.color(
                                                                     IridiumColorAPI.process(
                                                                         walletWithdrawNoEnoughAmount().replace(
-                                                                            "%amount",
-                                                                            data_names_config_mongodb.getInt("data.${dataeconomyvalue}")
+                                                                            "%amount%",
+                                                                            data_names_config_mongodb.getLong("data.${dataeconomyvalue}")
                                                                                 .toString()
-                                                                        ).replace("%valuename", dataeconomyvalue)
+                                                                        ).replace("%valuename%", dataeconomyvalue)
+                                                                            .replace("%amountformatted%", Economy.formatBalance(data_names_config_mongodb.getLong("data.${dataeconomyvalue}")
+                                                                                .toString()))
                                                                     )
                                                                 )
                                                             )
@@ -593,10 +629,12 @@ class WalletCommand : CommandExecutor, TabCompleter {
                                                                 Format.color(
                                                                     IridiumColorAPI.process(
                                                                         walletWithdrawNoEnoughAmount().replace(
-                                                                            "%amount",
-                                                                            data_names_config_mysql.getInt("data.${dataeconomyvalue}")
+                                                                            "%amount%",
+                                                                            data_names_config_mysql.getLong("data.${dataeconomyvalue}")
                                                                                 .toString()
-                                                                        ).replace("%valuename", dataeconomyvalue)
+                                                                        ).replace("%valuename%", dataeconomyvalue)
+                                                                            .replace("%amountformatted%", Economy.formatBalance(data_names_config_mysql.getLong("data.${dataeconomyvalue}")
+                                                                                .toString()))
                                                                     )
                                                                 )
                                                             )
@@ -608,10 +646,12 @@ class WalletCommand : CommandExecutor, TabCompleter {
                                                                 Format.color(
                                                                     IridiumColorAPI.process(
                                                                         walletWithdrawNoEnoughAmount().replace(
-                                                                            "%amount",
-                                                                            data_names_config_redis.getInt("data.${dataeconomyvalue}")
+                                                                            "%amount%",
+                                                                            data_names_config_redis.getLong("data.${dataeconomyvalue}")
                                                                                 .toString()
-                                                                        ).replace("%valuename", dataeconomyvalue)
+                                                                        ).replace("%valuename%", dataeconomyvalue)
+                                                                            .replace("%amountformatted%", Economy.formatBalance(data_names_config_redis.getLong("data.${dataeconomyvalue}")
+                                                                                .toString()))
                                                                     )
                                                                 )
                                                             )
@@ -620,7 +660,7 @@ class WalletCommand : CommandExecutor, TabCompleter {
                                                 }
                                             }
                                         } else if (databasetype == "MySQL") {
-                                            if (data_names_config_mysql.getInt("data.${dataeconomyvalue}") >= remove) {
+                                            if (data_names_config_mysql.getLong("data.${dataeconomyvalue}") >= remove) {
                                                 try {
                                                     when (databasetype) {
                                                         "h2" -> {
@@ -699,10 +739,11 @@ class WalletCommand : CommandExecutor, TabCompleter {
                                                         Format.color(
                                                             IridiumColorAPI.process(
                                                                 walletWithdrawAmount().replace(
-                                                                    "%amount",
+                                                                    "%amount%",
                                                                     remove.toString()
                                                                 )
-                                                                    .replace("%valuename", dataeconomyvalue)
+                                                                    .replace("%valuename%", dataeconomyvalue)
+                                                                    .replace("%amountformatted%", Economy.formatBalance(remove.toString()))
                                                             )
                                                         )
                                                     )
@@ -712,9 +753,10 @@ class WalletCommand : CommandExecutor, TabCompleter {
                                                         Format.color(
                                                             IridiumColorAPI.process(
                                                                 walletWithdrawConverted().replace(
-                                                                    "%amount",
+                                                                    "%amount%",
                                                                     remove.toString()
-                                                                ).replace("%valuename", dataeconomyvalue)
+                                                                ).replace("%valuename%", dataeconomyvalue)
+                                                                    .replace("%amountformatted%", Economy.formatBalance(remove.toString()))
                                                             )
                                                         )
                                                     )
@@ -726,10 +768,12 @@ class WalletCommand : CommandExecutor, TabCompleter {
                                                                 Format.color(
                                                                     IridiumColorAPI.process(
                                                                         walletWithdrawRemainingAmount().replace(
-                                                                            "%amount",
-                                                                            data_names_config_sqlite.getInt("data.${dataeconomyvalue}")
+                                                                            "%amount%",
+                                                                            data_names_config_sqlite.getLong("data.${dataeconomyvalue}")
                                                                                 .toString()
-                                                                        ).replace("%valuename", dataeconomyvalue)
+                                                                        ).replace("%valuename%", dataeconomyvalue)
+                                                                            .replace("%amountformatted%", Economy.formatBalance(data_names_config_sqlite.getLong("data.${dataeconomyvalue}")
+                                                                                .toString()))
                                                                     )
                                                                 )
                                                             )
@@ -741,10 +785,12 @@ class WalletCommand : CommandExecutor, TabCompleter {
                                                                 Format.color(
                                                                     IridiumColorAPI.process(
                                                                         walletWithdrawRemainingAmount().replace(
-                                                                            "%amount",
-                                                                            data_names_config_mongodb.getInt("data.${dataeconomyvalue}")
+                                                                            "%amount%",
+                                                                            data_names_config_mongodb.getLong("data.${dataeconomyvalue}")
                                                                                 .toString()
-                                                                        ).replace("%valuename", dataeconomyvalue)
+                                                                        ).replace("%valuename%", dataeconomyvalue)
+                                                                            .replace("%amountformatted%", Economy.formatBalance(data_names_config_mongodb.getLong("data.${dataeconomyvalue}")
+                                                                                .toString()))
                                                                     )
                                                                 )
                                                             )
@@ -756,10 +802,12 @@ class WalletCommand : CommandExecutor, TabCompleter {
                                                                 Format.color(
                                                                     IridiumColorAPI.process(
                                                                         walletWithdrawRemainingAmount().replace(
-                                                                            "%amount",
-                                                                            data_names_config_mysql.getInt("data.${dataeconomyvalue}")
+                                                                            "%amount%",
+                                                                            data_names_config_mysql.getLong("data.${dataeconomyvalue}")
                                                                                 .toString()
-                                                                        ).replace("%valuename", dataeconomyvalue)
+                                                                        ).replace("%valuename%", dataeconomyvalue)
+                                                                            .replace("%amountformatted%", Economy.formatBalance(data_names_config_mysql.getLong("data.${dataeconomyvalue}")
+                                                                                .toString()))
                                                                     )
                                                                 )
                                                             )
@@ -771,10 +819,12 @@ class WalletCommand : CommandExecutor, TabCompleter {
                                                                 Format.color(
                                                                     IridiumColorAPI.process(
                                                                         walletWithdrawRemainingAmount().replace(
-                                                                            "%amount",
-                                                                            data_names_config_redis.getInt("data.${dataeconomyvalue}")
+                                                                            "%amount%",
+                                                                            data_names_config_redis.getLong("data.${dataeconomyvalue}")
                                                                                 .toString()
-                                                                        ).replace("%valuename", dataeconomyvalue)
+                                                                        ).replace("%valuename%", dataeconomyvalue)
+                                                                            .replace("%amountformatted%", Economy.formatBalance(data_names_config_redis.getLong("data.${dataeconomyvalue}")
+                                                                                .toString()))
                                                                     )
                                                                 )
                                                             )
@@ -782,7 +832,7 @@ class WalletCommand : CommandExecutor, TabCompleter {
                                                     }
                                                 }
                                                 if(sender is Player) {
-                                                    sender.inventory.addItem(Economy.addEconomy(sender, remove))
+                                                    sender.inventory.addItem(Economy.addEconomy(sender, remove.toInt()))
                                                 }
                                             } else {
                                                 when (databasetype) {
@@ -792,10 +842,12 @@ class WalletCommand : CommandExecutor, TabCompleter {
                                                                 Format.color(
                                                                     IridiumColorAPI.process(
                                                                         walletWithdrawNoEnoughAmount().replace(
-                                                                            "%amount",
-                                                                            data_names_config_sqlite.getInt("data.${dataeconomyvalue}")
+                                                                            "%amount%",
+                                                                            data_names_config_sqlite.getLong("data.${dataeconomyvalue}")
                                                                                 .toString()
-                                                                        ).replace("%valuename", dataeconomyvalue)
+                                                                        ).replace("%valuename%", dataeconomyvalue)
+                                                                            .replace("%amountformatted%", Economy.formatBalance(data_names_config_sqlite.getLong("data.${dataeconomyvalue}")
+                                                                                .toString()))
                                                                     )
                                                                 )
                                                             )
@@ -807,10 +859,12 @@ class WalletCommand : CommandExecutor, TabCompleter {
                                                                 Format.color(
                                                                     IridiumColorAPI.process(
                                                                         walletWithdrawNoEnoughAmount().replace(
-                                                                            "%amount",
-                                                                            data_names_config_mongodb.getInt("data.${dataeconomyvalue}")
+                                                                            "%amount%",
+                                                                            data_names_config_mongodb.getLong("data.${dataeconomyvalue}")
                                                                                 .toString()
-                                                                        ).replace("%valuename", dataeconomyvalue)
+                                                                        ).replace("%valuename%", dataeconomyvalue)
+                                                                            .replace("%amountformatted%", Economy.formatBalance(data_names_config_mongodb.getLong("data.${dataeconomyvalue}")
+                                                                                .toString()))
                                                                     )
                                                                 )
                                                             )
@@ -822,10 +876,12 @@ class WalletCommand : CommandExecutor, TabCompleter {
                                                                 Format.color(
                                                                     IridiumColorAPI.process(
                                                                         walletWithdrawNoEnoughAmount().replace(
-                                                                            "%amount",
-                                                                            data_names_config_mysql.getInt("data.${dataeconomyvalue}")
+                                                                            "%amount%",
+                                                                            data_names_config_mysql.getLong("data.${dataeconomyvalue}")
                                                                                 .toString()
-                                                                        ).replace("%valuename", dataeconomyvalue)
+                                                                        ).replace("%valuename%", dataeconomyvalue)
+                                                                            .replace("%amountformatted%", Economy.formatBalance(data_names_config_mysql.getLong("data.${dataeconomyvalue}")
+                                                                                .toString()))
                                                                     )
                                                                 )
                                                             )
@@ -837,10 +893,12 @@ class WalletCommand : CommandExecutor, TabCompleter {
                                                                 Format.color(
                                                                     IridiumColorAPI.process(
                                                                         walletWithdrawNoEnoughAmount().replace(
-                                                                            "%amount",
-                                                                            data_names_config_redis.getInt("data.${dataeconomyvalue}")
+                                                                            "%amount%",
+                                                                            data_names_config_redis.getLong("data.${dataeconomyvalue}")
                                                                                 .toString()
-                                                                        ).replace("%valuename", dataeconomyvalue)
+                                                                        ).replace("%valuename%", dataeconomyvalue)
+                                                                            .replace("%amountformatted%", Economy.formatBalance(data_names_config_redis.getLong("data.${dataeconomyvalue}")
+                                                                                .toString()))
                                                                     )
                                                                 )
                                                             )
@@ -849,7 +907,7 @@ class WalletCommand : CommandExecutor, TabCompleter {
                                                 }
                                             }
                                         } else if (databasetype == "Redis") {
-                                            if (data_names_config_redis.getInt("data.${dataeconomyvalue}") >= remove) {
+                                            if (data_names_config_redis.getLong("data.${dataeconomyvalue}") >= remove) {
                                                 try {
                                                     when (databasetype) {
                                                         "h2" -> {
@@ -925,10 +983,11 @@ class WalletCommand : CommandExecutor, TabCompleter {
                                                         Format.color(
                                                             IridiumColorAPI.process(
                                                                 walletWithdrawAmount().replace(
-                                                                    "%amount",
+                                                                    "%amount%",
                                                                     remove.toString()
                                                                 )
-                                                                    .replace("%valuename", dataeconomyvalue)
+                                                                    .replace("%valuename%", dataeconomyvalue)
+                                                                    .replace("%amountformatted%", Economy.formatBalance(remove.toString()))
                                                             )
                                                         )
                                                     )
@@ -938,9 +997,10 @@ class WalletCommand : CommandExecutor, TabCompleter {
                                                         Format.color(
                                                             IridiumColorAPI.process(
                                                                 walletWithdrawConverted().replace(
-                                                                    "%amount",
+                                                                    "%amount%",
                                                                     remove.toString()
-                                                                ).replace("%valuename", dataeconomyvalue)
+                                                                ).replace("%valuename%", dataeconomyvalue)
+                                                                    .replace("%amountformatted%", Economy.formatBalance(remove.toString()))
                                                             )
                                                         )
                                                     )
@@ -952,10 +1012,12 @@ class WalletCommand : CommandExecutor, TabCompleter {
                                                                 Format.color(
                                                                     IridiumColorAPI.process(
                                                                         walletWithdrawRemainingAmount().replace(
-                                                                            "%amount",
-                                                                            data_names_config_sqlite.getInt("data.${dataeconomyvalue}")
+                                                                            "%amount%",
+                                                                            data_names_config_sqlite.getLong("data.${dataeconomyvalue}")
                                                                                 .toString()
-                                                                        ).replace("%valuename", dataeconomyvalue)
+                                                                        ).replace("%valuename%", dataeconomyvalue)
+                                                                            .replace("%amountformatted%", Economy.formatBalance(data_names_config_sqlite.getLong("data.${dataeconomyvalue}")
+                                                                                .toString()))
                                                                     )
                                                                 )
                                                             )
@@ -967,10 +1029,12 @@ class WalletCommand : CommandExecutor, TabCompleter {
                                                                 Format.color(
                                                                     IridiumColorAPI.process(
                                                                         walletWithdrawRemainingAmount().replace(
-                                                                            "%amount",
-                                                                            data_names_config_mongodb.getInt("data.${dataeconomyvalue}")
+                                                                            "%amount%",
+                                                                            data_names_config_mongodb.getLong("data.${dataeconomyvalue}")
                                                                                 .toString()
-                                                                        ).replace("%valuename", dataeconomyvalue)
+                                                                        ).replace("%valuename%", dataeconomyvalue)
+                                                                            .replace("%amountformatted%", Economy.formatBalance(data_names_config_mongodb.getLong("data.${dataeconomyvalue}")
+                                                                                .toString()))
                                                                     )
                                                                 )
                                                             )
@@ -982,10 +1046,12 @@ class WalletCommand : CommandExecutor, TabCompleter {
                                                                 Format.color(
                                                                     IridiumColorAPI.process(
                                                                         walletWithdrawRemainingAmount().replace(
-                                                                            "%amount",
-                                                                            data_names_config_mysql.getInt("data.${dataeconomyvalue}")
+                                                                            "%amount%",
+                                                                            data_names_config_mysql.getLong("data.${dataeconomyvalue}")
                                                                                 .toString()
-                                                                        ).replace("%valuename", dataeconomyvalue)
+                                                                        ).replace("%valuename%", dataeconomyvalue)
+                                                                            .replace("%amountformatted%", Economy.formatBalance(data_names_config_mysql.getLong("data.${dataeconomyvalue}")
+                                                                                .toString()))
                                                                     )
                                                                 )
                                                             )
@@ -997,10 +1063,12 @@ class WalletCommand : CommandExecutor, TabCompleter {
                                                                 Format.color(
                                                                     IridiumColorAPI.process(
                                                                         walletWithdrawRemainingAmount().replace(
-                                                                            "%amount",
-                                                                            data_names_config_redis.getInt("data.${dataeconomyvalue}")
+                                                                            "%amount%",
+                                                                            data_names_config_redis.getLong("data.${dataeconomyvalue}")
                                                                                 .toString()
-                                                                        ).replace("%valuename", dataeconomyvalue)
+                                                                        ).replace("%valuename%", dataeconomyvalue)
+                                                                            .replace("%amountformatted%", Economy.formatBalance(data_names_config_redis.getLong("data.${dataeconomyvalue}")
+                                                                                .toString()))
                                                                     )
                                                                 )
                                                             )
@@ -1008,7 +1076,7 @@ class WalletCommand : CommandExecutor, TabCompleter {
                                                     }
                                                 }
                                                 if(sender is Player) {
-                                                    sender.inventory.addItem(Economy.addEconomy(sender, remove))
+                                                    sender.inventory.addItem(Economy.addEconomy(sender, remove.toInt()))
                                                 }
                                             } else {
                                                 when (databasetype) {
@@ -1018,10 +1086,12 @@ class WalletCommand : CommandExecutor, TabCompleter {
                                                                 Format.color(
                                                                     IridiumColorAPI.process(
                                                                         walletWithdrawNoEnoughAmount().replace(
-                                                                            "%amount",
-                                                                            data_names_config_sqlite.getInt("data.${dataeconomyvalue}")
+                                                                            "%amount%",
+                                                                            data_names_config_sqlite.getLong("data.${dataeconomyvalue}")
                                                                                 .toString()
-                                                                        ).replace("%valuename", dataeconomyvalue)
+                                                                        ).replace("%valuename%", dataeconomyvalue)
+                                                                            .replace("%amountformatted%", Economy.formatBalance(data_names_config_sqlite.getLong("data.${dataeconomyvalue}")
+                                                                                .toString()))
                                                                     )
                                                                 )
                                                             )
@@ -1033,10 +1103,12 @@ class WalletCommand : CommandExecutor, TabCompleter {
                                                                 Format.color(
                                                                     IridiumColorAPI.process(
                                                                         walletWithdrawNoEnoughAmount().replace(
-                                                                            "%amount",
-                                                                            data_names_config_mongodb.getInt("data.${dataeconomyvalue}")
+                                                                            "%amount%",
+                                                                            data_names_config_mongodb.getLong("data.${dataeconomyvalue}")
                                                                                 .toString()
-                                                                        ).replace("%valuename", dataeconomyvalue)
+                                                                        ).replace("%valuename%", dataeconomyvalue)
+                                                                            .replace("%amountformatted%", Economy.formatBalance(data_names_config_mongodb.getLong("data.${dataeconomyvalue}")
+                                                                                .toString()))
                                                                     )
                                                                 )
                                                             )
@@ -1048,10 +1120,12 @@ class WalletCommand : CommandExecutor, TabCompleter {
                                                                 Format.color(
                                                                     IridiumColorAPI.process(
                                                                         walletWithdrawNoEnoughAmount().replace(
-                                                                            "%amount",
-                                                                            data_names_config_mysql.getInt("data.${dataeconomyvalue}")
+                                                                            "%amount%",
+                                                                            data_names_config_mysql.getLong("data.${dataeconomyvalue}")
                                                                                 .toString()
-                                                                        ).replace("%valuename", dataeconomyvalue)
+                                                                        ).replace("%valuename%", dataeconomyvalue)
+                                                                            .replace("%amountformatted%", Economy.formatBalance(data_names_config_mysql.getLong("data.${dataeconomyvalue}")
+                                                                                .toString()))
                                                                     )
                                                                 )
                                                             )
@@ -1063,10 +1137,12 @@ class WalletCommand : CommandExecutor, TabCompleter {
                                                                 Format.color(
                                                                     IridiumColorAPI.process(
                                                                         walletWithdrawNoEnoughAmount().replace(
-                                                                            "%amount",
-                                                                            data_names_config_redis.getInt("data.${dataeconomyvalue}")
+                                                                            "%amount%",
+                                                                            data_names_config_redis.getLong("data.${dataeconomyvalue}")
                                                                                 .toString()
-                                                                        ).replace("%valuename", dataeconomyvalue)
+                                                                        ).replace("%valuename%", dataeconomyvalue)
+                                                                            .replace("%amountformatted%", Economy.formatBalance(data_names_config_redis.getLong("data.${dataeconomyvalue}")
+                                                                                .toString()))
                                                                     )
                                                                 )
                                                             )
@@ -1082,7 +1158,7 @@ class WalletCommand : CommandExecutor, TabCompleter {
                                             Format.color(
                                                 IridiumColorAPI.process(
                                                     invalidAmount().replace(
-                                                        "%valuename",
+                                                        "%valuename%",
                                                         dataeconomyvalue
                                                     )
                                                 )
@@ -1097,7 +1173,7 @@ class WalletCommand : CommandExecutor, TabCompleter {
                                     Format.color(
                                         IridiumColorAPI.process(
                                             invalidAmount().replace(
-                                                "%valuename",
+                                                "%valuename%",
                                                 dataeconomyvalue
                                             )
                                         )
@@ -1111,7 +1187,7 @@ class WalletCommand : CommandExecutor, TabCompleter {
                                 Format.color(
                                     IridiumColorAPI.process(
                                         accessDenied().replace(
-                                            "%perm",
+                                            "%perm%",
                                             "hexaecon.permissions.withdraw"
                                         )
                                     )
@@ -1129,7 +1205,7 @@ class WalletCommand : CommandExecutor, TabCompleter {
                                         Format.color(
                                             IridiumColorAPI.process(
                                                 usageFormat().replace(
-                                                    "%u",
+                                                    "%u%",
                                                     usageConvertDeposit()!!
                                                 )
                                             )
@@ -1154,14 +1230,14 @@ class WalletCommand : CommandExecutor, TabCompleter {
                                             Format.hasSpecial(args[1]) ||
                                             Format.hasLetter(args[1]))
                                 ) {
-                                    val remove = args[1].toInt()
-                                    if (remove == 0) {
+                                    val remove = args[1].toLong()
+                                    if (remove == 0L) {
                                         sender.sendMessage(
                                             Format.hex(
                                                 IridiumColorAPI.process(
                                                     Format.color(
                                                         invalidAmount().replace(
-                                                            "%valuename",
+                                                            "%valuename%",
                                                             dataeconomyvalue
                                                         )
                                                     )
@@ -1169,7 +1245,7 @@ class WalletCommand : CommandExecutor, TabCompleter {
                                             )
                                         )
                                     }
-                                    if (remove >= 1) {
+                                    if (remove >= 1 && args.size >= 3) {
                                         val targetname = args[2]
                                         val target = Bukkit.getPlayer(targetname)
                                         if (targetname == null || targetname.isEmpty() || targetname.isBlank()) {
@@ -1178,7 +1254,7 @@ class WalletCommand : CommandExecutor, TabCompleter {
                                                     Format.hex(
                                                         Format.color(
                                                             IridiumColorAPI.process(
-                                                                playerNotFound().replace("%p", args[2])
+                                                                playerNotFound().replace("%p%", args[2])
                                                             )
                                                         )
                                                     )
@@ -1213,16 +1289,16 @@ class WalletCommand : CommandExecutor, TabCompleter {
                                         val data_names_config_redis: FileConfiguration =
                                             YamlConfiguration.loadConfiguration(data_names_redis)
                                         val somasqlite =
-                                            data_names_config_sqlite.getInt("data.${dataeconomyvalue}") - remove
+                                            data_names_config_sqlite.getLong("data.${dataeconomyvalue}") - remove
                                         val somamysql =
-                                            data_names_config_mysql.getInt("data.${dataeconomyvalue}") - remove
+                                            data_names_config_mysql.getLong("data.${dataeconomyvalue}") - remove
                                         val somamongodb =
-                                            data_names_config_mongodb.getInt("data.${dataeconomyvalue}") - remove
+                                            data_names_config_mongodb.getLong("data.${dataeconomyvalue}") - remove
                                         val somaredis =
-                                            data_names_config_redis.getInt("data.${dataeconomyvalue}") - remove
+                                            data_names_config_redis.getLong("data.${dataeconomyvalue}") - remove
 
                                         if (databasetype == "h2") {
-                                            if (data_names_config_sqlite.getInt("data.${dataeconomyvalue}") >= remove) {
+                                            if (data_names_config_sqlite.getLong("data.${dataeconomyvalue}") >= remove) {
                                                 try {
                                                     when (databasetype) {
                                                         "h2" -> {
@@ -1294,11 +1370,12 @@ class WalletCommand : CommandExecutor, TabCompleter {
                                                         Format.color(
                                                             IridiumColorAPI.process(
                                                                 removedEconFromPlayer().replace(
-                                                                    "%amount",
+                                                                    "%amount%",
                                                                     remove.toString()
                                                                 )
-                                                                    .replace("%valuename", dataeconomyvalue)
-                                                                    .replace("%p", target.name)
+                                                                    .replace("%valuename%", dataeconomyvalue)
+                                                                    .replace("%p%", target.name)
+                                                                    .replace("%amountformatted%", Economy.formatBalance(remove.toString()))
                                                             )
                                                         )
                                                     )
@@ -1310,14 +1387,15 @@ class WalletCommand : CommandExecutor, TabCompleter {
                                                         Format.color(
                                                             IridiumColorAPI.process(
                                                                 cannotRemoveEconFromPlayer().replace(
-                                                                    "%amount",
+                                                                    "%amount%",
                                                                     remove.toString()
                                                                 )
-                                                                    .replace("%valuename", dataeconomyvalue)
-                                                                    .replace("%p", target.name)
+                                                                    .replace("%amountformatted%", Economy.formatBalance(remove.toString()))
+                                                                    .replace("%valuename%", dataeconomyvalue)
+                                                                    .replace("%p%", target.name)
                                                                     .replace(
-                                                                        "%targetbalance",
-                                                                        data_names_config_sqlite.getInt("data.${dataeconomyvalue}")
+                                                                        "%targetbalance%",
+                                                                        data_names_config_sqlite.getLong("data.${dataeconomyvalue}")
                                                                             .toString()
                                                                     )
                                                             )
@@ -1326,7 +1404,7 @@ class WalletCommand : CommandExecutor, TabCompleter {
                                                 )
                                             }
                                         } else if (databasetype == "MongoDB") {
-                                            if (data_names_config_mongodb.getInt("data.${dataeconomyvalue}") >= remove) {
+                                            if (data_names_config_mongodb.getLong("data.${dataeconomyvalue}") >= remove) {
                                                 try {
                                                     when (databasetype) {
                                                         "h2" -> {
@@ -1398,11 +1476,12 @@ class WalletCommand : CommandExecutor, TabCompleter {
                                                         Format.color(
                                                             IridiumColorAPI.process(
                                                                 removedEconFromPlayer().replace(
-                                                                    "%amount",
+                                                                    "%amount%",
                                                                     remove.toString()
                                                                 )
-                                                                    .replace("%valuename", dataeconomyvalue)
-                                                                    .replace("%p", target.name)
+                                                                    .replace("%amountformatted%", Economy.formatBalance(remove.toString()))
+                                                                    .replace("%valuename%", dataeconomyvalue)
+                                                                    .replace("%p%", target.name)
                                                             )
                                                         )
                                                     )
@@ -1414,14 +1493,15 @@ class WalletCommand : CommandExecutor, TabCompleter {
                                                         Format.color(
                                                             IridiumColorAPI.process(
                                                                 cannotRemoveEconFromPlayer().replace(
-                                                                    "%amount",
+                                                                    "%amount%",
                                                                     remove.toString()
                                                                 )
-                                                                    .replace("%valuename", dataeconomyvalue)
-                                                                    .replace("%p", target.name)
+                                                                    .replace("%amountformatted%", Economy.formatBalance(remove.toString()))
+                                                                    .replace("%valuename%", dataeconomyvalue)
+                                                                    .replace("%p%", target.name)
                                                                     .replace(
-                                                                        "%targetbalance",
-                                                                        data_names_config_mongodb.getInt("data.${dataeconomyvalue}")
+                                                                        "%targetbalance%",
+                                                                        data_names_config_mongodb.getLong("data.${dataeconomyvalue}")
                                                                             .toString()
                                                                     )
                                                             )
@@ -1430,7 +1510,7 @@ class WalletCommand : CommandExecutor, TabCompleter {
                                                 )
                                             }
                                         } else if (databasetype == "MySQL") {
-                                            if (data_names_config_mysql.getInt("data.${dataeconomyvalue}") >= remove) {
+                                            if (data_names_config_mysql.getLong("data.${dataeconomyvalue}") >= remove) {
                                                 try {
                                                     when (databasetype) {
                                                         "h2" -> {
@@ -1502,11 +1582,12 @@ class WalletCommand : CommandExecutor, TabCompleter {
                                                         Format.color(
                                                             IridiumColorAPI.process(
                                                                 removedEconFromPlayer().replace(
-                                                                    "%amount",
+                                                                    "%amount%",
                                                                     remove.toString()
                                                                 )
-                                                                    .replace("%valuename", dataeconomyvalue)
-                                                                    .replace("%p", target.name)
+                                                                    .replace("%amountformatted%", Economy.formatBalance(remove.toString()))
+                                                                    .replace("%valuename%", dataeconomyvalue)
+                                                                    .replace("%p%", target.name)
                                                             )
                                                         )
                                                     )
@@ -1518,14 +1599,15 @@ class WalletCommand : CommandExecutor, TabCompleter {
                                                         Format.color(
                                                             IridiumColorAPI.process(
                                                                 cannotRemoveEconFromPlayer().replace(
-                                                                    "%amount",
+                                                                    "%amount%",
                                                                     remove.toString()
                                                                 )
-                                                                    .replace("%valuename", dataeconomyvalue)
-                                                                    .replace("%p", target.name)
+                                                                    .replace("%amountformatted%", Economy.formatBalance(remove.toString()))
+                                                                    .replace("%valuename%", dataeconomyvalue)
+                                                                    .replace("%p%", target.name)
                                                                     .replace(
-                                                                        "%targetbalance",
-                                                                        data_names_config_mysql.getInt("data.${dataeconomyvalue}")
+                                                                        "%targetbalance%",
+                                                                        data_names_config_mysql.getLong("data.${dataeconomyvalue}")
                                                                             .toString()
                                                                     )
                                                             )
@@ -1534,7 +1616,7 @@ class WalletCommand : CommandExecutor, TabCompleter {
                                                 )
                                             }
                                         } else if (databasetype == "Redis") {
-                                            if (data_names_config_redis.getInt("data.${dataeconomyvalue}") >= remove) {
+                                            if (data_names_config_redis.getLong("data.${dataeconomyvalue}") >= remove) {
                                                 try {
                                                     when (databasetype) {
                                                         "h2" -> {
@@ -1606,11 +1688,12 @@ class WalletCommand : CommandExecutor, TabCompleter {
                                                         Format.color(
                                                             IridiumColorAPI.process(
                                                                 removedEconFromPlayer().replace(
-                                                                    "%amount",
+                                                                    "%amount%",
                                                                     remove.toString()
                                                                 )
-                                                                    .replace("%valuename", dataeconomyvalue)
-                                                                    .replace("%p", target.name)
+                                                                    .replace("%amountformatted%", Economy.formatBalance(remove.toString()))
+                                                                    .replace("%valuename%", dataeconomyvalue)
+                                                                    .replace("%p%", target.name)
                                                             )
                                                         )
                                                     )
@@ -1622,14 +1705,15 @@ class WalletCommand : CommandExecutor, TabCompleter {
                                                         Format.color(
                                                             IridiumColorAPI.process(
                                                                 cannotRemoveEconFromPlayer().replace(
-                                                                    "%amount",
+                                                                    "%amount%",
                                                                     remove.toString()
                                                                 )
-                                                                    .replace("%valuename", dataeconomyvalue)
-                                                                    .replace("%p", target.name)
+                                                                    .replace("%amountformatted%", Economy.formatBalance(remove.toString()))
+                                                                    .replace("%valuename%", dataeconomyvalue)
+                                                                    .replace("%p%", target.name)
                                                                     .replace(
-                                                                        "%targetbalance",
-                                                                        data_names_config_mongodb.getInt("data.${dataeconomyvalue}")
+                                                                        "%targetbalance%",
+                                                                        data_names_config_mongodb.getLong("data.${dataeconomyvalue}")
                                                                             .toString()
                                                                     )
                                                             )
@@ -1645,7 +1729,7 @@ class WalletCommand : CommandExecutor, TabCompleter {
                                             Format.color(
                                                 IridiumColorAPI.process(
                                                     invalidAmount().replace(
-                                                        "%valuename",
+                                                        "%valuename%",
                                                         dataeconomyvalue
                                                     )
                                                 )
@@ -1660,7 +1744,7 @@ class WalletCommand : CommandExecutor, TabCompleter {
                                     Format.color(
                                         IridiumColorAPI.process(
                                             invalidAmount().replace(
-                                                "%valuename",
+                                                "%valuename%",
                                                 dataeconomyvalue
                                             )
                                         )
@@ -1674,7 +1758,7 @@ class WalletCommand : CommandExecutor, TabCompleter {
                                 Format.color(
                                     IridiumColorAPI.process(
                                         accessDenied().replace(
-                                            "%perm",
+                                            "%perm%",
                                             "hexaecon.permissions.remove"
                                         )
                                     )
@@ -1691,7 +1775,7 @@ class WalletCommand : CommandExecutor, TabCompleter {
                                     Format.hex(
                                         Format.color(
                                             usageFormat().replace(
-                                                "%u",
+                                                "%u%",
                                                 usageConvertDeposit()!!
                                             )
                                         )
@@ -1714,7 +1798,7 @@ class WalletCommand : CommandExecutor, TabCompleter {
                                             Format.color(
                                                 IridiumColorAPI.process(
                                                     usageFormat().replace(
-                                                        "%u",
+                                                        "%u%",
                                                         usageConvertDeposit()!!
                                                     )
                                                 )
@@ -1732,7 +1816,7 @@ class WalletCommand : CommandExecutor, TabCompleter {
                                         }
                                     }
                                 } else {
-                                    val amount = args[1].toInt()
+                                    val amount = args[1].toLong()
                                     val targetname = args[2]
                                     val target = Bukkit.getPlayer(targetname)
                                     try {
@@ -1741,7 +1825,7 @@ class WalletCommand : CommandExecutor, TabCompleter {
                                                 Format.hex(
                                                     Format.color(
                                                         IridiumColorAPI.process(
-                                                            invalidAmount().replace("%valuename", dataeconomyvalue)
+                                                            invalidAmount().replace("%valuename%", dataeconomyvalue)
                                                         )
                                                     )
                                                 )
@@ -1753,7 +1837,7 @@ class WalletCommand : CommandExecutor, TabCompleter {
                                                 Format.hex(
                                                     Format.color(
                                                         IridiumColorAPI.process(
-                                                            invalidAmount().replace("%valuename", dataeconomyvalue)
+                                                            invalidAmount().replace("%valuename%", dataeconomyvalue)
                                                         )
                                                     )
                                                 )
@@ -1767,7 +1851,7 @@ class WalletCommand : CommandExecutor, TabCompleter {
                                                     Format.hex(
                                                         Format.color(
                                                             IridiumColorAPI.process(
-                                                                playerNotFound().replace("%p", args[2])
+                                                                playerNotFound().replace("%p%", args[2])
                                                             )
                                                         )
                                                     )
@@ -1818,13 +1902,13 @@ class WalletCommand : CommandExecutor, TabCompleter {
                                                 .name + "_Redis.txt"
                                         )
                                         val somasqlite =
-                                            data_names_config2_sqlite.getInt("data.${dataeconomyvalue}") + amount
+                                            data_names_config2_sqlite.getLong("data.${dataeconomyvalue}") + amount
                                         val somamysql =
-                                            data_names_config2_mysql.getInt("data.${dataeconomyvalue}") + amount
+                                            data_names_config2_mysql.getLong("data.${dataeconomyvalue}") + amount
                                         val somamongodb =
-                                            data_names_config2_mongodb.getInt("data.${dataeconomyvalue}") + amount
+                                            data_names_config2_mongodb.getLong("data.${dataeconomyvalue}") + amount
                                         val somaredis =
-                                            data_names_config2_redis.getInt("data.${dataeconomyvalue}") + amount
+                                            data_names_config2_redis.getLong("data.${dataeconomyvalue}") + amount
                                         try {
                                             when (databasetype) {
                                                 "h2" -> {
@@ -1892,9 +1976,10 @@ class WalletCommand : CommandExecutor, TabCompleter {
                                             Format.hex(
                                                 Format.color(
                                                     IridiumColorAPI.process(
-                                                        generateToOther().replace("%amount", amount.toString())
-                                                            .replace("%valuename", dataeconomyvalue)
-                                                            .replace("%p", player.name)
+                                                        generateToOther().replace("%amount%", amount.toString())
+                                                            .replace("%valuename%", dataeconomyvalue)
+                                                            .replace("%p%", player.name)
+                                                            .replace("%amountformatted%", Economy.formatBalance(amount.toString()))
                                                     )
                                                 )
                                             )
@@ -1906,7 +1991,7 @@ class WalletCommand : CommandExecutor, TabCompleter {
                                                 Format.color(
                                                     IridiumColorAPI.process(
                                                         invalidAmount().replace(
-                                                            "%valuename",
+                                                            "%valuename%",
                                                             dataeconomyvalue
                                                         )
                                                     )
@@ -1922,7 +2007,7 @@ class WalletCommand : CommandExecutor, TabCompleter {
                                     Format.color(
                                         IridiumColorAPI.process(
                                             invalidAmount().replace(
-                                                "%valuename",
+                                                "%valuename%",
                                                 dataeconomyvalue
                                             )
                                         )
@@ -1936,7 +2021,7 @@ class WalletCommand : CommandExecutor, TabCompleter {
                                 Format.color(
                                     IridiumColorAPI.process(
                                         accessDenied().replace(
-                                            "%perm",
+                                            "%perm%",
                                             "hexaecon.permissions.generate"
                                         )
                                     )
@@ -1955,42 +2040,28 @@ class WalletCommand : CommandExecutor, TabCompleter {
     }
 
     override fun onTabComplete(arg0: CommandSender, arg1: Command, arg2: String, args: Array<String>): List<String>? {
-        val s: MutableList<String> = mutableListOf()
         if (arg1.name == "wallet") {
             if (args.size == 1) {
+                val s: MutableList<String> = mutableListOf()
                 a(s, args[0], "generate")
                 a(s, args[0], "withdraw")
                 a(s, args[0], "remove")
                 a(s, args[0], "reload")
                 return s
-            }
-            if (args.size == 2) {
-                if (args[0] == "withdraw") {
+            } else if (args.size == 2) {
+                if (args[0] == "withdraw" || args[0] == "remove" || args[0] == "generate") {
+                    val s: MutableList<String> = mutableListOf()
                     for (i in 1..100) {
                         a(s, args[1], i.toString())
                     }
-                    s.sort()
+                    s.sortBy { it.toInt() }
                     return s
                 }
-                if (args[0] == "remove") {
-                    for (i in 1..100) {
-                        a(s, args[1], i.toString())
-                    }
-                    s.sort()
-                    return s
-                }
-                if (args[0] == "generate") {
-                    for (i in 1..100) {
-                        a(s, args[1], i.toString())
-                    }
-                    s.sort()
-                    return s
-                }
-                return mutableListOf()
             }
         }
         return null
     }
+
 
     private fun reloadPlugin() {
         plugin.reloadLanguages()

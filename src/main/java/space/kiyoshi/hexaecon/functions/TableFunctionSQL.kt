@@ -13,11 +13,11 @@ object TableFunctionSQL {
     @Throws(SQLException::class)
     fun createTable(name: Player) {
         val tableName = name.name
-        val defaultvalue = 0
-        val sqlCreate = ("CREATE TABLE IF NOT EXISTS " + name.name
-                + "($dataeconomyvalue INT(255))")
+        val defaultValue = 0L
+        val sqlCreate = "CREATE TABLE IF NOT EXISTS $tableName ($dataeconomyvalue BIGINT)"
         val stmt = HexaEcon.MySQLManager!!.getConnection()!!.createStatement()
         stmt.executeUpdate(sqlCreate)
+
         // Check if the table is empty
         val sqlCheck = "SELECT COUNT(*) AS count FROM $tableName"
         val resultSet = stmt?.executeQuery(sqlCheck)
@@ -27,61 +27,69 @@ object TableFunctionSQL {
 
         // Insert the default value if the table is empty
         if (rowCount == 0) {
-            val sqlInsert = "INSERT INTO $tableName ($dataeconomyvalue) VALUES ($defaultvalue)"
+            val sqlInsert = "INSERT INTO $tableName ($dataeconomyvalue) VALUES ($defaultValue)"
             stmt?.execute(sqlInsert)
         }
         stmt.close()
     }
+
 
     @Throws(SQLException::class)
     fun createTableSQLite(name: Player) {
         val tableName = name.name
-        val defaultvalue = 0
-        val sqlCreate = """CREATE TABLE IF NOT EXISTS $tableName ($dataeconomyvalue INT(255))"""
+        val defaultValue = 0L
+        val sqlCreate = """CREATE TABLE IF NOT EXISTS $tableName ($dataeconomyvalue BIGINT)"""
         val stmt = HexaEcon.SQLiteManager!!.getConnection()!!.createStatement()
         stmt.executeUpdate(sqlCreate)
+
         // Check if the table is empty
         val sqlCheck = "SELECT COUNT(*) AS count FROM $tableName"
-        val resultSet = stmt?.executeQuery(sqlCheck)
-        resultSet?.next()
-        val rowCount = resultSet?.getInt("count") ?: 0
-        resultSet?.close()
+        val resultSet = stmt.executeQuery(sqlCheck)
+        resultSet.next()
+        val rowCount = resultSet.getInt("count")
+        resultSet.close()
 
         // Insert the default value if the table is empty
         if (rowCount == 0) {
-            val sqlInsert = "INSERT INTO $tableName ($dataeconomyvalue) VALUES ($defaultvalue)"
-            stmt?.execute(sqlInsert)
+            val sqlInsert = "INSERT INTO $tableName ($dataeconomyvalue) VALUES ($defaultValue)"
+            stmt.execute(sqlInsert)
         }
-        stmt?.close()
-    }
-
-    @JvmStatic
-    @Throws(SQLException::class)
-    fun createTableAmount(name: Player, value: Int) {
-        val sqlCreate = ("CREATE TABLE IF NOT EXISTS " + name.name
-                + "($dataeconomyvalue INT(255))")
-        val stmt = HexaEcon.MySQLManager!!.getConnection()!!.createStatement()
-        stmt.execute("start transaction")
-        stmt.execute(sqlCreate)
-        stmt.executeUpdate("INSERT INTO " + name.name + "($dataeconomyvalue) VALUES('" + value + "')")
-        stmt.execute("commit")
         stmt.close()
     }
 
+
     @JvmStatic
     @Throws(SQLException::class)
-    fun createTableAmountSQLite(name: Player, value: Int) {
+    fun createTableAmount(name: Player, value: Long) {
         val tableName = name.name
-        val sqlCreate = """CREATE TABLE IF NOT EXISTS $tableName ($dataeconomyvalue INT(255))"""
+        val sqlCreate = "CREATE TABLE IF NOT EXISTS $tableName ($dataeconomyvalue BIGINT)"
+        val stmt = HexaEcon.MySQLManager!!.getConnection()!!.createStatement()
+        stmt.execute("START TRANSACTION")
+        stmt.execute(sqlCreate)
+        stmt.executeUpdate("INSERT INTO $tableName ($dataeconomyvalue) VALUES ('$value')")
+        stmt.execute("COMMIT")
+        stmt.close()
+    }
+
+
+    @JvmStatic
+    @Throws(SQLException::class)
+    fun createTableAmountSQLite(name: Player, value: Long) {
+        val tableName = name.name
+        val sqlCreate = """CREATE TABLE IF NOT EXISTS $tableName ($dataeconomyvalue BIGINT)"""
         val stmt = HexaEcon.SQLiteManager!!.getConnection()!!.createStatement()
         stmt.executeUpdate(sqlCreate)
+
         val columnName = dataeconomyvalue
         val sqlInsert = "INSERT INTO $tableName ($columnName) VALUES (?)"
         val preparedStatement = HexaEcon.SQLiteManager!!.getConnection()!!.prepareStatement(sqlInsert)
-        preparedStatement.setInt(1, value)
+        preparedStatement.setLong(1, value)
         preparedStatement.executeUpdate()
+
         stmt.close()
     }
+
+
 
     @JvmStatic
     @Throws(SQLException::class)

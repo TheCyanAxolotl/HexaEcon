@@ -120,10 +120,10 @@ class EventsListener : Listener {
                     val data_names_config_redis: FileConfiguration =
                         YamlConfiguration.loadConfiguration(data_names_redis)
 
-                    val somasqlite = data_names_config_sqlite.getInt("data.${dataeconomyvalue}") + amount!!
-                    val somamysql = data_names_config_mysql.getInt("data.${dataeconomyvalue}") + amount
-                    val somamongodb = data_names_config_mongodb.getInt("data.${dataeconomyvalue}") + amount
-                    val somaredis = data_names_config_redis.getInt("data.${dataeconomyvalue}") + amount
+                    val somasqlite = data_names_config_sqlite.getLong("data.${dataeconomyvalue}") + amount!!
+                    val somamysql = data_names_config_mysql.getLong("data.${dataeconomyvalue}") + amount
+                    val somamongodb = data_names_config_mongodb.getLong("data.${dataeconomyvalue}") + amount
+                    val somaredis = data_names_config_redis.getLong("data.${dataeconomyvalue}") + amount
 
                     try {
                         when (databasetype) {
@@ -194,9 +194,10 @@ class EventsListener : Listener {
                             Format.color(
                                 IridiumColorAPI.process(
                                     genericEarn().replace(
-                                        "%amount",
+                                        "%amount%",
                                         amount.toString()
-                                    ).replace("%valuename", dataeconomyvalue)
+                                    ).replace("%valuename%", dataeconomyvalue)
+                                        .replace("%amountformatted%", Economy.formatBalance(amount.toString()))
                                 )
                             )
                         )

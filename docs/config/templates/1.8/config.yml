@@ -13,6 +13,15 @@
 # You can use for HEX this format #b50e22
 # For gradients you can use <GRADIENT:63c7db> Starting color and end color </GRADIENT:b50e22>
 
+# Local PlaceHolders Working on language/language.yml
+# %p% returns the name of the player
+# %u% returns the usage
+# %perm% returns the permission
+# %targetbalance% returns the name of the target player
+# %amount% returns the raw amount of the player balance
+# %amountformatted% returns the formatted amount of the player balance
+# %valuename% returns the value name u can change the valuename on config.yml in [DataEconomyName]
+
 # DataBase Setup
 DataBase:
   Type: "h2" # h2 / MySQL / MongoDB / Redis

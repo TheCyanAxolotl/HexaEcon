@@ -14,6 +14,8 @@ import java.io.File;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.Arrays;
+import java.util.List;
 
 @SuppressWarnings("ALL")
 public class HexaEconAPI {
@@ -332,6 +334,62 @@ public class HexaEconAPI {
     public static boolean canUseTexturePack() {
         return NMSUtils.INSTANCE.checkServerVersionUp(NMSUtils.INSTANCE.getCleanServerVersion());
     }
+
+    public static String formatBalance(String balance) {
+        long value;
+        try {
+            value = Long.parseLong(balance);
+        } catch (NumberFormatException e) {
+            return balance;
+        }
+
+        List<String> suffixes = Arrays.asList(
+                "",
+                "k",
+                "m",
+                "t",
+                "q",
+                "a",
+                "aa",
+                "ab",
+                "ac",
+                "ad",
+                "ae",
+                "af",
+                "ag",
+                "ah",
+                "ai",
+                "aj",
+                "ak",
+                "al",
+                "am",
+                "an",
+                "ao",
+                "ap",
+                "aq",
+                "ar",
+                "as",
+                "at",
+                "au",
+                "av",
+                "aw",
+                "ax",
+                "ay",
+                "az"
+        );
+
+        int suffixIndex = (int) (Math.floor(Math.log10(value) / 3));
+
+        double formattedValue;
+        if (suffixIndex >= 0 && suffixIndex < suffixes.size()) {
+            formattedValue = value / Math.pow(10.0, suffixIndex * 3);
+        } else {
+            formattedValue = value;
+        }
+
+        return String.format("%.1f%s", formattedValue, suffixes.get(suffixIndex));
+    }
+
 
 
 

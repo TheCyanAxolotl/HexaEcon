@@ -24,6 +24,7 @@ object TableFunctionMongo {
         collection.insertOne(document)
     }
 
+
     fun createCollection(name: String) {
         val collectionName = name
 
@@ -37,11 +38,14 @@ object TableFunctionMongo {
 
         // Insert the default value if the collection is empty
         if (collection.countDocuments() == 0L) {
-            val defaultDocument = Document(dataeconomyvalue, 0)
+            val defaultValue = 0L
+            val defaultDocument = Document(dataeconomyvalue, defaultValue)
             collection.insertOne(defaultDocument)
         }
     }
-    fun createCollectionAmount(name: String, value: Int) {
+
+
+    fun createCollectionAmount(name: String, value: Long) {
         val collectionName = name
 
         val database = mongoClient.getDatabase("hexaecon")
@@ -56,6 +60,7 @@ object TableFunctionMongo {
         val document = Document(dataeconomyvalue, value)
         collection.insertOne(document)
     }
+
 
     fun dropCollection(name: String) {
         val collectionName = name
@@ -78,7 +83,7 @@ object TableFunctionMongo {
             val cursor = collection.find()
 
             for (document in cursor) {
-                val coinsValue = document.getInteger("coins")
+                val coinsValue = document.getLong("coins")
                 results.add("$coinsValue")
             }
 

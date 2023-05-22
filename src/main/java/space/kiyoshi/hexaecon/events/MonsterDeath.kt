@@ -15,6 +15,7 @@ import space.kiyoshi.hexaecon.HexaEcon.Companion.plugin
 import space.kiyoshi.hexaecon.functions.TableFunctionMongo
 import space.kiyoshi.hexaecon.functions.TableFunctionRedis
 import space.kiyoshi.hexaecon.functions.TableFunctionSQL
+import space.kiyoshi.hexaecon.utils.Economy
 import space.kiyoshi.hexaecon.utils.Format
 import space.kiyoshi.hexaecon.utils.GetConfig
 import space.kiyoshi.hexaecon.utils.Language.genericEarn
@@ -72,13 +73,13 @@ class MonsterDeath : Listener {
                         YamlConfiguration.loadConfiguration(data_names_redis)
 
                     val somasqlite =
-                        data_names_config_sqlite.getInt("data.${dataeconomyvalue}") + eventsonkillmonstersearnamount
+                        data_names_config_sqlite.getLong("data.${dataeconomyvalue}") + eventsonkillmonstersearnamount
                     val somamysql =
-                        data_names_config_mysql.getInt("data.${dataeconomyvalue}") + eventsonkillmonstersearnamount
+                        data_names_config_mysql.getLong("data.${dataeconomyvalue}") + eventsonkillmonstersearnamount
                     val somamongodb =
-                        data_names_config_mongodb.getInt("data.${dataeconomyvalue}") + eventsonkillmonstersearnamount
+                        data_names_config_mongodb.getLong("data.${dataeconomyvalue}") + eventsonkillmonstersearnamount
                     val somaredis =
-                        data_names_config_redis.getInt("data.${dataeconomyvalue}") + eventsonkillmonstersearnamount
+                        data_names_config_redis.getLong("data.${dataeconomyvalue}") + eventsonkillmonstersearnamount
 
                     try {
                         when (databasetype) {
@@ -148,9 +149,10 @@ class MonsterDeath : Listener {
                             Format.color(
                                 IridiumColorAPI.process(
                                     genericEarn().replace(
-                                        "%amount",
+                                        "%amount%",
                                         eventsonkillmonstersearnamount.toString()
-                                    ).replace("%valuename", dataeconomyvalue)
+                                    ).replace("%valuename%", dataeconomyvalue)
+                                        .replace("%amountformatted%", Economy.formatBalance(eventsonkillmonstersearnamount.toString()))
                                 )
                             )
                         )
