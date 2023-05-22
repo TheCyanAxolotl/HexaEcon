@@ -85,7 +85,7 @@ object GetConfig {
         }
     }
 
-    fun generatePlayerConfigAmount(player: Player, value: Int) {
+    fun generatePlayerConfigAmount(player: Player, value: Long) {
         val databasetype = main().getString("DataBase.Type")!!
         val dataeconomyvalue = main().getString("DataBase.DataEconomyName")!!
         val data = File(plugin.dataFolder, "data")

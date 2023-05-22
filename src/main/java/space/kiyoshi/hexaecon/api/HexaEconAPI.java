@@ -19,7 +19,7 @@ import java.util.List;
 
 @SuppressWarnings("ALL")
 public class HexaEconAPI {
-    public static void createBankAccount(Player player, Integer value) throws SQLException {
+    public static void createBankAccount(Player player, Long value) throws SQLException {
         String databasetype = GetConfig.INSTANCE.main().getString("DataBase.Type");
         GetConfig.INSTANCE.generatePlayerConfigAmount(player, value);
         switch (databasetype) {
@@ -62,7 +62,7 @@ public class HexaEconAPI {
         return playerFolder.exists();
     }
 
-    public static void setMoney(Player player, Integer value) throws SQLException {
+    public static void setMoney(Player player, Long value) throws SQLException {
         String databasetype = GetConfig.INSTANCE.main().getString("DataBase.Type");
         GetConfig.INSTANCE.deletePlayerConfig(player);
         GetConfig.INSTANCE.generatePlayerConfigAmount(player, value);
@@ -86,7 +86,7 @@ public class HexaEconAPI {
         }
     }
 
-    public static void addMoney(Player player, Integer value) {
+    public static void addMoney(Player player, Long value) {
         String databasetype = GetConfig.INSTANCE.main().getString("DataBase.Type");
         String dataeconomyvalue = GetConfig.INSTANCE.main().getString("DataBase.DataEconomyName");
         File data_names2_sqlite =
@@ -121,14 +121,14 @@ public class HexaEconAPI {
                 HexaEcon.Companion.getPlugin().getDataFolder().toString() + "/data/"+player.getName()+"/" + player.getName()
                         + "_Redis.txt"
         );
-        int somasqlite =
-                data_names_config2_sqlite.getInt("data." + dataeconomyvalue) + value;
-        int somamysql =
-                data_names_config2_mysql.getInt("data." + dataeconomyvalue) + value;
-        int somamongodb =
-                data_names_config2_mongodb.getInt("data." + dataeconomyvalue) + value;
-        int somaredis =
-                data_names_config2_redis.getInt("data." + dataeconomyvalue) + value;
+        long somasqlite =
+                data_names_config2_sqlite.getLong("data." + dataeconomyvalue) + value;
+        long somamysql =
+                data_names_config2_mysql.getLong("data." + dataeconomyvalue) + value;
+        long somamongodb =
+                data_names_config2_mongodb.getLong("data." + dataeconomyvalue) + value;
+        long somaredis =
+                data_names_config2_redis.getLong("data." + dataeconomyvalue) + value;
         try {
             switch (databasetype) {
                 case "h2" -> {
@@ -194,7 +194,7 @@ public class HexaEconAPI {
         HexaEcon.Companion.getPlugin().reloadConfig();
     }
 
-    public static void removeMoney(Player player, Integer value) {
+    public static void removeMoney(Player player, Long value) {
         String databasetype = GetConfig.INSTANCE.main().getString("DataBase.Type");
         String dataeconomyvalue = GetConfig.INSTANCE.main().getString("DataBase.DataEconomyName");
         File data_names_sqlite =
@@ -213,17 +213,17 @@ public class HexaEconAPI {
                 YamlConfiguration.loadConfiguration(data_names_mongodb);
         FileConfiguration data_names_config_redis =
                 YamlConfiguration.loadConfiguration(data_names_redis);
-        int somasqlite =
-                data_names_config_sqlite.getInt("data." + dataeconomyvalue) - value;
-        int somamysql =
-                data_names_config_mysql.getInt("data." + dataeconomyvalue) - value;
-        int somamongodb =
-                data_names_config_mongodb.getInt("data." + data_names_config_mongodb) - value;
-        int somaredis =
-                data_names_config_redis.getInt("data." + dataeconomyvalue) - value;
+        long somasqlite =
+                data_names_config_sqlite.getLong("data." + dataeconomyvalue) - value;
+        long somamysql =
+                data_names_config_mysql.getLong("data." + dataeconomyvalue) - value;
+        long somamongodb =
+                data_names_config_mongodb.getLong("data." + data_names_config_mongodb) - value;
+        long somaredis =
+                data_names_config_redis.getLong("data." + dataeconomyvalue) - value;
 
         if (databasetype == "h2") {
-            if (data_names_config_sqlite.getInt("data." + dataeconomyvalue) >= value){
+            if (data_names_config_sqlite.getLong("data." + dataeconomyvalue) >= value){
                 try {
                     switch (databasetype) {
                         case "h2" ->{
@@ -306,7 +306,7 @@ public class HexaEconAPI {
                 String SQL = "SELECT * FROM " + player.getName();
                 ResultSet rs = stmt.executeQuery(SQL);
                 rs.next();
-                String value = String.valueOf(rs.getInt(dataeconomyvalue));
+                String value = String.valueOf(rs.getLong(dataeconomyvalue));
                 rs.close();
                 stmt.close();
                 return value;
@@ -318,11 +318,11 @@ public class HexaEconAPI {
         return "Unknown Balance";
     }
 
-    public static boolean hasPlayerEnoughMoney(Player player, int amount) throws SQLException {
+    public static boolean hasPlayerEnoughMoney(Player player, Long amount) throws SQLException {
         String playerBalance = getPlayerBalance(player);
         if (playerBalance != null) {
             try {
-                int balance = Integer.parseInt(playerBalance);
+                long balance = Long.parseLong(playerBalance);
                 return balance >= amount;
             } catch (NumberFormatException e) {
                 e.printStackTrace();
