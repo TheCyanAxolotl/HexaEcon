@@ -1,4 +1,4 @@
-@file:Suppress("LocalVariableName")
+@file:Suppress("LocalVariableName", "SpellCheckingInspection")
 
 package space.kiyoshi.hexaecon.utils
 
@@ -48,9 +48,22 @@ class HexaEconPlaceHolders : PlaceholderExpansion() {
                     Format.color(
                         IridiumColorAPI.process(
                             formattedAmount()?.replace(
-                                "%amount",
-                                getBalance(player)
-                            )?.replace("%symbol", symbol.toString())!!
+                                "%amountformatted%",
+                                Economy.formatBalance(getBalance(player))
+                            )!!
+                        )
+                    )
+                )
+            }
+
+            "balance_formatted_symbol" -> {
+                Format.hex(
+                    Format.color(
+                        IridiumColorAPI.process(
+                            formattedAmount()?.replace(
+                                "%amountformatted%",
+                                Economy.formatBalance(getBalance(player))+symbol.toString()
+                            )!!
                         )
                     )
                 )

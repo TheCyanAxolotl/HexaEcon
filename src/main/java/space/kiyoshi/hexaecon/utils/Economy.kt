@@ -1,4 +1,6 @@
-@file:Suppress("UNUSED_PARAMETER", "unused", "LocalVariableName", "SpellCheckingInspection", "DEPRECATION")
+@file:Suppress("UNUSED_PARAMETER", "unused", "LocalVariableName", "SpellCheckingInspection", "DEPRECATION",
+    "ReplaceJavaStaticMethodWithKotlinAnalog"
+)
 
 package space.kiyoshi.hexaecon.utils
 
@@ -70,4 +72,63 @@ object Economy {
             }
         }
     }
+
+    fun formatBalance(balance: String): String {
+        val value = balance.toLongOrNull() ?: return balance
+
+        val suffixes = listOf(
+            "",
+            "k",
+            "m",
+            "t",
+            "q",
+            "a",
+            "aa",
+            "ab",
+            "ac",
+            "ad",
+            "ae",
+            "af",
+            "ag",
+            "ah",
+            "ai",
+            "aj",
+            "ak",
+            "al",
+            "am",
+            "an",
+            "ao",
+            "ap",
+            "aq",
+            "ar",
+            "as",
+            "at",
+            "au",
+            "av",
+            "aw",
+            "ax",
+            "ay",
+            "az"
+            // Add more suffixes as needed
+        )
+
+        val suffixIndex = (Math.floor(Math.log10(value.toDouble())) / 3).toInt()
+
+        // Handle out-of-bounds suffixIndex
+        val formattedValue = if (suffixIndex in suffixes.indices) {
+            value / Math.pow(10.0, (suffixIndex * 3).toDouble())
+        } else {
+            value.toDouble()
+        }
+
+        val formattedString = "%.1f%s".format(formattedValue, suffixes.getOrElse(suffixIndex) { "" })
+
+        return if (value == 0L) {
+            "0"
+        } else {
+            formattedString
+        }
+    }
+
+
 }
