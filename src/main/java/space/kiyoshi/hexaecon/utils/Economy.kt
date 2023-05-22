@@ -112,7 +112,6 @@ object Economy {
             "ax",
             "ay",
             "az"
-            // Add more suffixes if needed
         )
 
         val suffixIndex = (Math.floor(Math.log10(value.toDouble())) / 3).toInt()
