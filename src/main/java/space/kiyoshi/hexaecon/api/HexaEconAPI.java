@@ -318,6 +318,33 @@ public class HexaEconAPI {
         return "Unknown Balance";
     }
 
+    public static String getFormattedPlayerBalance(Player player) throws SQLException {
+        String databasetype = GetConfig.INSTANCE.main().getString("DataBase.Type");
+        String dataeconomyvalue = GetConfig.INSTANCE.main().getString("DataBase.DataEconomyName");
+        switch (databasetype) {
+            case "h2" -> {
+                return formatBalance(TableFunctionSQL.selectAllFromTableAsStringSQLite(player.getName()).toString().replace("[", "").replace("]", ""));
+            }
+            case "MongoDB" -> {
+                return formatBalance(TableFunctionMongo.INSTANCE.selectAllFromCollectionAsString(player.getName()).toString().replace("[", "").replace("]", ""));
+            }
+            case "MySQL" -> {
+                Statement stmt = HexaEcon.Companion.getMySQLManager().getConnection().createStatement();
+                String SQL = "SELECT * FROM " + player.getName();
+                ResultSet rs = stmt.executeQuery(SQL);
+                rs.next();
+                String value = String.valueOf(rs.getLong(dataeconomyvalue));
+                rs.close();
+                stmt.close();
+                return formatBalance(value);
+            }
+            case "Redis" -> {
+                formatBalance(TableFunctionRedis.selectAllFromCollectionAsStringRedis(player.getName()).toString().replace("[", "").replace("]", ""));
+            }
+        }
+        return "Unknown Balance";
+    }
+
     public static boolean hasPlayerEnoughMoney(Player player, Long amount) throws SQLException {
         String playerBalance = getPlayerBalance(player);
         if (playerBalance != null) {
