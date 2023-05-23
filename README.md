@@ -8,7 +8,7 @@
   <a href="https://i.imgur.com/iFI45Ej.png">
         <img src="https://i.imgur.com/iFI45Ej.png" alt="HexaEcon">
     </a>
-  <a href="https://i.imgur.com/3oEH0bp.png">
-        <img src="https://i.imgur.com/3oEH0bp.png" alt="HexaEcon">
+  <a href="https://i.imgur.com/eATynbr.png">
+        <img src="https://i.imgur.com/eATynbr.png" alt="HexaEcon">
     </a>
 </div>
