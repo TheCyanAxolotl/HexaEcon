@@ -40,6 +40,10 @@ object Language {
         return getPrefix() + plugin.getLanguages().getString("Language.GenerateToOther")
     }
 
+    fun setToOther(): String {
+        return getPrefix() + plugin.getLanguages().getString("Language.SetToOther")
+    }
+
     fun invalidAmount(): String {
         return getPrefix() + plugin.getLanguages().getString("Language.InvalidAmount")
     }

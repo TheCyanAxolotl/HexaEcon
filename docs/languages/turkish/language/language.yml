@@ -8,6 +8,7 @@ Language:
   GenericEarn: '&e+ &6%amountformatted% &e%valuename%.'
   ConfigurationReloaded: '&eyapılandırma dosyaları başarıyla yeniden yüklendi.'
   GenerateToOther: '&e+ &6%p% &eadlı oyuncuya &6%amountformatted% &e%valuename% verdiniz.'
+  SetToOther: '&6%p% &bakiyenizi &6%amountformatted% &e%valuename% olarak ayarlayın'
   AccessDenied: '&ebu komuta erişim izniniz yok: &6%perm%'
   InvalidAmount: '&eMinimum gerekli değer &61 &e%valuename% &eveya geçerli bir sayı olup olmadığını kontrol et.'
   WalletWithdrawAmount: '&e- &6%amountformatted% &e%valuename%.'

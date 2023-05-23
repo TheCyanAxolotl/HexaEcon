@@ -33,6 +33,7 @@ import space.kiyoshi.hexaecon.utils.Language.generateToOther
 import space.kiyoshi.hexaecon.utils.Language.invalidAmount
 import space.kiyoshi.hexaecon.utils.Language.playerNotFound
 import space.kiyoshi.hexaecon.utils.Language.removedEconFromPlayer
+import space.kiyoshi.hexaecon.utils.Language.setToOther
 import space.kiyoshi.hexaecon.utils.Language.usageConvertDeposit
 import space.kiyoshi.hexaecon.utils.Language.usageFormat
 import space.kiyoshi.hexaecon.utils.Language.walletWithdrawAmount
@@ -2035,6 +2036,261 @@ class WalletCommand : CommandExecutor, TabCompleter {
                         )
                     }
                 }
+                if (args[0] == "set") {
+                    if (player.hasPermission("hexaecon.permissions.set")) {
+                        try {
+                            if (args.size < 2) {
+                                player.sendMessage(
+                                    Format.hex(
+                                        Format.color(
+                                            usageFormat().replace(
+                                                "%u%",
+                                                usageConvertDeposit()!!
+                                            )
+                                        )
+                                    )
+                                )
+                                if (sound != "NONE") {
+                                    if (sender is Player) {
+                                        sender.playSound(
+                                            sender.location,
+                                            Sound.valueOf(sound),
+                                            volume.toFloat(),
+                                            pitch.toFloat()
+                                        )
+                                    }
+                                }
+                            } else {
+                                if (args.size < 3) {
+                                    player.sendMessage(
+                                        Format.hex(
+                                            Format.color(
+                                                IridiumColorAPI.process(
+                                                    usageFormat().replace(
+                                                        "%u%",
+                                                        usageConvertDeposit()!!
+                                                    )
+                                                )
+                                            )
+                                        )
+                                    )
+                                    if (sound != "NONE") {
+                                        if (sender is Player) {
+                                            sender.playSound(
+                                                sender.location,
+                                                Sound.valueOf(sound),
+                                                volume.toFloat(),
+                                                pitch.toFloat()
+                                            )
+                                        }
+                                    }
+                                } else {
+                                    val amount = args[1].toLong()
+                                    val targetname = args[2]
+                                    val target = Bukkit.getPlayer(targetname)
+                                    try {
+                                        if (amount == null) {
+                                            player.sendMessage(
+                                                Format.hex(
+                                                    Format.color(
+                                                        IridiumColorAPI.process(
+                                                            invalidAmount().replace("%valuename%", dataeconomyvalue)
+                                                        )
+                                                    )
+                                                )
+                                            )
+                                            return true
+                                        }
+                                        if (amount < 0) {
+                                            player.sendMessage(
+                                                Format.hex(
+                                                    Format.color(
+                                                        IridiumColorAPI.process(
+                                                            invalidAmount().replace("%valuename%", dataeconomyvalue)
+                                                        )
+                                                    )
+                                                )
+                                            )
+                                            return true
+                                        }
+
+                                        if (targetname == null || targetname.isEmpty() || targetname.isBlank()) {
+                                            player.sendMessage(
+                                                Format.hex(
+                                                    Format.hex(
+                                                        Format.color(
+                                                            IridiumColorAPI.process(
+                                                                playerNotFound().replace("%p%", args[2])
+                                                            )
+                                                        )
+                                                    )
+                                                )
+                                            )
+                                            if (sound != "NONE") {
+                                                if (sender is Player) {
+                                                    sender.playSound(
+                                                        sender.location,
+                                                        Sound.valueOf(sound),
+                                                        volume.toFloat(),
+                                                        pitch.toFloat()
+                                                    )
+                                                }
+                                            }
+                                            return false
+                                        }
+                                        val data_names2_sqlite =
+                                            File(plugin.dataFolder.toString() + "/data/${target!!.name}/" + target.name + "_SQLite.txt")
+                                        val data_names2_mysql =
+                                            File(plugin.dataFolder.toString() + "/data/${target.name}/" + target.name + "_MySQL.txt")
+                                        val data_names2_mongodb =
+                                            File(plugin.dataFolder.toString() + "/data/${target.name}/" + target.name + "_MongoDB.txt")
+                                        val data_names2_redis =
+                                            File(plugin.dataFolder.toString() + "/data/${target.name}/" + target.name + "_Redis.txt")
+                                        val data_names_config2_sqlite: FileConfiguration =
+                                            YamlConfiguration.loadConfiguration(data_names2_sqlite)
+                                        val data_names_config2_mysql: FileConfiguration =
+                                            YamlConfiguration.loadConfiguration(data_names2_mysql)
+                                        val data_names_config2_mongodb: FileConfiguration =
+                                            YamlConfiguration.loadConfiguration(data_names2_mongodb)
+                                        val data_names_config2_redis: FileConfiguration =
+                                            YamlConfiguration.loadConfiguration(data_names2_redis)
+                                        val data_names_sqlite = File(
+                                            plugin.dataFolder.toString() + "/data/${target.name}/" + target
+                                                .name + "_SQLite.txt"
+                                        )
+                                        val data_names_mysql = File(
+                                            plugin.dataFolder.toString() + "/data/${target.name}/" + target
+                                                .name + "_MySQL.txt"
+                                        )
+                                        val data_names_mongodb = File(
+                                            plugin.dataFolder.toString() + "/data/${target.name}/" + target
+                                                .name + "_MongoDB.txt"
+                                        )
+                                        val data_names_redis = File(
+                                            plugin.dataFolder.toString() + "/data/${target.name}/" + target
+                                                .name + "_Redis.txt"
+                                        )
+                                        try {
+                                            when (databasetype) {
+                                                "h2" -> {
+                                                    TableFunctionSQL.dropTableSQLite(target)
+                                                }
+                                                "MongoDB" -> {
+                                                    TableFunctionMongo.dropCollection(target.name)
+                                                }
+                                                "MySQL" -> {
+                                                    TableFunctionSQL.dropTable(target)
+                                                }
+                                                "Redis" -> {
+                                                    TableFunctionRedis.dropTable(target.name)
+                                                }
+                                            }
+                                        } catch (_: SQLException) {}
+                                        try {
+                                            when (databasetype) {
+                                                "h2" -> {
+                                                    TableFunctionSQL.createTableAmountSQLite(target, amount)
+                                                }
+                                                "MongoDB" -> {
+                                                    TableFunctionMongo.createCollectionAmount(target.name, amount)
+                                                }
+                                                "MySQL" -> {
+                                                    TableFunctionSQL.createTableAmount(target, amount)
+                                                }
+                                                "Redis" -> {
+                                                    TableFunctionRedis.createTableAmount(target.name, amount)
+                                                }
+                                            }
+                                        } catch (_: SQLException) {}
+                                        when (databasetype) {
+                                            "h2" -> {
+                                                data_names_config2_sqlite["data.${dataeconomyvalue}"] = amount
+                                            }
+                                            "MongoDB" -> {
+                                                data_names_config2_mongodb["data.${dataeconomyvalue}"] = amount
+                                            }
+                                            "MySQL" -> {
+                                                data_names_config2_mysql["data.${dataeconomyvalue}"] = amount
+                                            }
+                                            "Redis" -> {
+                                                data_names_config2_redis["data.${dataeconomyvalue}"] = amount
+                                            }
+                                        }
+                                        try {
+                                            when (databasetype) {
+                                                "h2" -> {
+                                                    data_names_config2_sqlite.save(data_names_sqlite)
+                                                }
+                                                "MongoDB" -> {
+                                                    data_names_config2_mongodb.save(data_names_mongodb)
+                                                }
+                                                "MySQL" -> {
+                                                    data_names_config2_mysql.save(data_names_mysql)
+                                                }
+                                                "Redis" -> {
+                                                    data_names_config2_redis.save(data_names_redis)
+                                                }
+                                            }
+                                        } catch (_: IOException) {}
+                                        plugin.reloadConfig()
+                                        target.sendMessage(
+                                            Format.hex(
+                                                Format.color(
+                                                    IridiumColorAPI.process(
+                                                        setToOther().replace("%amount%", amount.toString())
+                                                            .replace("%valuename%", dataeconomyvalue)
+                                                            .replace("%p%", player.name)
+                                                            .replace("%amountformatted%", Economy.formatBalance(amount.toString()))
+                                                    )
+                                                )
+                                            )
+                                        )
+                                        return true
+                                    } catch (e: Exception) {
+                                        player.sendMessage(
+                                            Format.hex(
+                                                Format.color(
+                                                    IridiumColorAPI.process(
+                                                        invalidAmount().replace(
+                                                            "%valuename%",
+                                                            dataeconomyvalue
+                                                        )
+                                                    )
+                                                )
+                                            )
+                                        )
+                                    }
+                                }
+                            }
+                        } catch (e: NumberFormatException) {
+                            player.sendMessage(
+                                Format.hex(
+                                    Format.color(
+                                        IridiumColorAPI.process(
+                                            invalidAmount().replace(
+                                                "%valuename%",
+                                                dataeconomyvalue
+                                            )
+                                        )
+                                    )
+                                )
+                            )
+                        }
+                    } else {
+                        player.sendMessage(
+                            Format.hex(
+                                Format.color(
+                                    IridiumColorAPI.process(
+                                        accessDenied().replace(
+                                            "%perm%",
+                                            "hexaecon.permissions.set"
+                                        )
+                                    )
+                                )
+                            )
+                        )
+                    }
+                }
             }
         }
         return false
@@ -2049,12 +2305,13 @@ class WalletCommand : CommandExecutor, TabCompleter {
             if (args.size == 1) {
                 val s: MutableList<String> = mutableListOf()
                 a(s, args[0], "generate")
+                a(s, args[0], "set")
                 a(s, args[0], "withdraw")
                 a(s, args[0], "remove")
                 a(s, args[0], "reload")
                 return s
             } else if (args.size == 2) {
-                if (args[0] == "withdraw" || args[0] == "remove" || args[0] == "generate") {
+                if (args[0] == "withdraw" || args[0] == "remove" || args[0] == "generate" || args[0] == "set") {
                     val s: MutableList<String> = mutableListOf()
                     for (i in 1..100) {
                         a(s, args[1], i.toString())

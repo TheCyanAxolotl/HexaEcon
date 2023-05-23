@@ -8,6 +8,7 @@ Language:
   GenericEarn: '&e+ &6%amountformatted% &e%valuename%.'
   ConfigurationReloaded: '&eArquivos de configuração recarregados com sucesso.'
   GenerateToOther: '&e+ &6%amountformatted% &e%valuename% gerado por &6%p%'
+  SetToOther: '&6%p% &defina seu saldo para &6%amountformatted% &e%valuename%'
   AccessDenied: '&eVocê não tem acesso a este comando, requer permissão: &6%perm%'
   InvalidAmount: '&ePrecisa mínimo &61 &e%valuename% &eou verifica se é um valor válido.'
   WalletWithdrawAmount: '&e- &6%amountformatted% &e%valuename%.'
