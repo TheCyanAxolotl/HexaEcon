@@ -312,7 +312,7 @@ public class HexaEconAPI {
                 return value;
             }
             case "Redis" -> {
-                TableFunctionRedis.selectAllFromCollectionAsStringRedis(player.getName()).toString().replace("[", "").replace("]", "");
+                return TableFunctionRedis.selectAllFromCollectionAsStringRedis(player.getName()).toString().replace("[", "").replace("]", "");
             }
         }
         return "Unknown Balance";
@@ -339,7 +339,7 @@ public class HexaEconAPI {
                 return formatBalance(value);
             }
             case "Redis" -> {
-                formatBalance(TableFunctionRedis.selectAllFromCollectionAsStringRedis(player.getName()).toString().replace("[", "").replace("]", ""));
+                return formatBalance(TableFunctionRedis.selectAllFromCollectionAsStringRedis(player.getName()).toString().replace("[", "").replace("]", ""));
             }
         }
         return "Unknown Balance";
@@ -400,7 +400,6 @@ public class HexaEconAPI {
                 "ax",
                 "ay",
                 "az"
-                // Add more suffixes if needed
         };
 
         int suffixIndex = (int) (Math.floor(Math.log10(value.doubleValue())) / 3);
