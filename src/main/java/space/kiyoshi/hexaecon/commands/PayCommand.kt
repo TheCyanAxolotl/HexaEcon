@@ -1,3 +1,8 @@
+/*
+ * Copyright (c) 2023. KiyoshiDevelopment
+ *   All rights reserved.
+ */
+
 @file:Suppress(
     "ReplaceSizeZeroCheckWithIsEmpty", "SameParameterValue", "UnnecessaryVariable",
     "ReplaceSizeCheckWithIsNotEmpty", "LocalVariableName", "SpellCheckingInspection", "SENSELESS_COMPARISON"

@@ -1,3 +1,8 @@
+/*
+ * Copyright (c) 2023. KiyoshiDevelopment
+ *   All rights reserved.
+ */
+
 @file:Suppress("ReplaceSizeZeroCheckWithIsEmpty", "UnnecessaryVariable", "LocalVariableName", "SpellCheckingInspection")
 
 package space.kiyoshi.hexaecon.commands

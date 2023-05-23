@@ -1,3 +1,8 @@
+/*
+ * Copyright (c) 2023. KiyoshiDevelopment
+ *   All rights reserved.
+ */
+
 @file:Suppress("FunctionName", "LocalVariableName", "SpellCheckingInspection")
 
 package space.kiyoshi.hexaecon.events

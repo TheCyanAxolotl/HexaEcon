@@ -1,3 +1,8 @@
+/*
+ * Copyright (c) 2023. KiyoshiDevelopment
+ *   All rights reserved.
+ */
+
 @file:Suppress("unused", "MemberVisibilityCanBePrivate")
 
 package space.kiyoshi.hexaecon.mongo

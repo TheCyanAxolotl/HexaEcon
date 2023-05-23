@@ -1,3 +1,8 @@
+/*
+ * Copyright (c) 2023. KiyoshiDevelopment
+ *   All rights reserved.
+ */
+
 package space.kiyoshi.hexaecon.api;
 
 import org.bukkit.configuration.file.FileConfiguration;
