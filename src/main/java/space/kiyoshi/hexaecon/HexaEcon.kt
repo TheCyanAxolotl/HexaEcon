@@ -14,10 +14,7 @@ import org.bukkit.plugin.java.JavaPlugin
 import space.kiyoshi.hexaecon.commands.EcoCommand
 import space.kiyoshi.hexaecon.commands.PayCommand
 import space.kiyoshi.hexaecon.commands.WalletCommand
-import space.kiyoshi.hexaecon.events.AnimalsDeath
-import space.kiyoshi.hexaecon.events.EventsListener
-import space.kiyoshi.hexaecon.events.JoinEvent
-import space.kiyoshi.hexaecon.events.MonsterDeath
+import space.kiyoshi.hexaecon.listeners.EventListener
 import space.kiyoshi.hexaecon.mongo.MongoDBManager
 import space.kiyoshi.hexaecon.redis.RedisManager
 import space.kiyoshi.hexaecon.sql.MySQLManager
@@ -162,10 +159,7 @@ class HexaEcon : JavaPlugin() {
     }
 
     private fun events() {
-        server.pluginManager.registerEvents(MonsterDeath(), this)
-        server.pluginManager.registerEvents(AnimalsDeath(), this)
-        server.pluginManager.registerEvents(JoinEvent(), this)
-        server.pluginManager.registerEvents(EventsListener(), this)
+        server.pluginManager.registerEvents(EventListener(), this)
     }
 
     private fun commands() {
