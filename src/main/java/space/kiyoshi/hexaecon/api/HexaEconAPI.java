@@ -27,38 +27,46 @@ public class HexaEconAPI {
     public static void createBankAccount(Player player, Long value) throws SQLException {
         String databasetype = GetConfig.INSTANCE.main().getString("DataBase.Type");
         GetConfig.INSTANCE.generatePlayerConfigAmount(player, value);
-        switch (databasetype) {
-            case "h2" -> {
-                TableFunctionSQL.INSTANCE.createTableAmountSQLite(player, value);
+        try {
+            switch (databasetype) {
+                case "h2" -> {
+                    TableFunctionSQL.INSTANCE.createTableAmountSQLite(player, value);
+                }
+                case "MongoDB" -> {
+                    TableFunctionMongo.INSTANCE.createCollectionAmount(player.getName(), value);
+                }
+                case "MySQL" -> {
+                    TableFunctionSQL.INSTANCE.createTableAmount(player, value);
+                }
+                case "Redis" -> {
+                    TableFunctionRedis.INSTANCE.createTableAmount(player.getName(), value);
+                }
             }
-            case "MongoDB" -> {
-                TableFunctionMongo.INSTANCE.createCollectionAmount(player.getName(), value);
-            }
-            case "MySQL" -> {
-                TableFunctionSQL.INSTANCE.createTableAmount(player, value);
-            }
-            case "Redis" -> {
-                TableFunctionRedis.INSTANCE.createTableAmount(player.getName(), value);
-            }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
     public static void deleteBankAccount(Player player) throws SQLException {
         String databasetype = GetConfig.INSTANCE.main().getString("DataBase.Type");
         GetConfig.INSTANCE.deletePlayerConfig(player);
-        switch (databasetype) {
-            case "h2" -> {
-                TableFunctionSQL.INSTANCE.dropTableSQLite(player);
+        try {
+            switch (databasetype) {
+                case "h2" -> {
+                    TableFunctionSQL.INSTANCE.dropTableSQLite(player);
+                }
+                case "MongoDB" -> {
+                    TableFunctionMongo.INSTANCE.dropCollection(player.getName());
+                }
+                case "MySQL" -> {
+                    TableFunctionSQL.INSTANCE.dropTable(player);
+                }
+                case "Redis" -> {
+                    TableFunctionRedis.INSTANCE.dropTable(player.getName());
+                }
             }
-            case "MongoDB" -> {
-                TableFunctionMongo.INSTANCE.dropCollection(player.getName());
-            }
-            case "MySQL" -> {
-                TableFunctionSQL.INSTANCE.dropTable(player);
-            }
-            case "Redis" -> {
-                TableFunctionRedis.INSTANCE.dropTable(player.getName());
-            }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
@@ -71,23 +79,27 @@ public class HexaEconAPI {
         String databasetype = GetConfig.INSTANCE.main().getString("DataBase.Type");
         GetConfig.INSTANCE.deletePlayerConfig(player);
         GetConfig.INSTANCE.generatePlayerConfigAmount(player, value);
-        switch (databasetype) {
-            case "h2" -> {
-                TableFunctionSQL.INSTANCE.dropTableSQLite(player);
-                TableFunctionSQL.INSTANCE.createTableAmountSQLite(player, value);
+        try {
+            switch (databasetype) {
+                case "h2" -> {
+                    TableFunctionSQL.INSTANCE.dropTableSQLite(player);
+                    TableFunctionSQL.INSTANCE.createTableAmountSQLite(player, value);
+                }
+                case "MongoDB" -> {
+                    TableFunctionMongo.INSTANCE.dropCollection(player.getName());
+                    TableFunctionMongo.INSTANCE.createCollectionAmount(player.getName(), value);
+                }
+                case "MySQL" -> {
+                    TableFunctionSQL.INSTANCE.dropTable(player);
+                    TableFunctionSQL.INSTANCE.createTableAmount(player, value);
+                }
+                case "Redis" -> {
+                    TableFunctionRedis.INSTANCE.dropTable(player.getName());
+                    TableFunctionRedis.INSTANCE.createTableAmount(player.getName(), value);
+                }
             }
-            case "MongoDB" -> {
-                TableFunctionMongo.INSTANCE.dropCollection(player.getName());
-                TableFunctionMongo.INSTANCE.createCollectionAmount(player.getName(), value);
-            }
-            case "MySQL" -> {
-                TableFunctionSQL.INSTANCE.dropTable(player);
-                TableFunctionSQL.INSTANCE.createTableAmount(player, value);
-            }
-            case "Redis" -> {
-                TableFunctionRedis.INSTANCE.dropTable(player.getName());
-                TableFunctionRedis.INSTANCE.createTableAmount(player.getName(), value);
-            }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
@@ -97,10 +109,8 @@ public class HexaEconAPI {
         File dataFolder = HexaEcon.Companion.getPlugin().getDataFolder();
         File dataFile = new File(dataFolder, "/data/" + player.getName() + "/" + player.getName() + "_" + databasetype + ".txt");
         FileConfiguration dataConfig = YamlConfiguration.loadConfiguration(dataFile);
-
         long currentAmount = dataConfig.getLong("data." + dataeconomyvalue, 0);
         long newAmount = currentAmount + value;
-
         try {
             switch (databasetype) {
                 case "h2":
@@ -120,10 +130,8 @@ public class HexaEconAPI {
                     TableFunctionRedis.INSTANCE.createTableAmount(player.getName(), newAmount);
                     break;
             }
-
             dataConfig.set("data." + dataeconomyvalue, newAmount);
             dataConfig.save(dataFile);
-
             HexaEcon.Companion.getPlugin().reloadConfig();
         } catch (Exception e) {
             e.printStackTrace();
@@ -137,10 +145,8 @@ public class HexaEconAPI {
         File dataFolder = HexaEcon.Companion.getPlugin().getDataFolder();
         File dataFile = new File(dataFolder, "/data/" + player.getName() + "/" + player.getName() + "_" + databasetype + ".txt");
         FileConfiguration dataConfig = YamlConfiguration.loadConfiguration(dataFile);
-
         long currentAmount = dataConfig.getLong("data." + dataeconomyvalue, 0);
         long newAmount = currentAmount - value;
-
         if (newAmount >= 0) {
             try {
                 switch (databasetype) {
@@ -161,10 +167,8 @@ public class HexaEconAPI {
                         TableFunctionRedis.INSTANCE.createTableAmount(player.getName(), newAmount);
                         break;
                 }
-
                 dataConfig.set("data." + dataeconomyvalue, newAmount);
                 dataConfig.save(dataFile);
-
                 HexaEcon.Companion.getPlugin().reloadConfig();
             } catch (Exception e) {
                 e.printStackTrace();
@@ -176,26 +180,30 @@ public class HexaEconAPI {
     public static String getPlayerBalance(Player player) throws SQLException {
         String databasetype = GetConfig.INSTANCE.main().getString("DataBase.Type");
         String dataeconomyvalue = GetConfig.INSTANCE.main().getString("DataBase.DataEconomyName");
-        switch (databasetype) {
-            case "h2" -> {
-                return TableFunctionSQL.selectAllFromTableAsStringSQLite(player.getName()).toString().replace("[", "").replace("]", "");
+        try {
+            switch (databasetype) {
+                case "h2" -> {
+                    return TableFunctionSQL.selectAllFromTableAsStringSQLite(player.getName()).toString().replace("[", "").replace("]", "");
+                }
+                case "MongoDB" -> {
+                    return TableFunctionMongo.INSTANCE.selectAllFromCollectionAsString(player.getName()).toString().replace("[", "").replace("]", "");
+                }
+                case "MySQL" -> {
+                    Statement stmt = HexaEcon.Companion.getMySQLManager().getConnection().createStatement();
+                    String SQL = "SELECT * FROM " + player.getName();
+                    ResultSet rs = stmt.executeQuery(SQL);
+                    rs.next();
+                    String value = String.valueOf(rs.getLong(dataeconomyvalue));
+                    rs.close();
+                    stmt.close();
+                    return value;
+                }
+                case "Redis" -> {
+                    return TableFunctionRedis.selectAllFromCollectionAsStringRedis(player.getName()).toString().replace("[", "").replace("]", "");
+                }
             }
-            case "MongoDB" -> {
-                return TableFunctionMongo.INSTANCE.selectAllFromCollectionAsString(player.getName()).toString().replace("[", "").replace("]", "");
-            }
-            case "MySQL" -> {
-                Statement stmt = HexaEcon.Companion.getMySQLManager().getConnection().createStatement();
-                String SQL = "SELECT * FROM " + player.getName();
-                ResultSet rs = stmt.executeQuery(SQL);
-                rs.next();
-                String value = String.valueOf(rs.getLong(dataeconomyvalue));
-                rs.close();
-                stmt.close();
-                return value;
-            }
-            case "Redis" -> {
-                return TableFunctionRedis.selectAllFromCollectionAsStringRedis(player.getName()).toString().replace("[", "").replace("]", "");
-            }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
         return "Unknown Balance";
     }
@@ -203,26 +211,30 @@ public class HexaEconAPI {
     public static String getFormattedPlayerBalance(Player player) throws SQLException {
         String databasetype = GetConfig.INSTANCE.main().getString("DataBase.Type");
         String dataeconomyvalue = GetConfig.INSTANCE.main().getString("DataBase.DataEconomyName");
-        switch (databasetype) {
-            case "h2" -> {
-                return formatBalance(TableFunctionSQL.selectAllFromTableAsStringSQLite(player.getName()).toString().replace("[", "").replace("]", ""));
+        try {
+            switch (databasetype) {
+                case "h2" -> {
+                    return formatBalance(TableFunctionSQL.selectAllFromTableAsStringSQLite(player.getName()).toString().replace("[", "").replace("]", ""));
+                }
+                case "MongoDB" -> {
+                    return formatBalance(TableFunctionMongo.INSTANCE.selectAllFromCollectionAsString(player.getName()).toString().replace("[", "").replace("]", ""));
+                }
+                case "MySQL" -> {
+                    Statement stmt = HexaEcon.Companion.getMySQLManager().getConnection().createStatement();
+                    String SQL = "SELECT * FROM " + player.getName();
+                    ResultSet rs = stmt.executeQuery(SQL);
+                    rs.next();
+                    String value = String.valueOf(rs.getLong(dataeconomyvalue));
+                    rs.close();
+                    stmt.close();
+                    return formatBalance(value);
+                }
+                case "Redis" -> {
+                    return formatBalance(TableFunctionRedis.selectAllFromCollectionAsStringRedis(player.getName()).toString().replace("[", "").replace("]", ""));
+                }
             }
-            case "MongoDB" -> {
-                return formatBalance(TableFunctionMongo.INSTANCE.selectAllFromCollectionAsString(player.getName()).toString().replace("[", "").replace("]", ""));
-            }
-            case "MySQL" -> {
-                Statement stmt = HexaEcon.Companion.getMySQLManager().getConnection().createStatement();
-                String SQL = "SELECT * FROM " + player.getName();
-                ResultSet rs = stmt.executeQuery(SQL);
-                rs.next();
-                String value = String.valueOf(rs.getLong(dataeconomyvalue));
-                rs.close();
-                stmt.close();
-                return formatBalance(value);
-            }
-            case "Redis" -> {
-                return formatBalance(TableFunctionRedis.selectAllFromCollectionAsStringRedis(player.getName()).toString().replace("[", "").replace("]", ""));
-            }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
         return "Unknown Balance";
     }

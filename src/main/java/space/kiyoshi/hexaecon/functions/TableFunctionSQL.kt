@@ -11,6 +11,8 @@ import org.bukkit.entity.Player
 import space.kiyoshi.hexaecon.HexaEcon
 import space.kiyoshi.hexaecon.utils.GetConfig
 import java.sql.SQLException
+import java.util.concurrent.CompletableFuture
+import java.util.concurrent.ExecutionException
 
 object TableFunctionSQL {
     private val dataeconomyvalue = GetConfig.main().getString("DataBase.DataEconomyName")!!
@@ -116,6 +118,26 @@ object TableFunctionSQL {
         stmt.executeUpdate(sqlDrop)
         stmt.close()
     }
+
+    fun getValueFromSQL(player: Player, dataeconomyvalue: String): Long {
+        val future = CompletableFuture.supplyAsync {
+            val stmt = HexaEcon.MySQLManager!!.getConnection()!!.createStatement()
+            val SQL = "SELECT * FROM " + player.name
+            val rs = stmt.executeQuery(SQL)
+            rs.next()
+            val value = rs.getLong(dataeconomyvalue)
+            rs.close()
+            stmt.close()
+            value
+        }
+        return try {
+            future.get()
+        } catch (e: ExecutionException) {
+            e.printStackTrace()
+            0L
+        }
+    }
+
 
     @JvmStatic
     @Throws(SQLException::class)
