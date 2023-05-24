@@ -90,6 +90,10 @@ Sounds: # https://hub.spigotmc.org/javadocs/bukkit/org/bukkit/Sound.html
     Sound: "NONE"
     Volume: 100
     Pitch: 1
+  NoPermission:
+    Sound: "ENTITY_VILLAGER_NO"
+    Volume: 100
+    Pitch: 1
 
 # Texture
 TextureManager:

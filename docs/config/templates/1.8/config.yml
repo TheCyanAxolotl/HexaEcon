@@ -65,7 +65,7 @@ Economy:
       - "&f&l| &7at /warp shop"
 
 # Sounds
-Sounds: # https://hub.spigotmc.org/javadocs/bukkit/org/bukkit/Sound.html
+Sounds: # https://helpch.at/docs/1.8/index.html?org/bukkit/Sound.html
   OnPlayerInteractWithEcon:
     Sound: "LEVEL_UP" # if the sound is NONE no play sounds
     Volume: 100
@@ -88,6 +88,10 @@ Sounds: # https://hub.spigotmc.org/javadocs/bukkit/org/bukkit/Sound.html
     Pitch: 1
   WalletCommand:
     Sound: "NONE"
+    Volume: 100
+    Pitch: 1
+  NoPermission:
+    Sound: "VILLAGER_NO"
     Volume: 100
     Pitch: 1
 
