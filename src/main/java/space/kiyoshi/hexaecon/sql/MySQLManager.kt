@@ -36,12 +36,8 @@ class MySQLManager {
                 } else {
                     Class.forName("com.mysql.cj.jdbc.Driver")
                 }
-                val unicode =
-                    "useSSL=false&autoReconnect=true&useUnicode=yes&characterEncoding=UTF-8&allowPublicKeyRetrieval=true"
-                DriverManager.getConnection(
-                    "jdbc:mysql://" +
-                            host + ":" + port + "/" + database + "?" + unicode, username, password
-                )
+                val unicode = "useSSL=false&autoReconnect=true&useUnicode=yes&characterEncoding=UTF-8&allowPublicKeyRetrieval=true"
+                DriverManager.getConnection("jdbc:mysql://$host:$port/$database?$unicode", username, password)
             } catch (e: Exception) {
                 return e.printStackTrace().also { KiyoshiLogger.log(LogRecord(Level.SEVERE, "[MySQL] error while pulling requests from HexaEcon [1]"), "HexaEcon") }
             }

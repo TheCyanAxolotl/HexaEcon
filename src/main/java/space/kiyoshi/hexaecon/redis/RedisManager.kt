@@ -3,7 +3,6 @@
  *   All rights reserved.
  */
 
-@file:Suppress("unused")
 
 package space.kiyoshi.hexaecon.redis
 
@@ -31,9 +30,5 @@ class RedisManager(private val host: String, private val port: Int) {
 
     fun getValue(key: String): String? {
         return jedis.get(key)
-    }
-
-    fun deleteKey(key: String) {
-        jedis.del(key)
     }
 }

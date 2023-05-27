@@ -3,7 +3,7 @@
  *   All rights reserved.
  */
 
-@file:Suppress("RedundantIf", "SpellCheckingInspection", "unused")
+@file:Suppress("RedundantIf", "SpellCheckingInspection")
 
 package space.kiyoshi.hexaecon.sql
 
@@ -24,7 +24,6 @@ class SQLiteManager(private val databasePath: String) {
         try {
             Class.forName("org.sqlite.JDBC")
             connection = DriverManager.getConnection("jdbc:sqlite:$databasePath")
-            println("Connected to SQLite database.")
         } catch (e: ClassNotFoundException) {
             e.printStackTrace()
         } catch (e: SQLException) {
@@ -39,16 +38,6 @@ class SQLiteManager(private val databasePath: String) {
         } catch (e: SQLException) {
             e.printStackTrace()
         }
-    }
-
-    fun executeQuery(query: String): ResultSet? {
-        try {
-            val statement = connection?.createStatement()
-            return statement?.executeQuery(query)
-        } catch (e: SQLException) {
-            e.printStackTrace()
-        }
-        return null
     }
 
     fun getConnection(): Connection? {
