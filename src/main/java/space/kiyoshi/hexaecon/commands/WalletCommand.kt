@@ -3,11 +3,6 @@
  *   All rights reserved.
  */
 
-@file:Suppress(
-    "ReplaceSizeZeroCheckWithIsEmpty", "SameParameterValue", "UnnecessaryVariable",
-    "ReplaceSizeCheckWithIsNotEmpty", "LocalVariableName", "SpellCheckingInspection", "SENSELESS_COMPARISON"
-)
-
 package space.kiyoshi.hexaecon.commands
 
 import com.iridium.iridiumcolorapi.IridiumColorAPI
@@ -54,23 +49,15 @@ class WalletCommand : CommandExecutor, TabCompleter {
     private val volume = GetConfig.main().getInt("Sounds.OnKillMonsters.Volume")
     private val pitch = GetConfig.main().getInt("Sounds.OnKillMonsters.Pitch")
     private val databasetype = GetConfig.main().getString("DataBase.Type")!!
+    private val soundnoperm = GetConfig.main().getString("Sounds.NoPermission.Sound")!!
+    private val pitchnoperm = GetConfig.main().getInt("Sounds.NoPermission.Pitch")
+    private val volumenoperm = GetConfig.main().getInt("Sounds.NoPermission.Volume")
 
     override fun onCommand(sender: CommandSender, command: Command, label: String, args: Array<String>): Boolean {
         val player = sender
         if (command.name == "wallet") {
             if (args.size == 0) {
-                player.sendMessage(
-                    Format.hex(
-                        Format.color(
-                            IridiumColorAPI.process(
-                                usageFormat().replace(
-                                    "%u%",
-                                    usageConvertDeposit()!!
-                                )
-                            )
-                        )
-                    )
-                )
+                player.sendMessage(Format.hex(Format.color(IridiumColorAPI.process(usageFormat().replace("%u%", usageConvertDeposit()!!)))))
                 if (sound != "NONE") {
                     if (sender is Player) {
                         sender.playSound(sender.location, Sound.valueOf(sound), volume.toFloat(), pitch.toFloat())
@@ -84,73 +71,29 @@ class WalletCommand : CommandExecutor, TabCompleter {
                         if (sender is Player) {
                             player.sendMessage(Format.hex(Format.color(IridiumColorAPI.process(configurationReloaded()))))
                         }
-                        KiyoshiLogger.log(
-                            LogRecord(Level.INFO, "[HexaEcon] configuration successfully reloaded."),
-                            "HexaEcon"
-                        )
+                        KiyoshiLogger.log(LogRecord(Level.INFO, "[HexaEcon] configuration successfully reloaded."), "HexaEcon")
                     } else {
-                        player.sendMessage(
-                            Format.hex(
-                                Format.color(
-                                    IridiumColorAPI.process(
-                                        accessDenied().replace(
-                                            "%perm%",
-                                            "hexaecon.permissions.reload"
-                                        )
-                                    )
-                                )
-                            )
-                        )
+                        if (soundnoperm != "NONE") {
+                            (player as Player).player?.playSound(player.location, Sound.valueOf(sound), volumenoperm.toFloat(), pitchnoperm.toFloat())
+                        }
+                        player.sendMessage(Format.hex(Format.color(IridiumColorAPI.process(accessDenied().replace("%perm%", "hexaecon.permissions.reload")))))
                     }
                 }
                 if (args[0] == "withdraw") {
                     if (player.hasPermission("hexaecon.permissions.withdraw")) {
                         try {
                             if (args.size < 2) {
-                                sender.sendMessage(
-                                    Format.hex(
-                                        Format.color(
-                                            IridiumColorAPI.process(
-                                                usageFormat().replace(
-                                                    "%u%",
-                                                    usageConvertDeposit()!!
-                                                )
-                                            )
-                                        )
-                                    )
-                                )
+                                sender.sendMessage(Format.hex(Format.color(IridiumColorAPI.process(usageFormat().replace("%u%", usageConvertDeposit()!!)))))
                                 if (sound != "NONE") {
                                     if (sender is Player) {
-                                        sender.playSound(
-                                            sender.location,
-                                            Sound.valueOf(sound),
-                                            volume.toFloat(),
-                                            pitch.toFloat()
-                                        )
+                                        sender.playSound(sender.location, Sound.valueOf(sound), volume.toFloat(), pitch.toFloat())
                                     }
                                 }
                             } else {
-                                if (!(Format.hasLetter(args[1]) ||
-                                            Format.hasLetterAndSpecial(args[1]) ||
-                                            Format.hasLetterAndMabyeDigit(args[1]) ||
-                                            Format.hasLetterSpecialAndMaybeDigit(args[1]) ||
-                                            Format.hasSpecial(args[1]) ||
-                                            Format.hasLetter(args[1]))
-                                ) {
+                                if (!(Format.hasLetter(args[1]) || Format.hasLetterAndSpecial(args[1]) || Format.hasLetterAndMabyeDigit(args[1]) || Format.hasLetterSpecialAndMaybeDigit(args[1]) || Format.hasSpecial(args[1]) || Format.hasLetter(args[1]))) {
                                     val remove = args[1].toLong()
                                     if (remove == 0L) {
-                                        sender.sendMessage(
-                                            Format.hex(
-                                                IridiumColorAPI.process(
-                                                    Format.color(
-                                                        invalidAmount().replace(
-                                                            "%valuename%",
-                                                            dataeconomyvalue
-                                                        )
-                                                    )
-                                                )
-                                            )
-                                        )
+                                        sender.sendMessage(Format.hex(IridiumColorAPI.process(Format.color(invalidAmount().replace("%valuename%", dataeconomyvalue)))))
                                     }
                                     if (remove >= 1) {
                                         val data_names_sqlite =
@@ -177,247 +120,69 @@ class WalletCommand : CommandExecutor, TabCompleter {
                                             data_names_config_mongodb.getLong("data.${dataeconomyvalue}") - remove
                                         val somaredis =
                                             data_names_config_redis.getLong("data.${dataeconomyvalue}") - remove
-
                                         if (databasetype == "h2") {
                                             if (data_names_config_sqlite.getLong("data.${dataeconomyvalue}") >= remove) {
                                                 try {
                                                     when (databasetype) {
                                                         "h2" -> {
                                                             TableFunctionSQL.dropTableSQLite(sender as Player)
-                                                        }
-                                                        "MongoDB" -> {
-                                                            TableFunctionMongo.dropCollection(sender.name)
-                                                        }
-                                                        "MySQL" -> {
-                                                            TableFunctionSQL.dropTable(sender as Player)
-                                                        }
-                                                        "Redis" -> {
-                                                            TableFunctionRedis.dropTable(sender.name)
-                                                        }
-                                                    }
-                                                } catch (_: SQLException) {}
-                                                try {
-                                                    when (databasetype) {
-                                                        "h2" -> {
-                                                            TableFunctionSQL.createTableAmountSQLite(player as Player,
-                                                                somasqlite
-                                                            )
-                                                        }
-                                                        "MongoDB" -> {
-                                                            TableFunctionMongo.createCollectionAmount(sender.name, somamongodb)
-                                                        }
-                                                        "MySQL" -> {
-                                                            TableFunctionSQL.createTableAmount(player as Player,
-                                                                somamysql
-                                                            )
-                                                        }
-                                                        "Redis" -> {
-                                                            TableFunctionRedis.createTableAmount(sender.name, somaredis)
-                                                        }
-                                                    }
-                                                } catch (e: SQLException) {
-                                                    throw RuntimeException(e)
-                                                }
-                                                when (databasetype) {
-                                                    "h2" -> {
-                                                        data_names_config_sqlite["data.${dataeconomyvalue}"] = somasqlite
-                                                    }
-                                                    "MongoDB" -> {
-                                                        data_names_config_mongodb["data.${dataeconomyvalue}"] = somamongodb
-                                                    }
-                                                    "MySQL" -> {
-                                                        data_names_config_mysql["data.${dataeconomyvalue}"] = somamysql
-                                                    }
-                                                    "Redis" -> {
-                                                        data_names_config_redis["data.${dataeconomyvalue}"] = somaredis
-                                                    }
-                                                }
-                                                try {
-                                                    when (databasetype) {
-                                                        "h2" -> {
+                                                            TableFunctionSQL.createTableAmountSQLite(player as Player, somasqlite)
+                                                            data_names_config_sqlite["data.${dataeconomyvalue}"] = somasqlite
                                                             data_names_config_sqlite.save(data_names_sqlite)
                                                         }
                                                         "MongoDB" -> {
+                                                            TableFunctionMongo.dropCollection(sender.name)
+                                                            TableFunctionMongo.createCollectionAmount(sender.name, somamongodb)
+                                                            data_names_config_mongodb["data.${dataeconomyvalue}"] = somamongodb
                                                             data_names_config_mongodb.save(data_names_mongodb)
                                                         }
                                                         "MySQL" -> {
+                                                            TableFunctionSQL.dropTable(sender as Player)
+                                                            TableFunctionSQL.createTableAmount(player as Player, somamysql)
+                                                            data_names_config_mysql["data.${dataeconomyvalue}"] = somamysql
                                                             data_names_config_mysql.save(data_names_mysql)
                                                         }
                                                         "Redis" -> {
+                                                            TableFunctionRedis.dropTable(sender.name)
+                                                            TableFunctionRedis.createTableAmount(sender.name, somaredis)
+                                                            data_names_config_redis["data.${dataeconomyvalue}"] = somaredis
                                                             data_names_config_redis.save(data_names_redis)
                                                         }
                                                     }
-                                                } catch (e: IOException) {
-                                                    throw RuntimeException(e)
+                                                } catch (e: SQLException) {
+                                                    e.printStackTrace()
                                                 }
                                                 plugin.reloadConfig()
-                                                player.sendMessage(
-                                                    Format.hex(
-                                                        Format.color(
-                                                            IridiumColorAPI.process(
-                                                                walletWithdrawAmount().replace(
-                                                                    "%amountformatted%",
-                                                                    Economy.formatBalance(remove.toString())
-                                                                )
-                                                                    .replace("%valuename%", dataeconomyvalue)
-                                                                    .replace("%amount%", remove.toString())
-                                                            )
-                                                        )
-                                                    )
-                                                )
-                                                player.sendMessage(
-                                                    Format.hex(
-                                                        Format.color(
-                                                            IridiumColorAPI.process(
-                                                                walletWithdrawConverted().replace(
-                                                                    "%amount%",
-                                                                    remove.toString()
-                                                                ).replace("%valuename%", dataeconomyvalue)
-                                                                    .replace("%amountformatted%", Economy.formatBalance(remove.toString()))
-                                                            )
-                                                        )
-                                                    )
-                                                )
+                                                player.sendMessage(Format.hex(Format.color(IridiumColorAPI.process(walletWithdrawAmount().replace("%amountformatted%", Economy.formatBalance(remove.toString())).replace("%valuename%", dataeconomyvalue).replace("%amount%", remove.toString())))))
+                                                player.sendMessage(Format.hex(Format.color(IridiumColorAPI.process(walletWithdrawConverted().replace("%amount%", remove.toString()).replace("%valuename%", dataeconomyvalue).replace("%amountformatted%", Economy.formatBalance(remove.toString()))))))
                                                 when (databasetype) {
                                                     "h2" -> {
-                                                        player.sendMessage(
-                                                            Format.hex(
-                                                                Format.color(
-                                                                    IridiumColorAPI.process(
-                                                                        walletWithdrawRemainingAmount().replace(
-                                                                            "%amount%",
-                                                                            data_names_config_sqlite.getLong("data.${dataeconomyvalue}")
-                                                                                .toString()
-                                                                        ).replace("%valuename%", dataeconomyvalue)
-                                                                            .replace("%amountformatted%", Economy.formatBalance(data_names_config_sqlite.getLong("data.${dataeconomyvalue}")
-                                                                                .toString()))
-                                                                    )
-                                                                )
-                                                            )
-                                                        )
+                                                        player.sendMessage(Format.hex(Format.color(IridiumColorAPI.process(walletWithdrawRemainingAmount().replace("%amount%", data_names_config_sqlite.getLong("data.${dataeconomyvalue}").toString()).replace("%valuename%", dataeconomyvalue).replace("%amountformatted%", Economy.formatBalance(data_names_config_sqlite.getLong("data.${dataeconomyvalue}").toString()))))))
                                                     }
                                                     "MongoDB" -> {
-                                                        player.sendMessage(
-                                                            Format.hex(
-                                                                Format.color(
-                                                                    IridiumColorAPI.process(
-                                                                        walletWithdrawRemainingAmount().replace(
-                                                                            "%amount%",
-                                                                            data_names_config_mongodb.getLong("data.${dataeconomyvalue}")
-                                                                                .toString()
-                                                                        ).replace("%valuename%", dataeconomyvalue)
-                                                                            .replace("%amountformatted%", Economy.formatBalance(data_names_config_mongodb.getLong("data.${dataeconomyvalue}")
-                                                                                .toString()))
-                                                                    )
-                                                                )
-                                                            )
-                                                        )
+                                                        player.sendMessage(Format.hex(Format.color(IridiumColorAPI.process(walletWithdrawRemainingAmount().replace("%amount%", data_names_config_mongodb.getLong("data.${dataeconomyvalue}").toString()).replace("%valuename%", dataeconomyvalue).replace("%amountformatted%", Economy.formatBalance(data_names_config_mongodb.getLong("data.${dataeconomyvalue}").toString()))))))
                                                     }
                                                     "MySQL" -> {
-                                                        player.sendMessage(
-                                                            Format.hex(
-                                                                Format.color(
-                                                                    IridiumColorAPI.process(
-                                                                        walletWithdrawRemainingAmount().replace(
-                                                                            "%amount%",
-                                                                            data_names_config_mysql.getLong("data.${dataeconomyvalue}")
-                                                                                .toString()
-                                                                        ).replace("%valuename%", dataeconomyvalue)
-                                                                            .replace("%amountformatted%", Economy.formatBalance(data_names_config_mysql.getLong("data.${dataeconomyvalue}")
-                                                                                .toString()))
-                                                                    )
-                                                                )
-                                                            )
-                                                        )
+                                                        player.sendMessage(Format.hex(Format.color(IridiumColorAPI.process(walletWithdrawRemainingAmount().replace("%amount%", data_names_config_mysql.getLong("data.${dataeconomyvalue}").toString()).replace("%valuename%", dataeconomyvalue).replace("%amountformatted%", Economy.formatBalance(data_names_config_mysql.getLong("data.${dataeconomyvalue}").toString()))))))
                                                     }
                                                     "Redis" -> {
-                                                        player.sendMessage(
-                                                            Format.hex(
-                                                                Format.color(
-                                                                    IridiumColorAPI.process(
-                                                                        walletWithdrawRemainingAmount().replace(
-                                                                            "%amount%",
-                                                                            data_names_config_redis.getLong("data.${dataeconomyvalue}")
-                                                                                .toString()
-                                                                        ).replace("%valuename%", dataeconomyvalue)
-                                                                            .replace("%amountformatted%", Economy.formatBalance(data_names_config_redis.getLong("data.${dataeconomyvalue}")
-                                                                                .toString()))
-                                                                    )
-                                                                )
-                                                            )
-                                                        )
+                                                        player.sendMessage(Format.hex(Format.color(IridiumColorAPI.process(walletWithdrawRemainingAmount().replace("%amount%", data_names_config_redis.getLong("data.${dataeconomyvalue}").toString()).replace("%valuename%", dataeconomyvalue).replace("%amountformatted%", Economy.formatBalance(data_names_config_redis.getLong("data.${dataeconomyvalue}").toString()))))))
                                                     }
                                                 }
                                                 (player as Player).inventory.addItem(Economy.addEconomy(player, remove.toInt()))
                                             } else {
                                                 when (databasetype) {
                                                     "h2" -> {
-                                                        player.sendMessage(
-                                                            Format.hex(
-                                                                Format.color(
-                                                                    IridiumColorAPI.process(
-                                                                        walletWithdrawNoEnoughAmount().replace(
-                                                                            "%amount%",
-                                                                            data_names_config_sqlite.getLong("data.${dataeconomyvalue}")
-                                                                                .toString()
-                                                                        ).replace("%valuename%", dataeconomyvalue)
-                                                                            .replace("%amountformatted%", Economy.formatBalance(data_names_config_sqlite.getLong("data.${dataeconomyvalue}")
-                                                                                .toString()))
-                                                                    )
-                                                                )
-                                                            )
-                                                        )
+                                                        player.sendMessage(Format.hex(Format.color(IridiumColorAPI.process(walletWithdrawNoEnoughAmount().replace("%amount%", data_names_config_sqlite.getLong("data.${dataeconomyvalue}").toString()).replace("%valuename%", dataeconomyvalue).replace("%amountformatted%", Economy.formatBalance(data_names_config_sqlite.getLong("data.${dataeconomyvalue}").toString()))))))
                                                     }
                                                     "MongoDB" -> {
-                                                        player.sendMessage(
-                                                            Format.hex(
-                                                                Format.color(
-                                                                    IridiumColorAPI.process(
-                                                                        walletWithdrawNoEnoughAmount().replace(
-                                                                            "%amount%",
-                                                                            data_names_config_mongodb.getLong("data.${dataeconomyvalue}")
-                                                                                .toString()
-                                                                        ).replace("%valuename%", dataeconomyvalue)
-                                                                            .replace("%amountformatted%", Economy.formatBalance(data_names_config_mongodb.getLong("data.${dataeconomyvalue}")
-                                                                                .toString()))
-                                                                    )
-                                                                )
-                                                            )
-                                                        )
+                                                        player.sendMessage(Format.hex(Format.color(IridiumColorAPI.process(walletWithdrawNoEnoughAmount().replace("%amount%", data_names_config_mongodb.getLong("data.${dataeconomyvalue}").toString()).replace("%valuename%", dataeconomyvalue).replace("%amountformatted%", Economy.formatBalance(data_names_config_mongodb.getLong("data.${dataeconomyvalue}").toString()))))))
                                                     }
                                                     "MySQL" -> {
-                                                        player.sendMessage(
-                                                            Format.hex(
-                                                                Format.color(
-                                                                    IridiumColorAPI.process(
-                                                                        walletWithdrawNoEnoughAmount().replace(
-                                                                            "%amount%",
-                                                                            data_names_config_mysql.getLong("data.${dataeconomyvalue}")
-                                                                                .toString()
-                                                                        ).replace("%valuename%", dataeconomyvalue)
-                                                                            .replace("%amountformatted%", Economy.formatBalance(data_names_config_mysql.getLong("data.${dataeconomyvalue}")
-                                                                                .toString()))
-                                                                    )
-                                                                )
-                                                            )
-                                                        )
+                                                        player.sendMessage(Format.hex(Format.color(IridiumColorAPI.process(walletWithdrawNoEnoughAmount().replace("%amount%", data_names_config_mysql.getLong("data.${dataeconomyvalue}").toString()).replace("%valuename%", dataeconomyvalue).replace("%amountformatted%", Economy.formatBalance(data_names_config_mysql.getLong("data.${dataeconomyvalue}").toString()))))))
                                                     }
                                                     "Redis" -> {
-                                                        player.sendMessage(
-                                                            Format.hex(
-                                                                Format.color(
-                                                                    IridiumColorAPI.process(
-                                                                        walletWithdrawNoEnoughAmount().replace(
-                                                                            "%amount%",
-                                                                            data_names_config_redis.getLong("data.${dataeconomyvalue}")
-                                                                                .toString()
-                                                                        ).replace("%valuename%", dataeconomyvalue)
-                                                                            .replace("%amountformatted%", Economy.formatBalance(data_names_config_redis.getLong("data.${dataeconomyvalue}")
-                                                                                .toString()))
-                                                                    )
-                                                                )
-                                                            )
-                                                        )
+                                                        player.sendMessage(Format.hex(Format.color(IridiumColorAPI.process(walletWithdrawNoEnoughAmount().replace("%amount%", data_names_config_redis.getLong("data.${dataeconomyvalue}").toString()).replace("%valuename%", dataeconomyvalue).replace("%amountformatted%", Economy.formatBalance(data_names_config_redis.getLong("data.${dataeconomyvalue}").toString()))))))
                                                     }
                                                 }
                                             }
@@ -427,241 +192,63 @@ class WalletCommand : CommandExecutor, TabCompleter {
                                                     when (databasetype) {
                                                         "h2" -> {
                                                             TableFunctionSQL.dropTableSQLite(sender as Player)
-                                                        }
-                                                        "MongoDB" -> {
-                                                            TableFunctionMongo.dropCollection(sender.name)
-                                                        }
-                                                        "MySQL" -> {
-                                                            TableFunctionSQL.dropTable(sender as Player)
-                                                        }
-                                                        "Redis" -> {
-                                                            TableFunctionRedis.dropTable(sender.name)
-                                                        }
-                                                    }
-                                                } catch (_: SQLException) {}
-                                                try {
-                                                    when (databasetype) {
-                                                        "h2" -> {
-                                                            TableFunctionSQL.createTableAmountSQLite(
-                                                                player as Player,
-                                                                somasqlite
-                                                            )
-                                                        }
-                                                        "MongoDB" -> {
-                                                            TableFunctionMongo.createCollectionAmount(player.name, somamongodb)
-                                                        }
-                                                        "MySQL" -> {
-                                                            TableFunctionSQL.createTableAmount(player as Player, somamysql)
-                                                        }
-                                                        "Redis" -> {
-                                                            TableFunctionRedis.createTableAmount(player.name, somaredis)
-                                                        }
-                                                    }
-                                                } catch (e: SQLException) {
-                                                    throw RuntimeException(e)
-                                                }
-                                                when (databasetype) {
-                                                    "h2" -> {
-                                                        data_names_config_sqlite["data.${dataeconomyvalue}"] = somasqlite
-                                                    }
-                                                    "MongoDB" -> {
-                                                        data_names_config_mongodb["data.${dataeconomyvalue}"] = somamongodb
-                                                    }
-                                                    "MySQL" -> {
-                                                        data_names_config_mysql["data.${dataeconomyvalue}"] = somamysql
-                                                    }
-                                                    "Redis" -> {
-                                                        data_names_config_redis["data.${dataeconomyvalue}"] = somaredis
-                                                    }
-                                                }
-                                                try {
-                                                    when (databasetype) {
-                                                        "h2" -> {
+                                                            TableFunctionSQL.createTableAmountSQLite(player as Player, somasqlite)
+                                                            data_names_config_sqlite["data.${dataeconomyvalue}"] = somasqlite
                                                             data_names_config_sqlite.save(data_names_sqlite)
                                                         }
                                                         "MongoDB" -> {
+                                                            TableFunctionMongo.dropCollection(sender.name)
+                                                            TableFunctionMongo.createCollectionAmount(player.name, somamongodb)
+                                                            data_names_config_mongodb["data.${dataeconomyvalue}"] = somamongodb
                                                             data_names_config_mongodb.save(data_names_mongodb)
                                                         }
                                                         "MySQL" -> {
+                                                            TableFunctionSQL.dropTable(sender as Player)
+                                                            TableFunctionSQL.createTableAmount(player as Player, somamysql)
+                                                            data_names_config_mysql["data.${dataeconomyvalue}"] = somamysql
                                                             data_names_config_mysql.save(data_names_mysql)
                                                         }
                                                         "Redis" -> {
+                                                            TableFunctionRedis.dropTable(sender.name)
+                                                            TableFunctionRedis.createTableAmount(player.name, somaredis)
+                                                            data_names_config_redis["data.${dataeconomyvalue}"] = somaredis
                                                             data_names_config_redis.save(data_names_redis)
                                                         }
                                                     }
-                                                } catch (e: IOException) {
-                                                    throw RuntimeException(e)
+                                                } catch (e: SQLException) {
+                                                    e.printStackTrace()
                                                 }
                                                 plugin.reloadConfig()
-                                                player.sendMessage(
-                                                    Format.hex(
-                                                        Format.color(
-                                                            IridiumColorAPI.process(
-                                                                walletWithdrawAmount().replace(
-                                                                    "%amount%",
-                                                                    remove.toString()
-                                                                )
-                                                                    .replace("%valuename%", dataeconomyvalue)
-                                                                    .replace("%amountformatted%", Economy.formatBalance(remove.toString()))
-                                                            )
-                                                        )
-                                                    )
-                                                )
-                                                player.sendMessage(
-                                                    Format.hex(
-                                                        Format.color(
-                                                            IridiumColorAPI.process(
-                                                                walletWithdrawConverted().replace(
-                                                                    "%amount%",
-                                                                    remove.toString()
-                                                                ).replace("%valuename%", dataeconomyvalue)
-                                                                    .replace("%amountformatted%", Economy.formatBalance(remove.toString()))
-                                                            )
-                                                        )
-                                                    )
-                                                )
+                                                player.sendMessage(Format.hex(Format.color(IridiumColorAPI.process(walletWithdrawAmount().replace("%amount%", remove.toString()).replace("%valuename%", dataeconomyvalue).replace("%amountformatted%", Economy.formatBalance(remove.toString()))))))
+                                                player.sendMessage(Format.hex(Format.color(IridiumColorAPI.process(walletWithdrawConverted().replace("%amount%", remove.toString()).replace("%valuename%", dataeconomyvalue).replace("%amountformatted%", Economy.formatBalance(remove.toString()))))))
                                                 when (databasetype) {
                                                     "h2" -> {
-                                                        player.sendMessage(
-                                                            Format.hex(
-                                                                Format.color(
-                                                                    IridiumColorAPI.process(
-                                                                        walletWithdrawRemainingAmount().replace(
-                                                                            "%amount%",
-                                                                            data_names_config_sqlite.getLong("data.${dataeconomyvalue}")
-                                                                                .toString()
-                                                                        ).replace("%valuename%", dataeconomyvalue)
-                                                                            .replace("%amountformatted%", Economy.formatBalance(data_names_config_sqlite.getLong("data.${dataeconomyvalue}")
-                                                                                .toString()))
-                                                                    )
-                                                                )
-                                                            )
-                                                        )
+                                                        player.sendMessage(Format.hex(Format.color(IridiumColorAPI.process(walletWithdrawRemainingAmount().replace("%amount%", data_names_config_sqlite.getLong("data.${dataeconomyvalue}").toString()).replace("%valuename%", dataeconomyvalue).replace("%amountformatted%", Economy.formatBalance(data_names_config_sqlite.getLong("data.${dataeconomyvalue}").toString()))))))
                                                     }
                                                     "MongoDB" -> {
-                                                        player.sendMessage(
-                                                            Format.hex(
-                                                                Format.color(
-                                                                    IridiumColorAPI.process(
-                                                                        walletWithdrawRemainingAmount().replace(
-                                                                            "%amount%",
-                                                                            data_names_config_mongodb.getLong("data.${dataeconomyvalue}")
-                                                                                .toString()
-                                                                        ).replace("%valuename%", dataeconomyvalue)
-                                                                            .replace("%amountformatted%", Economy.formatBalance(data_names_config_mongodb.getLong("data.${dataeconomyvalue}")
-                                                                                .toString()))
-                                                                    )
-                                                                )
-                                                            )
-                                                        )
+                                                        player.sendMessage(Format.hex(Format.color(IridiumColorAPI.process(walletWithdrawRemainingAmount().replace("%amount%", data_names_config_mongodb.getLong("data.${dataeconomyvalue}").toString()).replace("%valuename%", dataeconomyvalue).replace("%amountformatted%", Economy.formatBalance(data_names_config_mongodb.getLong("data.${dataeconomyvalue}").toString()))))))
                                                     }
                                                     "MySQL" -> {
-                                                        player.sendMessage(
-                                                            Format.hex(
-                                                                Format.color(
-                                                                    IridiumColorAPI.process(
-                                                                        walletWithdrawRemainingAmount().replace(
-                                                                            "%amount%",
-                                                                            data_names_config_mysql.getLong("data.${dataeconomyvalue}")
-                                                                                .toString()
-                                                                        ).replace("%valuename%", dataeconomyvalue)
-                                                                            .replace("%amountformatted%", Economy.formatBalance(data_names_config_mysql.getLong("data.${dataeconomyvalue}")
-                                                                                .toString()))
-                                                                    )
-                                                                )
-                                                            )
-                                                        )
+                                                        player.sendMessage(Format.hex(Format.color(IridiumColorAPI.process(walletWithdrawRemainingAmount().replace("%amount%", data_names_config_mysql.getLong("data.${dataeconomyvalue}").toString()).replace("%valuename%", dataeconomyvalue).replace("%amountformatted%", Economy.formatBalance(data_names_config_mysql.getLong("data.${dataeconomyvalue}").toString()))))))
                                                     }
                                                     "Redis" -> {
-                                                        player.sendMessage(
-                                                            Format.hex(
-                                                                Format.color(
-                                                                    IridiumColorAPI.process(
-                                                                        walletWithdrawRemainingAmount().replace(
-                                                                            "%amount%",
-                                                                            data_names_config_redis.getLong("data.${dataeconomyvalue}")
-                                                                                .toString()
-                                                                        ).replace("%valuename%", dataeconomyvalue)
-                                                                            .replace("%amountformatted%", Economy.formatBalance(data_names_config_redis.getLong("data.${dataeconomyvalue}")
-                                                                                .toString()))
-                                                                    )
-                                                                )
-                                                            )
-                                                        )
+                                                        player.sendMessage(Format.hex(Format.color(IridiumColorAPI.process(walletWithdrawRemainingAmount().replace("%amount%", data_names_config_redis.getLong("data.${dataeconomyvalue}").toString()).replace("%valuename%", dataeconomyvalue).replace("%amountformatted%", Economy.formatBalance(data_names_config_redis.getLong("data.${dataeconomyvalue}").toString()))))))
                                                     }
                                                 }
-                                                if(sender is Player) {
-                                                    sender.inventory.addItem(Economy.addEconomy(sender, remove.toInt()))
-                                                }
+                                                (sender as Player).player?.inventory?.addItem(Economy.addEconomy(sender, remove.toInt()))
                                             } else {
                                                 when (databasetype) {
                                                     "h2" -> {
-                                                        player.sendMessage(
-                                                            Format.hex(
-                                                                Format.color(
-                                                                    IridiumColorAPI.process(
-                                                                        walletWithdrawNoEnoughAmount().replace(
-                                                                            "%amount%",
-                                                                            data_names_config_sqlite.getLong("data.${dataeconomyvalue}")
-                                                                                .toString()
-                                                                        ).replace("%valuename%", dataeconomyvalue)
-                                                                            .replace("%amountformatted%", Economy.formatBalance(data_names_config_sqlite.getLong("data.${dataeconomyvalue}")
-                                                                                .toString()))
-                                                                    )
-                                                                )
-                                                            )
-                                                        )
+                                                        player.sendMessage(Format.hex(Format.color(IridiumColorAPI.process(walletWithdrawNoEnoughAmount().replace("%amount%", data_names_config_sqlite.getLong("data.${dataeconomyvalue}").toString()).replace("%valuename%", dataeconomyvalue).replace("%amountformatted%", Economy.formatBalance(data_names_config_sqlite.getLong("data.${dataeconomyvalue}").toString()))))))
                                                     }
                                                     "MongoDB" -> {
-                                                        player.sendMessage(
-                                                            Format.hex(
-                                                                Format.color(
-                                                                    IridiumColorAPI.process(
-                                                                        walletWithdrawNoEnoughAmount().replace(
-                                                                            "%amount%",
-                                                                            data_names_config_mongodb.getLong("data.${dataeconomyvalue}")
-                                                                                .toString()
-                                                                        ).replace("%valuename%", dataeconomyvalue)
-                                                                            .replace("%amountformatted%", Economy.formatBalance(data_names_config_mongodb.getLong("data.${dataeconomyvalue}")
-                                                                                .toString()))
-                                                                    )
-                                                                )
-                                                            )
-                                                        )
+                                                        player.sendMessage(Format.hex(Format.color(IridiumColorAPI.process(walletWithdrawNoEnoughAmount().replace("%amount%", data_names_config_mongodb.getLong("data.${dataeconomyvalue}").toString()).replace("%valuename%", dataeconomyvalue).replace("%amountformatted%", Economy.formatBalance(data_names_config_mongodb.getLong("data.${dataeconomyvalue}").toString()))))))
                                                     }
                                                     "MySQL" -> {
-                                                        player.sendMessage(
-                                                            Format.hex(
-                                                                Format.color(
-                                                                    IridiumColorAPI.process(
-                                                                        walletWithdrawNoEnoughAmount().replace(
-                                                                            "%amount%",
-                                                                            data_names_config_mysql.getLong("data.${dataeconomyvalue}")
-                                                                                .toString()
-                                                                        ).replace("%valuename%", dataeconomyvalue)
-                                                                            .replace("%amountformatted%", Economy.formatBalance(data_names_config_mysql.getLong("data.${dataeconomyvalue}")
-                                                                                .toString()))
-                                                                    )
-                                                                )
-                                                            )
-                                                        )
+                                                        player.sendMessage(Format.hex(Format.color(IridiumColorAPI.process(walletWithdrawNoEnoughAmount().replace("%amount%", data_names_config_mysql.getLong("data.${dataeconomyvalue}").toString()).replace("%valuename%", dataeconomyvalue).replace("%amountformatted%", Economy.formatBalance(data_names_config_mysql.getLong("data.${dataeconomyvalue}").toString()))))))
                                                     }
                                                     "Redis" -> {
-                                                        player.sendMessage(
-                                                            Format.hex(
-                                                                Format.color(
-                                                                    IridiumColorAPI.process(
-                                                                        walletWithdrawNoEnoughAmount().replace(
-                                                                            "%amount%",
-                                                                            data_names_config_redis.getLong("data.${dataeconomyvalue}")
-                                                                                .toString()
-                                                                        ).replace("%valuename%", dataeconomyvalue)
-                                                                            .replace("%amountformatted%", Economy.formatBalance(data_names_config_redis.getLong("data.${dataeconomyvalue}")
-                                                                                .toString()))
-                                                                    )
-                                                                )
-                                                            )
-                                                        )
+                                                        player.sendMessage(Format.hex(Format.color(IridiumColorAPI.process(walletWithdrawNoEnoughAmount().replace("%amount%", data_names_config_redis.getLong("data.${dataeconomyvalue}").toString()).replace("%valuename%", dataeconomyvalue).replace("%amountformatted%", Economy.formatBalance(data_names_config_redis.getLong("data.${dataeconomyvalue}").toString()))))))
                                                     }
                                                 }
                                             }
@@ -671,244 +258,63 @@ class WalletCommand : CommandExecutor, TabCompleter {
                                                     when (databasetype) {
                                                         "h2" -> {
                                                             TableFunctionSQL.dropTableSQLite(sender as Player)
-                                                        }
-                                                        "MongoDB" -> {
-                                                            TableFunctionMongo.dropCollection(sender.name)
-                                                        }
-                                                        "MySQL" -> {
-                                                            TableFunctionSQL.dropTable(sender as Player)
-                                                        }
-                                                        "Redis" -> {
-                                                            TableFunctionRedis.dropTable(sender.name)
-                                                        }
-                                                    }
-                                                } catch (_: SQLException) {}
-                                                try {
-                                                    when (databasetype) {
-                                                        "h2" -> {
-                                                            TableFunctionSQL.createTableAmountSQLite(
-                                                                player as Player,
-                                                                somasqlite
-                                                            )
-                                                        }
-                                                        "MongoDB" -> {
-                                                            TableFunctionMongo.createCollectionAmount(
-                                                                player.name,
-                                                                somasqlite
-                                                            )
-                                                        }
-                                                        "MySQL" -> {
-                                                            TableFunctionSQL.createTableAmount(player as Player, somamysql)
-                                                        }
-                                                        "Redis" -> {
-                                                            TableFunctionRedis.createTableAmount(player.name, somaredis)
-                                                        }
-                                                    }
-                                                } catch (e: SQLException) {
-                                                    throw RuntimeException(e)
-                                                }
-                                                when (databasetype) {
-                                                    "h2" -> {
-                                                        data_names_config_sqlite["data.${dataeconomyvalue}"] = somasqlite
-                                                    }
-                                                    "MongoDB" -> {
-                                                        data_names_config_mongodb["data.${dataeconomyvalue}"] = somamongodb
-                                                    }
-                                                    "MySQL" -> {
-                                                        data_names_config_mysql["data.${dataeconomyvalue}"] = somamysql
-                                                    }
-                                                    "Redis" -> {
-                                                        data_names_config_redis["data.${dataeconomyvalue}"] = somaredis
-                                                    }
-                                                }
-                                                try {
-                                                    when (databasetype) {
-                                                        "h2" -> {
+                                                            TableFunctionSQL.createTableAmountSQLite(player as Player, somasqlite)
+                                                            data_names_config_sqlite["data.${dataeconomyvalue}"] = somasqlite
                                                             data_names_config_sqlite.save(data_names_sqlite)
                                                         }
                                                         "MongoDB" -> {
+                                                            TableFunctionMongo.dropCollection(sender.name)
+                                                            TableFunctionMongo.createCollectionAmount(player.name, somasqlite)
+                                                            data_names_config_mongodb["data.${dataeconomyvalue}"] = somamongodb
                                                             data_names_config_mongodb.save(data_names_mongodb)
                                                         }
                                                         "MySQL" -> {
+                                                            TableFunctionSQL.dropTable(sender as Player)
+                                                            TableFunctionSQL.createTableAmount(player as Player, somamysql)
+                                                            data_names_config_mysql["data.${dataeconomyvalue}"] = somamysql
                                                             data_names_config_mysql.save(data_names_mysql)
                                                         }
                                                         "Redis" -> {
+                                                            TableFunctionRedis.dropTable(sender.name)
+                                                            TableFunctionRedis.createTableAmount(player.name, somaredis)
+                                                            data_names_config_redis["data.${dataeconomyvalue}"] = somaredis
                                                             data_names_config_redis.save(data_names_redis)
                                                         }
                                                     }
-                                                } catch (e: IOException) {
-                                                    throw RuntimeException(e)
+                                                } catch (e: SQLException) {
+                                                    e.printStackTrace()
                                                 }
                                                 plugin.reloadConfig()
-                                                player.sendMessage(
-                                                    Format.hex(
-                                                        Format.color(
-                                                            IridiumColorAPI.process(
-                                                                walletWithdrawAmount().replace(
-                                                                    "%amount%",
-                                                                    remove.toString()
-                                                                )
-                                                                    .replace("%valuename%", dataeconomyvalue)
-                                                                    .replace("%amountformatted%", Economy.formatBalance(remove.toString()))
-                                                            )
-                                                        )
-                                                    )
-                                                )
-                                                player.sendMessage(
-                                                    Format.hex(
-                                                        Format.color(
-                                                            IridiumColorAPI.process(
-                                                                walletWithdrawConverted().replace(
-                                                                    "%amount%",
-                                                                    remove.toString()
-                                                                ).replace("%valuename%", dataeconomyvalue)
-                                                                    .replace("%amountformatted%", Economy.formatBalance(remove.toString()))
-                                                            )
-                                                        )
-                                                    )
-                                                )
+                                                player.sendMessage(Format.hex(Format.color(IridiumColorAPI.process(walletWithdrawAmount().replace("%amount%", remove.toString()).replace("%valuename%", dataeconomyvalue).replace("%amountformatted%", Economy.formatBalance(remove.toString()))))))
+                                                player.sendMessage(Format.hex(Format.color(IridiumColorAPI.process(walletWithdrawConverted().replace("%amount%", remove.toString()).replace("%valuename%", dataeconomyvalue).replace("%amountformatted%", Economy.formatBalance(remove.toString()))))))
                                                 when (databasetype) {
                                                     "h2" -> {
-                                                        player.sendMessage(
-                                                            Format.hex(
-                                                                Format.color(
-                                                                    IridiumColorAPI.process(
-                                                                        walletWithdrawRemainingAmount().replace(
-                                                                            "%amount%",
-                                                                            data_names_config_sqlite.getLong("data.${dataeconomyvalue}")
-                                                                                .toString()
-                                                                        ).replace("%valuename%", dataeconomyvalue)
-                                                                            .replace("%amountformatted%", Economy.formatBalance(data_names_config_sqlite.getLong("data.${dataeconomyvalue}")
-                                                                                .toString()))
-                                                                    )
-                                                                )
-                                                            )
-                                                        )
+                                                        player.sendMessage(Format.hex(Format.color(IridiumColorAPI.process(walletWithdrawRemainingAmount().replace("%amount%", data_names_config_sqlite.getLong("data.${dataeconomyvalue}").toString()).replace("%valuename%", dataeconomyvalue).replace("%amountformatted%", Economy.formatBalance(data_names_config_sqlite.getLong("data.${dataeconomyvalue}").toString()))))))
                                                     }
                                                     "MongoDB" -> {
-                                                        player.sendMessage(
-                                                            Format.hex(
-                                                                Format.color(
-                                                                    IridiumColorAPI.process(
-                                                                        walletWithdrawRemainingAmount().replace(
-                                                                            "%amount%",
-                                                                            data_names_config_mongodb.getLong("data.${dataeconomyvalue}")
-                                                                                .toString()
-                                                                        ).replace("%valuename%", dataeconomyvalue)
-                                                                            .replace("%amountformatted%", Economy.formatBalance(data_names_config_mongodb.getLong("data.${dataeconomyvalue}")
-                                                                                .toString()))
-                                                                    )
-                                                                )
-                                                            )
-                                                        )
+                                                        player.sendMessage(Format.hex(Format.color(IridiumColorAPI.process(walletWithdrawRemainingAmount().replace("%amount%", data_names_config_mongodb.getLong("data.${dataeconomyvalue}").toString()).replace("%valuename%", dataeconomyvalue).replace("%amountformatted%", Economy.formatBalance(data_names_config_mongodb.getLong("data.${dataeconomyvalue}").toString()))))))
                                                     }
                                                     "MySQL" -> {
-                                                        player.sendMessage(
-                                                            Format.hex(
-                                                                Format.color(
-                                                                    IridiumColorAPI.process(
-                                                                        walletWithdrawRemainingAmount().replace(
-                                                                            "%amount%",
-                                                                            data_names_config_mysql.getLong("data.${dataeconomyvalue}")
-                                                                                .toString()
-                                                                        ).replace("%valuename%", dataeconomyvalue)
-                                                                            .replace("%amountformatted%", Economy.formatBalance(data_names_config_mysql.getLong("data.${dataeconomyvalue}")
-                                                                                .toString()))
-                                                                    )
-                                                                )
-                                                            )
-                                                        )
+                                                        player.sendMessage(Format.hex(Format.color(IridiumColorAPI.process(walletWithdrawRemainingAmount().replace("%amount%", data_names_config_mysql.getLong("data.${dataeconomyvalue}").toString()).replace("%valuename%", dataeconomyvalue).replace("%amountformatted%", Economy.formatBalance(data_names_config_mysql.getLong("data.${dataeconomyvalue}").toString()))))))
                                                     }
                                                     "Redis" -> {
-                                                        player.sendMessage(
-                                                            Format.hex(
-                                                                Format.color(
-                                                                    IridiumColorAPI.process(
-                                                                        walletWithdrawRemainingAmount().replace(
-                                                                            "%amount%",
-                                                                            data_names_config_redis.getLong("data.${dataeconomyvalue}")
-                                                                                .toString()
-                                                                        ).replace("%valuename%", dataeconomyvalue)
-                                                                            .replace("%amountformatted%", Economy.formatBalance(data_names_config_redis.getLong("data.${dataeconomyvalue}")
-                                                                                .toString()))
-                                                                    )
-                                                                )
-                                                            )
-                                                        )
+                                                        player.sendMessage(Format.hex(Format.color(IridiumColorAPI.process(walletWithdrawRemainingAmount().replace("%amount%", data_names_config_redis.getLong("data.${dataeconomyvalue}").toString()).replace("%valuename%", dataeconomyvalue).replace("%amountformatted%", Economy.formatBalance(data_names_config_redis.getLong("data.${dataeconomyvalue}").toString()))))))
                                                     }
                                                 }
-                                                if(sender is Player) {
-                                                    sender.inventory.addItem(Economy.addEconomy(sender, remove.toInt()))
-                                                }
+                                                (sender as Player).player?.inventory?.addItem(Economy.addEconomy(sender, remove.toInt()))
                                             } else {
                                                 when (databasetype) {
                                                     "h2" -> {
-                                                        player.sendMessage(
-                                                            Format.hex(
-                                                                Format.color(
-                                                                    IridiumColorAPI.process(
-                                                                        walletWithdrawNoEnoughAmount().replace(
-                                                                            "%amount%",
-                                                                            data_names_config_sqlite.getLong("data.${dataeconomyvalue}")
-                                                                                .toString()
-                                                                        ).replace("%valuename%", dataeconomyvalue)
-                                                                            .replace("%amountformatted%", Economy.formatBalance(data_names_config_sqlite.getLong("data.${dataeconomyvalue}")
-                                                                                .toString()))
-                                                                    )
-                                                                )
-                                                            )
-                                                        )
+                                                        player.sendMessage(Format.hex(Format.color(IridiumColorAPI.process(walletWithdrawNoEnoughAmount().replace("%amount%", data_names_config_sqlite.getLong("data.${dataeconomyvalue}").toString()).replace("%valuename%", dataeconomyvalue).replace("%amountformatted%", Economy.formatBalance(data_names_config_sqlite.getLong("data.${dataeconomyvalue}").toString()))))))
                                                     }
                                                     "MongoDB" -> {
-                                                        player.sendMessage(
-                                                            Format.hex(
-                                                                Format.color(
-                                                                    IridiumColorAPI.process(
-                                                                        walletWithdrawNoEnoughAmount().replace(
-                                                                            "%amount%",
-                                                                            data_names_config_mongodb.getLong("data.${dataeconomyvalue}")
-                                                                                .toString()
-                                                                        ).replace("%valuename%", dataeconomyvalue)
-                                                                            .replace("%amountformatted%", Economy.formatBalance(data_names_config_mongodb.getLong("data.${dataeconomyvalue}")
-                                                                                .toString()))
-                                                                    )
-                                                                )
-                                                            )
-                                                        )
+                                                        player.sendMessage(Format.hex(Format.color(IridiumColorAPI.process(walletWithdrawNoEnoughAmount().replace("%amount%", data_names_config_mongodb.getLong("data.${dataeconomyvalue}").toString()).replace("%valuename%", dataeconomyvalue).replace("%amountformatted%", Economy.formatBalance(data_names_config_mongodb.getLong("data.${dataeconomyvalue}").toString()))))))
                                                     }
                                                     "MySQL" -> {
-                                                        player.sendMessage(
-                                                            Format.hex(
-                                                                Format.color(
-                                                                    IridiumColorAPI.process(
-                                                                        walletWithdrawNoEnoughAmount().replace(
-                                                                            "%amount%",
-                                                                            data_names_config_mysql.getLong("data.${dataeconomyvalue}")
-                                                                                .toString()
-                                                                        ).replace("%valuename%", dataeconomyvalue)
-                                                                            .replace("%amountformatted%", Economy.formatBalance(data_names_config_mysql.getLong("data.${dataeconomyvalue}")
-                                                                                .toString()))
-                                                                    )
-                                                                )
-                                                            )
-                                                        )
+                                                        player.sendMessage(Format.hex(Format.color(IridiumColorAPI.process(walletWithdrawNoEnoughAmount().replace("%amount%", data_names_config_mysql.getLong("data.${dataeconomyvalue}").toString()).replace("%valuename%", dataeconomyvalue).replace("%amountformatted%", Economy.formatBalance(data_names_config_mysql.getLong("data.${dataeconomyvalue}").toString()))))))
                                                     }
                                                     "Redis" -> {
-                                                        player.sendMessage(
-                                                            Format.hex(
-                                                                Format.color(
-                                                                    IridiumColorAPI.process(
-                                                                        walletWithdrawNoEnoughAmount().replace(
-                                                                            "%amount%",
-                                                                            data_names_config_redis.getLong("data.${dataeconomyvalue}")
-                                                                                .toString()
-                                                                        ).replace("%valuename%", dataeconomyvalue)
-                                                                            .replace("%amountformatted%", Economy.formatBalance(data_names_config_redis.getLong("data.${dataeconomyvalue}")
-                                                                                .toString()))
-                                                                    )
-                                                                )
-                                                            )
-                                                        )
+                                                        player.sendMessage(Format.hex(Format.color(IridiumColorAPI.process(walletWithdrawNoEnoughAmount().replace("%amount%", data_names_config_redis.getLong("data.${dataeconomyvalue}").toString()).replace("%valuename%", dataeconomyvalue).replace("%amountformatted%", Economy.formatBalance(data_names_config_redis.getLong("data.${dataeconomyvalue}").toString()))))))
                                                     }
                                                 }
                                             }
@@ -918,167 +324,47 @@ class WalletCommand : CommandExecutor, TabCompleter {
                                                     when (databasetype) {
                                                         "h2" -> {
                                                             TableFunctionSQL.dropTableSQLite(sender as Player)
-                                                        }
-                                                        "MongoDB" -> {
-                                                            TableFunctionMongo.dropCollection(sender.name)
-                                                        }
-                                                        "MySQL" -> {
-                                                            TableFunctionSQL.dropTable(sender as Player)
-                                                        }
-                                                        "Redis" -> {
-                                                            TableFunctionRedis.dropTable(sender.name)
-                                                        }
-                                                    }
-                                                } catch (_: SQLException) {}
-                                                try {
-                                                    when (databasetype) {
-                                                        "h2" -> {
-                                                            TableFunctionSQL.createTableAmountSQLite(
-                                                                player as Player,
-                                                                somasqlite
-                                                            )
-                                                        }
-                                                        "MongoDB" -> {
-                                                            TableFunctionMongo.createCollectionAmount(player.name, somamongodb)
-                                                        }
-                                                        "MySQL" -> {
-                                                            TableFunctionSQL.createTableAmount(player as Player, somamysql)
-                                                        }
-                                                        "Redis" -> {
-                                                            TableFunctionRedis.createTableAmount(player.name, somaredis)
-                                                        }
-                                                    }
-                                                } catch (e: SQLException) {
-                                                    throw RuntimeException(e)
-                                                }
-                                                when (databasetype) {
-                                                    "h2" -> {
-                                                        data_names_config_sqlite["data.${dataeconomyvalue}"] = somasqlite
-                                                    }
-                                                    "MongoDB" -> {
-                                                        data_names_config_mongodb["data.${dataeconomyvalue}"] = somamongodb
-                                                    }
-                                                    "MySQL" -> {
-                                                        data_names_config_mysql["data.${dataeconomyvalue}"] = somamysql
-                                                    }
-                                                    "Redis" -> {
-                                                        data_names_config_redis["data.${dataeconomyvalue}"] = somaredis
-                                                    }
-                                                }
-                                                try {
-                                                    when (databasetype) {
-                                                        "h2" -> {
+                                                            TableFunctionSQL.createTableAmountSQLite(player as Player, somasqlite)
+                                                            data_names_config_sqlite["data.${dataeconomyvalue}"] = somasqlite
                                                             data_names_config_sqlite.save(data_names_sqlite)
                                                         }
                                                         "MongoDB" -> {
+                                                            TableFunctionMongo.dropCollection(sender.name)
+                                                            TableFunctionMongo.createCollectionAmount(player.name, somamongodb)
+                                                            data_names_config_mongodb["data.${dataeconomyvalue}"] = somamongodb
                                                             data_names_config_mongodb.save(data_names_mongodb)
                                                         }
                                                         "MySQL" -> {
+                                                            TableFunctionSQL.dropTable(sender as Player)
+                                                            TableFunctionSQL.createTableAmount(player as Player, somamysql)
+                                                            data_names_config_mysql["data.${dataeconomyvalue}"] = somamysql
                                                             data_names_config_mysql.save(data_names_mysql)
                                                         }
                                                         "Redis" -> {
+                                                            TableFunctionRedis.dropTable(sender.name)
+                                                            TableFunctionRedis.createTableAmount(player.name, somaredis)
+                                                            data_names_config_redis["data.${dataeconomyvalue}"] = somaredis
                                                             data_names_config_redis.save(data_names_redis)
                                                         }
                                                     }
-                                                } catch (e: IOException) {
-                                                    throw RuntimeException(e)
+                                                } catch (e: SQLException) {
+                                                    e.printStackTrace()
                                                 }
                                                 plugin.reloadConfig()
-                                                player.sendMessage(
-                                                    Format.hex(
-                                                        Format.color(
-                                                            IridiumColorAPI.process(
-                                                                walletWithdrawAmount().replace(
-                                                                    "%amount%",
-                                                                    remove.toString()
-                                                                )
-                                                                    .replace("%valuename%", dataeconomyvalue)
-                                                                    .replace("%amountformatted%", Economy.formatBalance(remove.toString()))
-                                                            )
-                                                        )
-                                                    )
-                                                )
-                                                player.sendMessage(
-                                                    Format.hex(
-                                                        Format.color(
-                                                            IridiumColorAPI.process(
-                                                                walletWithdrawConverted().replace(
-                                                                    "%amount%",
-                                                                    remove.toString()
-                                                                ).replace("%valuename%", dataeconomyvalue)
-                                                                    .replace("%amountformatted%", Economy.formatBalance(remove.toString()))
-                                                            )
-                                                        )
-                                                    )
-                                                )
+                                                player.sendMessage(Format.hex(Format.color(IridiumColorAPI.process(walletWithdrawAmount().replace("%amount%", remove.toString()).replace("%valuename%", dataeconomyvalue).replace("%amountformatted%", Economy.formatBalance(remove.toString()))))))
+                                                player.sendMessage(Format.hex(Format.color(IridiumColorAPI.process(walletWithdrawConverted().replace("%amount%", remove.toString()).replace("%valuename%", dataeconomyvalue).replace("%amountformatted%", Economy.formatBalance(remove.toString()))))))
                                                 when (databasetype) {
                                                     "h2" -> {
-                                                        player.sendMessage(
-                                                            Format.hex(
-                                                                Format.color(
-                                                                    IridiumColorAPI.process(
-                                                                        walletWithdrawRemainingAmount().replace(
-                                                                            "%amount%",
-                                                                            data_names_config_sqlite.getLong("data.${dataeconomyvalue}")
-                                                                                .toString()
-                                                                        ).replace("%valuename%", dataeconomyvalue)
-                                                                            .replace("%amountformatted%", Economy.formatBalance(data_names_config_sqlite.getLong("data.${dataeconomyvalue}")
-                                                                                .toString()))
-                                                                    )
-                                                                )
-                                                            )
-                                                        )
+                                                        player.sendMessage(Format.hex(Format.color(IridiumColorAPI.process(walletWithdrawRemainingAmount().replace("%amount%", data_names_config_sqlite.getLong("data.${dataeconomyvalue}").toString()).replace("%valuename%", dataeconomyvalue).replace("%amountformatted%", Economy.formatBalance(data_names_config_sqlite.getLong("data.${dataeconomyvalue}").toString()))))))
                                                     }
                                                     "MongoDB" -> {
-                                                        player.sendMessage(
-                                                            Format.hex(
-                                                                Format.color(
-                                                                    IridiumColorAPI.process(
-                                                                        walletWithdrawRemainingAmount().replace(
-                                                                            "%amount%",
-                                                                            data_names_config_mongodb.getLong("data.${dataeconomyvalue}")
-                                                                                .toString()
-                                                                        ).replace("%valuename%", dataeconomyvalue)
-                                                                            .replace("%amountformatted%", Economy.formatBalance(data_names_config_mongodb.getLong("data.${dataeconomyvalue}")
-                                                                                .toString()))
-                                                                    )
-                                                                )
-                                                            )
-                                                        )
+                                                        player.sendMessage(Format.hex(Format.color(IridiumColorAPI.process(walletWithdrawRemainingAmount().replace("%amount%", data_names_config_mongodb.getLong("data.${dataeconomyvalue}").toString()).replace("%valuename%", dataeconomyvalue).replace("%amountformatted%", Economy.formatBalance(data_names_config_mongodb.getLong("data.${dataeconomyvalue}").toString()))))))
                                                     }
                                                     "MySQL" -> {
-                                                        player.sendMessage(
-                                                            Format.hex(
-                                                                Format.color(
-                                                                    IridiumColorAPI.process(
-                                                                        walletWithdrawRemainingAmount().replace(
-                                                                            "%amount%",
-                                                                            data_names_config_mysql.getLong("data.${dataeconomyvalue}")
-                                                                                .toString()
-                                                                        ).replace("%valuename%", dataeconomyvalue)
-                                                                            .replace("%amountformatted%", Economy.formatBalance(data_names_config_mysql.getLong("data.${dataeconomyvalue}")
-                                                                                .toString()))
-                                                                    )
-                                                                )
-                                                            )
-                                                        )
+                                                        player.sendMessage(Format.hex(Format.color(IridiumColorAPI.process(walletWithdrawRemainingAmount().replace("%amount%", data_names_config_mysql.getLong("data.${dataeconomyvalue}").toString()).replace("%valuename%", dataeconomyvalue).replace("%amountformatted%", Economy.formatBalance(data_names_config_mysql.getLong("data.${dataeconomyvalue}").toString()))))))
                                                     }
                                                     "Redis" -> {
-                                                        player.sendMessage(
-                                                            Format.hex(
-                                                                Format.color(
-                                                                    IridiumColorAPI.process(
-                                                                        walletWithdrawRemainingAmount().replace(
-                                                                            "%amount%",
-                                                                            data_names_config_redis.getLong("data.${dataeconomyvalue}")
-                                                                                .toString()
-                                                                        ).replace("%valuename%", dataeconomyvalue)
-                                                                            .replace("%amountformatted%", Economy.formatBalance(data_names_config_redis.getLong("data.${dataeconomyvalue}")
-                                                                                .toString()))
-                                                                    )
-                                                                )
-                                                            )
-                                                        )
+                                                        player.sendMessage(Format.hex(Format.color(IridiumColorAPI.process(walletWithdrawRemainingAmount().replace("%amount%", data_names_config_redis.getLong("data.${dataeconomyvalue}").toString()).replace("%valuename%", dataeconomyvalue).replace("%amountformatted%", Economy.formatBalance(data_names_config_redis.getLong("data.${dataeconomyvalue}").toString()))))))
                                                     }
                                                 }
                                                 if(sender is Player) {
@@ -1087,155 +373,42 @@ class WalletCommand : CommandExecutor, TabCompleter {
                                             } else {
                                                 when (databasetype) {
                                                     "h2" -> {
-                                                        player.sendMessage(
-                                                            Format.hex(
-                                                                Format.color(
-                                                                    IridiumColorAPI.process(
-                                                                        walletWithdrawNoEnoughAmount().replace(
-                                                                            "%amount%",
-                                                                            data_names_config_sqlite.getLong("data.${dataeconomyvalue}")
-                                                                                .toString()
-                                                                        ).replace("%valuename%", dataeconomyvalue)
-                                                                            .replace("%amountformatted%", Economy.formatBalance(data_names_config_sqlite.getLong("data.${dataeconomyvalue}")
-                                                                                .toString()))
-                                                                    )
-                                                                )
-                                                            )
-                                                        )
+                                                        player.sendMessage(Format.hex(Format.color(IridiumColorAPI.process(walletWithdrawNoEnoughAmount().replace("%amount%", data_names_config_sqlite.getLong("data.${dataeconomyvalue}").toString()).replace("%valuename%", dataeconomyvalue).replace("%amountformatted%", Economy.formatBalance(data_names_config_sqlite.getLong("data.${dataeconomyvalue}").toString()))))))
                                                     }
                                                     "MongoDB" -> {
-                                                        player.sendMessage(
-                                                            Format.hex(
-                                                                Format.color(
-                                                                    IridiumColorAPI.process(
-                                                                        walletWithdrawNoEnoughAmount().replace(
-                                                                            "%amount%",
-                                                                            data_names_config_mongodb.getLong("data.${dataeconomyvalue}")
-                                                                                .toString()
-                                                                        ).replace("%valuename%", dataeconomyvalue)
-                                                                            .replace("%amountformatted%", Economy.formatBalance(data_names_config_mongodb.getLong("data.${dataeconomyvalue}")
-                                                                                .toString()))
-                                                                    )
-                                                                )
-                                                            )
-                                                        )
+                                                        player.sendMessage(Format.hex(Format.color(IridiumColorAPI.process(walletWithdrawNoEnoughAmount().replace("%amount%", data_names_config_mongodb.getLong("data.${dataeconomyvalue}").toString()).replace("%valuename%", dataeconomyvalue).replace("%amountformatted%", Economy.formatBalance(data_names_config_mongodb.getLong("data.${dataeconomyvalue}").toString()))))))
                                                     }
                                                     "MySQL" -> {
-                                                        player.sendMessage(
-                                                            Format.hex(
-                                                                Format.color(
-                                                                    IridiumColorAPI.process(
-                                                                        walletWithdrawNoEnoughAmount().replace(
-                                                                            "%amount%",
-                                                                            data_names_config_mysql.getLong("data.${dataeconomyvalue}")
-                                                                                .toString()
-                                                                        ).replace("%valuename%", dataeconomyvalue)
-                                                                            .replace("%amountformatted%", Economy.formatBalance(data_names_config_mysql.getLong("data.${dataeconomyvalue}")
-                                                                                .toString()))
-                                                                    )
-                                                                )
-                                                            )
-                                                        )
+                                                        player.sendMessage(Format.hex(Format.color(IridiumColorAPI.process(walletWithdrawNoEnoughAmount().replace("%amount%", data_names_config_mysql.getLong("data.${dataeconomyvalue}").toString()).replace("%valuename%", dataeconomyvalue).replace("%amountformatted%", Economy.formatBalance(data_names_config_mysql.getLong("data.${dataeconomyvalue}").toString()))))))
                                                     }
                                                     "Redis" -> {
-                                                        player.sendMessage(
-                                                            Format.hex(
-                                                                Format.color(
-                                                                    IridiumColorAPI.process(
-                                                                        walletWithdrawNoEnoughAmount().replace(
-                                                                            "%amount%",
-                                                                            data_names_config_redis.getLong("data.${dataeconomyvalue}")
-                                                                                .toString()
-                                                                        ).replace("%valuename%", dataeconomyvalue)
-                                                                            .replace("%amountformatted%", Economy.formatBalance(data_names_config_redis.getLong("data.${dataeconomyvalue}")
-                                                                                .toString()))
-                                                                    )
-                                                                )
-                                                            )
-                                                        )
+                                                        player.sendMessage(Format.hex(Format.color(IridiumColorAPI.process(walletWithdrawNoEnoughAmount().replace("%amount%", data_names_config_redis.getLong("data.${dataeconomyvalue}").toString()).replace("%valuename%", dataeconomyvalue).replace("%amountformatted%", Economy.formatBalance(data_names_config_redis.getLong("data.${dataeconomyvalue}").toString()))))))
                                                     }
                                                 }
                                             }
                                         }
                                     }
                                 } else {
-                                    player.sendMessage(
-                                        Format.hex(
-                                            Format.color(
-                                                IridiumColorAPI.process(
-                                                    invalidAmount().replace(
-                                                        "%valuename%",
-                                                        dataeconomyvalue
-                                                    )
-                                                )
-                                            )
-                                        )
-                                    )
+                                    player.sendMessage(Format.hex(Format.color(IridiumColorAPI.process(invalidAmount().replace("%valuename%", dataeconomyvalue)))))
                                 }
                             }
                         } catch (e: NumberFormatException) {
-                            player.sendMessage(
-                                Format.hex(
-                                    Format.color(
-                                        IridiumColorAPI.process(
-                                            invalidAmount().replace(
-                                                "%valuename%",
-                                                dataeconomyvalue
-                                            )
-                                        )
-                                    )
-                                )
-                            )
+                            player.sendMessage(Format.hex(Format.color(IridiumColorAPI.process(invalidAmount().replace("%valuename%", dataeconomyvalue)))))
                         }
                     } else {
-                        player.sendMessage(
-                            Format.hex(
-                                Format.color(
-                                    IridiumColorAPI.process(
-                                        accessDenied().replace(
-                                            "%perm%",
-                                            "hexaecon.permissions.withdraw"
-                                        )
-                                    )
-                                )
-                            )
-                        )
+                        player.sendMessage(Format.hex(Format.color(IridiumColorAPI.process(accessDenied().replace("%perm%", "hexaecon.permissions.withdraw")))))
                     }
                 }
                 if (args[0] == "remove") {
                     if (player.hasPermission("hexaecon.permissions.remove")) {
                         try {
                             if (args.size < 2) {
-                                sender.sendMessage(
-                                    Format.hex(
-                                        Format.color(
-                                            IridiumColorAPI.process(
-                                                usageFormat().replace(
-                                                    "%u%",
-                                                    usageConvertDeposit()!!
-                                                )
-                                            )
-                                        )
-                                    )
-                                )
+                                sender.sendMessage(Format.hex(Format.color(IridiumColorAPI.process(usageFormat().replace("%u%", usageConvertDeposit()!!)))))
                                 if (sound != "NONE") {
-                                    if (sender is Player) {
-                                        sender.playSound(
-                                            sender.location,
-                                            Sound.valueOf(sound),
-                                            volume.toFloat(),
-                                            pitch.toFloat()
-                                        )
-                                    }
+                                    (sender as Player).player?.playSound(sender.location, Sound.valueOf(sound), volume.toFloat(), pitch.toFloat())
                                 }
                             } else {
-                                if (!(Format.hasLetter(args[1]) ||
-                                            Format.hasLetterAndSpecial(args[1]) ||
-                                            Format.hasLetterAndMabyeDigit(args[1]) ||
-                                            Format.hasLetterSpecialAndMaybeDigit(args[1]) ||
-                                            Format.hasSpecial(args[1]) ||
-                                            Format.hasLetter(args[1]))
-                                ) {
+                                if (!(Format.hasLetter(args[1]) || Format.hasLetterAndSpecial(args[1]) || Format.hasLetterAndMabyeDigit(args[1]) || Format.hasLetterSpecialAndMaybeDigit(args[1]) || Format.hasSpecial(args[1]) || Format.hasLetter(args[1]))) {
                                     val remove = args[1].toLong()
                                     if (remove == 0L) {
                                         sender.sendMessage(
