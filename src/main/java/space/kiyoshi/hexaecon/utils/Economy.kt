@@ -125,17 +125,13 @@ object Economy {
         } else {
             value.toDouble()
         }
-
         val suffix = suffixes.getOrElse(suffixIndex) { "" }
-
         val decimalFormatSymbols = DecimalFormatSymbols.getInstance().apply {
             groupingSeparator = '.'
             decimalSeparator = ','
         }
         val decimalFormat = DecimalFormat(pattern, decimalFormatSymbols)
-
         val formattedBalance = decimalFormat.format(formattedValue)
-
         return "$formattedBalance$suffix"
     }
 }

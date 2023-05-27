@@ -8,10 +8,13 @@
 package space.kiyoshi.hexaecon.sql
 
 import space.kiyoshi.hexaecon.utils.GetConfig
+import space.kiyoshi.hexaecon.utils.KiyoshiLogger
 import space.kiyoshi.hexaecon.utils.NMSUtils
 import java.sql.Connection
 import java.sql.DriverManager
 import java.sql.SQLException
+import java.util.logging.Level
+import java.util.logging.LogRecord
 
 class MySQLManager {
     private val nms = NMSUtils
@@ -40,8 +43,7 @@ class MySQLManager {
                             host + ":" + port + "/" + database + "?" + unicode, username, password
                 )
             } catch (e: Exception) {
-                return e.printStackTrace()
-                //return KiyoshiLogger.log(LogRecord(Level.SEVERE, "[MySQL] error while pulling requests from HexaEcon [1]"), "HexaEcon").also { plugin.server.shutdown() }
+                return e.printStackTrace().also { KiyoshiLogger.log(LogRecord(Level.SEVERE, "[MySQL] error while pulling requests from HexaEcon [1]"), "HexaEcon") }
             }
         }
     }
@@ -51,8 +53,7 @@ class MySQLManager {
             try {
                 connection!!.close()
             } catch (e: SQLException) {
-                return e.printStackTrace()
-                //return KiyoshiLogger.log(LogRecord(Level.SEVERE, "[MySQL] error while pulling requests from HexaEcon [1]"), "HexaEcon").also { plugin.server.shutdown() }
+                return e.printStackTrace().also { KiyoshiLogger.log(LogRecord(Level.SEVERE, "[MySQL] error while pulling requests from HexaEcon [1]"), "HexaEcon") }
             }
         }
     }

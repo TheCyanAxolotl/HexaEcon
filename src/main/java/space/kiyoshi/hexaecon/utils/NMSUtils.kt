@@ -24,23 +24,18 @@ object NMSUtils {
     fun checkServerVersionUp(version: String): Boolean {
         val targetVersion = "1.16"
         val versionPattern = """^(\d+)\.(\d+)(?:\.\d+)?$""".toRegex()
-
         val matchResult = versionPattern.matchEntire(version)
-
         if (matchResult != null) {
             val major = matchResult.groupValues[1].toInt()
             val minor = matchResult.groupValues[2].toInt()
-
             val targetMajor = targetVersion.substringBefore('.').toInt()
             val targetMinor = targetVersion.substringAfter('.').toInt()
-
             if (major < targetMajor) {
                 return true
             } else if (major == targetMajor && minor <= targetMinor) {
                 return true
             }
         }
-
         return false
     }
 
@@ -52,7 +47,6 @@ object NMSUtils {
         val versionString = Bukkit.getServer().version
         val regexPattern = """\d+\.\d+\.\d+""".toRegex()
         val matchResult = regexPattern.find(versionString)
-
         return matchResult?.value ?: "Unknown"
     }
 

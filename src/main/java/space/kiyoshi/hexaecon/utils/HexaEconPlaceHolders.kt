@@ -49,29 +49,11 @@ class HexaEconPlaceHolders : PlaceholderExpansion() {
             }
 
             "balance_formatted" -> {
-                Format.hex(
-                    Format.color(
-                        IridiumColorAPI.process(
-                            formattedAmount()?.replace(
-                                "%amountformatted%",
-                                Economy.formatBalance(getBalance(player))
-                            )!!
-                        )
-                    )
-                )
+                Format.hex(Format.color(IridiumColorAPI.process(formattedAmount()?.replace("%amountformatted%", Economy.formatBalance(getBalance(player)))!!)))
             }
 
             "balance_formatted_symbol" -> {
-                Format.hex(
-                    Format.color(
-                        IridiumColorAPI.process(
-                            formattedAmount()?.replace(
-                                "%amountformatted%",
-                                Economy.formatBalance(getBalance(player))+symbol.toString()
-                            )!!
-                        )
-                    )
-                )
+                Format.hex(Format.color(IridiumColorAPI.process(formattedAmount()?.replace("%amountformatted%", Economy.formatBalance(getBalance(player))+symbol.toString())!!)))
             }
 
             else -> null
@@ -104,7 +86,7 @@ class HexaEconPlaceHolders : PlaceholderExpansion() {
                 TableFunctionRedis.selectAllFromCollectionAsStringRedis(player.name).toString().replace("[", "").replace("]", "")
             }
             else -> {
-                return "Unknown DataBaseType"
+                return "Unknown DataBase (*Type)"
             }
         }
     }

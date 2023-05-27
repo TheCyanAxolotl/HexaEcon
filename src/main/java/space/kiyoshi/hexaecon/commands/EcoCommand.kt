@@ -25,12 +25,12 @@ import space.kiyoshi.hexaecon.utils.Language.isConsolePlayer
 class EcoCommand : CommandExecutor {
     private val dataeconomyvalue = GetConfig.main().getString("DataBase.DataEconomyName")!!
     private val soundeco = GetConfig.main().getString("Sounds.NoPermission.Sound")!!
-    private val soundnoperm = GetConfig.main().getString("Sounds.NoPermission.Sound")!!
     private val volumeeco = GetConfig.main().getInt("Sounds.EcoCommand.Volume")
-    private val volumenoperm = GetConfig.main().getInt("Sounds.NoPermission.Volume")
     private val pitcheco = GetConfig.main().getInt("Sounds.EcoCommand.Pitch")
-    private val pitchnoperm = GetConfig.main().getInt("Sounds.NoPermission.Pitch")
     private val databasetype = GetConfig.main().getString("DataBase.Type")!!
+    private val soundnoperm = GetConfig.main().getString("Sounds.NoPermission.Sound")!!
+    private val pitchnoperm = GetConfig.main().getInt("Sounds.NoPermission.Pitch")
+    private val volumenoperm = GetConfig.main().getInt("Sounds.NoPermission.Volume")
     override fun onCommand(sender: CommandSender, command: Command, label: String, args: Array<String>): Boolean {
         if (sender !is Player) {
             sender.sendMessage(Format.hex(Format.color(isConsolePlayer())))

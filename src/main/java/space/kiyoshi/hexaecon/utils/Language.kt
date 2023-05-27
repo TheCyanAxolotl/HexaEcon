@@ -12,9 +12,13 @@ import space.kiyoshi.hexaecon.HexaEcon.Companion.plugin
 
 object Language {
 
+    /********************************* Prefix *********************************/
+
     private fun getPrefix(): String? {
         return plugin.getLanguages().getString("Language.Prefix")
     }
+
+    /********************************* Messages *********************************/
 
     fun isConsolePlayer(): String {
         return getPrefix() + plugin.getLanguages().getString("Language.IsConsolePlayer")
@@ -88,7 +92,7 @@ object Language {
         return getPrefix() + plugin.getLanguages().getString("Language.UsageFormat")
     }
 
-    // Usages
+    /********************************* Usages *********************************/
 
     fun usageConvertDeposit(): String? {
         return plugin.getLanguages().getString("Usages.EconConvertDeposit")
@@ -102,7 +106,7 @@ object Language {
         return getPrefix() + plugin.getLanguages().getString("Language.ConfigurationReloaded")
     }
 
-    // Formatted
+    /********************************* Formatted *********************************/
 
     fun formattedAmount(): String? {
         return plugin.getLanguages().getString("Formatted.Amount")

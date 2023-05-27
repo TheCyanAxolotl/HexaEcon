@@ -48,23 +48,15 @@ class PayCommand : CommandExecutor, TabCompleter {
     private val volume = GetConfig.main().getInt("Sounds.OnKillMonsters.Volume")
     private val pitch = GetConfig.main().getInt("Sounds.OnKillMonsters.Pitch")
     private val databasetype = GetConfig.main().getString("DataBase.Type")!!
+    private val soundnoperm = GetConfig.main().getString("Sounds.NoPermission.Sound")!!
+    private val pitchnoperm = GetConfig.main().getInt("Sounds.NoPermission.Pitch")
+    private val volumenoperm = GetConfig.main().getInt("Sounds.NoPermission.Volume")
 
     override fun onCommand(sender: CommandSender, command: Command, label: String, args: Array<String>): Boolean {
         val player = sender
         if (command.name == "pay") {
             if (args.size == 0) {
-                player.sendMessage(
-                    Format.hex(
-                        Format.color(
-                            IridiumColorAPI.process(
-                                usageFormat().replace(
-                                    "%u",
-                                    usagePayment()!!
-                                )
-                            )
-                        )
-                    )
-                )
+                player.sendMessage(Format.hex(Format.color(IridiumColorAPI.process(usageFormat().replace("%u", usagePayment()!!)))))
                 if (sound != "NONE") {
                     if (sender is Player) {
                         sender.playSound(sender.location, Sound.valueOf(sound), volume.toFloat(), pitch.toFloat())
@@ -78,36 +70,16 @@ class PayCommand : CommandExecutor, TabCompleter {
                             player.sendMessage(Format.hex(Format.color(usageFormat().replace("%u%", usagePayment()!!))))
                             if (sound != "NONE") {
                                 if (sender is Player) {
-                                    sender.playSound(
-                                        sender.location,
-                                        Sound.valueOf(sound),
-                                        volume.toFloat(),
-                                        pitch.toFloat()
+                                    sender.playSound(sender.location, Sound.valueOf(sound), volume.toFloat(),pitch.toFloat()
                                     )
                                 }
                             }
                         } else {
                             if (args.size < 2) {
-                                player.sendMessage(
-                                    Format.hex(
-                                        Format.color(
-                                            IridiumColorAPI.process(
-                                                usageFormat().replace(
-                                                    "%u%",
-                                                    usagePayment()!!
-                                                )
-                                            )
-                                        )
-                                    )
-                                )
+                                player.sendMessage(Format.hex(Format.color(IridiumColorAPI.process(usageFormat().replace("%u%", usagePayment()!!)))))
                                 if (sound != "NONE") {
                                     if (sender is Player) {
-                                        sender.playSound(
-                                            sender.location,
-                                            Sound.valueOf(sound),
-                                            volume.toFloat(),
-                                            pitch.toFloat()
-                                        )
+                                        sender.playSound(sender.location, Sound.valueOf(sound), volume.toFloat(), pitch.toFloat())
                                     }
                                 }
                             } else {
@@ -116,54 +88,18 @@ class PayCommand : CommandExecutor, TabCompleter {
                                 val target = Bukkit.getPlayer(targetname)
                                 try {
                                     if (amount == null) {
-                                        player.sendMessage(
-                                            Format.hex(
-                                                Format.color(
-                                                    IridiumColorAPI.process(
-                                                        invalidAmount().replace(
-                                                            "%valuename%",
-                                                            dataeconomyvalue
-                                                        )
-                                                    )
-                                                )
-                                            )
-                                        )
+                                        player.sendMessage(Format.hex(Format.color(IridiumColorAPI.process(invalidAmount().replace("%valuename%", dataeconomyvalue)))))
                                         return true
                                     }
                                     if (amount == 0L) {
-                                        player.sendMessage(
-                                            Format.hex(
-                                                Format.color(
-                                                    IridiumColorAPI.process(
-                                                        invalidAmount().replace(
-                                                            "%valuename%",
-                                                            dataeconomyvalue
-                                                        )
-                                                    )
-                                                )
-                                            )
-                                        )
+                                        player.sendMessage(Format.hex(Format.color(IridiumColorAPI.process(invalidAmount().replace("%valuename%", dataeconomyvalue)))))
                                         return true
                                     }
-
                                     if (targetname == null || targetname.isEmpty() || targetname.isBlank()) {
-                                        player.sendMessage(
-                                            Format.hex(
-                                                Format.color(
-                                                    IridiumColorAPI.process(
-                                                        playerNotFound().replace("%p%", args[2])
-                                                    )
-                                                )
-                                            )
-                                        )
+                                        player.sendMessage(Format.hex(Format.color(IridiumColorAPI.process(playerNotFound().replace("%p%", args[2])))))
                                         if (sound != "NONE") {
                                             if (sender is Player) {
-                                                sender.playSound(
-                                                    sender.location,
-                                                    Sound.valueOf(sound),
-                                                    volume.toFloat(),
-                                                    pitch.toFloat()
-                                                )
+                                                sender.playSound(sender.location, Sound.valueOf(sound), volume.toFloat(), pitch.toFloat())
                                             }
                                         }
                                         return false
@@ -172,23 +108,12 @@ class PayCommand : CommandExecutor, TabCompleter {
                                         player.sendMessage(Format.hex(Format.color(IridiumColorAPI.process(cannotpayself()))))
                                         if (sound != "NONE") {
                                             if (sender is Player) {
-                                                sender.playSound(
-                                                    sender.location,
-                                                    Sound.valueOf(sound),
-                                                    volume.toFloat(),
-                                                    pitch.toFloat()
-                                                )
+                                                sender.playSound(sender.location, Sound.valueOf(sound), volume.toFloat(), pitch.toFloat())
                                             }
                                         }
                                         return false
                                     }
-                                    if (!(Format.hasLetter(args[0]) ||
-                                                Format.hasLetterAndSpecial(args[0]) ||
-                                                Format.hasLetterAndMabyeDigit(args[0]) ||
-                                                Format.hasLetterSpecialAndMaybeDigit(args[0]) ||
-                                                Format.hasSpecial(args[0]) ||
-                                                Format.hasLetter(args[0]))
-                                    ) {
+                                    if (!(Format.hasLetter(args[0]) || Format.hasLetterAndSpecial(args[0]) || Format.hasLetterAndMabyeDigit(args[0]) || Format.hasLetterSpecialAndMaybeDigit(args[0]) || Format.hasSpecial(args[0]) || Format.hasLetter(args[0]))) {
                                         if (amount >= 1) {
                                             val data_names_sqlite =
                                                 File(plugin.dataFolder.toString() + "/data/${target!!.name}/" + target.name + "_SQLite.txt")
@@ -198,7 +123,6 @@ class PayCommand : CommandExecutor, TabCompleter {
                                                 File(plugin.dataFolder.toString() + "/data/${target.name}/" + target.name + "_MongoDB.txt")
                                             val data_names_redis =
                                                 File(plugin.dataFolder.toString() + "/data/${target.name}/" + target.name + "_Redis.txt")
-
                                             val data_names_sqlite_self =
                                                 File(plugin.dataFolder.toString() + "/data/${player.name}/" + player.name + "_SQLite.txt")
                                             val data_names_mysql_self =
@@ -207,7 +131,6 @@ class PayCommand : CommandExecutor, TabCompleter {
                                                 File(plugin.dataFolder.toString() + "/data/${player.name}/" + player.name + "_MongoDB.txt")
                                             val data_names_redis_self =
                                                 File(plugin.dataFolder.toString() + "/data/${player.name}/" + player.name + "_MongoDB.txt")
-
                                             val data_names_config_sqlite: FileConfiguration =
                                                 YamlConfiguration.loadConfiguration(data_names_sqlite)
                                             val data_names_config_mysql: FileConfiguration =
@@ -216,7 +139,6 @@ class PayCommand : CommandExecutor, TabCompleter {
                                                 YamlConfiguration.loadConfiguration(data_names_mongodb)
                                             val data_names_config_redis: FileConfiguration =
                                                 YamlConfiguration.loadConfiguration(data_names_redis)
-
                                             val data_names_config_sqlite_self: FileConfiguration =
                                                 YamlConfiguration.loadConfiguration(data_names_sqlite_self)
                                             val data_names_config_mysql_self: FileConfiguration =
@@ -225,7 +147,6 @@ class PayCommand : CommandExecutor, TabCompleter {
                                                 YamlConfiguration.loadConfiguration(data_names_mongodb_self)
                                             val data_names_config_redis_self: FileConfiguration =
                                                 YamlConfiguration.loadConfiguration(data_names_redis_self)
-
                                             val somasqlitepay =
                                                 data_names_config_sqlite_self.getLong("data.${dataeconomyvalue}") - amount
                                             val somamysqlpay =
@@ -234,7 +155,6 @@ class PayCommand : CommandExecutor, TabCompleter {
                                                 data_names_config_mongodb_self.getLong("data.${dataeconomyvalue}") - amount
                                             val somaredispay =
                                                 data_names_config_redis_self.getLong("data.${dataeconomyvalue}") - amount
-
                                             val somasqlitepayed =
                                                 data_names_config_sqlite.getLong("data.${dataeconomyvalue}") + amount
                                             val somamysqlpayed =
@@ -243,80 +163,37 @@ class PayCommand : CommandExecutor, TabCompleter {
                                                 data_names_config_mongodb.getLong("data.${dataeconomyvalue}") + amount
                                             val somaredispayed =
                                                 data_names_config_redis.getLong("data.${dataeconomyvalue}") + amount
-
                                             if (databasetype == "h2") {
                                                 if (data_names_config_sqlite_self.getLong("data.${dataeconomyvalue}") >= amount) {
                                                     try {
                                                         TableFunctionSQL.dropTableSQLite(player as Player)
                                                         TableFunctionSQL.dropTableSQLite(target)
-                                                    } catch (_: SQLException) {
+                                                    } catch (e: SQLException) {
+                                                        e.printStackTrace()
                                                     }
                                                     try {
-                                                        TableFunctionSQL.createTableAmountSQLite(
-                                                            player as Player,
-                                                            somasqlitepay
-                                                        )
-                                                        TableFunctionSQL.createTableAmountSQLite(target,
-                                                            somasqlitepayed
-                                                        )
-                                                    } catch (_: SQLException) {
+                                                        TableFunctionSQL.createTableAmountSQLite(player as Player, somasqlitepay)
+                                                        TableFunctionSQL.createTableAmountSQLite(target, somasqlitepayed)
+                                                    } catch (e: SQLException) {
+                                                        e.printStackTrace()
                                                     }
                                                     try {
-                                                        data_names_config_sqlite_self["data.${dataeconomyvalue}"] =
-                                                            somasqlitepay
-                                                        data_names_config_sqlite["data.${dataeconomyvalue}"] =
-                                                            somasqlitepayed
-                                                    } catch (_: IOException) {
+                                                        data_names_config_sqlite_self["data.${dataeconomyvalue}"] = somasqlitepay
+                                                        data_names_config_sqlite["data.${dataeconomyvalue}"] = somasqlitepayed
+                                                    } catch (e: IOException) {
+                                                        e.printStackTrace()
                                                     }
                                                     try {
                                                         data_names_config_sqlite_self.save(data_names_sqlite_self)
                                                         data_names_config_sqlite.save(data_names_sqlite)
-                                                    } catch (_: IOException) {
+                                                    } catch (e: IOException) {
+                                                        e.printStackTrace()
                                                     }
                                                     plugin.reloadConfig()
-                                                    player.sendMessage(
-                                                        Format.hex(
-                                                            Format.color(
-                                                                IridiumColorAPI.process(
-                                                                    playerpayed().replace("%amountformatted%", Economy.formatBalance(amount.toString()))
-                                                                        .replace("%valuename%", dataeconomyvalue)
-                                                                        .replace("%p%", target.name)
-                                                                        .replace("%amount%", amount.toString())
-                                                                )
-                                                            )
-                                                        )
-                                                    )
-                                                    target.sendMessage(
-                                                        Format.hex(
-                                                            Format.color(
-                                                                IridiumColorAPI.process(
-                                                                    paymentrecived().replace(
-                                                                        "%amountformatted%",
-                                                                        Economy.formatBalance(amount.toString())
-                                                                    ).replace("%valuename%", dataeconomyvalue)
-                                                                        .replace("%p%", player.name)
-                                                                        .replace("%amount%", amount.toString())
-                                                                )
-                                                            )
-                                                        )
-                                                    )
+                                                    player.sendMessage(Format.hex(Format.color(IridiumColorAPI.process(playerpayed().replace("%amountformatted%", Economy.formatBalance(amount.toString())).replace("%valuename%", dataeconomyvalue).replace("%p%", target.name).replace("%amount%", amount.toString())))))
+                                                    target.sendMessage(Format.hex(Format.color(IridiumColorAPI.process(paymentrecived().replace("%amountformatted%", Economy.formatBalance(amount.toString())).replace("%valuename%", dataeconomyvalue).replace("%p%", player.name).replace("%amount%", amount.toString())))))
                                                 } else {
-                                                    player.sendMessage(
-                                                        Format.hex(
-                                                            Format.color(
-                                                                IridiumColorAPI.process(
-                                                                    Language.walletWithdrawNoEnoughAmount()
-                                                                        .replace(
-                                                                            "%amountformatted%",
-                                                                            Economy.formatBalance(data_names_config_sqlite_self.getLong("data.${dataeconomyvalue}")
-                                                                                .toString())
-                                                                        ).replace("%valuename%", dataeconomyvalue)
-                                                                        .replace("%amount%", data_names_config_sqlite_self.getLong("data.${dataeconomyvalue}")
-                                                                            .toString())
-                                                                )
-                                                            )
-                                                        )
-                                                    )
+                                                    player.sendMessage(Format.hex(Format.color(IridiumColorAPI.process(Language.walletWithdrawNoEnoughAmount().replace("%amountformatted%", Economy.formatBalance(data_names_config_sqlite_self.getLong("data.${dataeconomyvalue}").toString())).replace("%valuename%", dataeconomyvalue).replace("%amount%", data_names_config_sqlite_self.getLong("data.${dataeconomyvalue}").toString())))))
                                                 }
                                             } else if (databasetype == "MongoDB") {
                                                 if (data_names_config_mongodb_self.getLong("data.${dataeconomyvalue}") >= amount) {
