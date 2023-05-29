@@ -23,7 +23,7 @@ import space.kiyoshi.hexaecon.functions.TableFunctionRedis
 import space.kiyoshi.hexaecon.functions.TableFunctionSQL
 import space.kiyoshi.hexaecon.utils.Economy
 import space.kiyoshi.hexaecon.utils.Format
-import space.kiyoshi.hexaecon.utils.GetConfig
+import space.kiyoshi.hexaecon.utils.DataManager
 import space.kiyoshi.hexaecon.utils.Language
 import space.kiyoshi.hexaecon.utils.Language.accessDenied
 import space.kiyoshi.hexaecon.utils.Language.cannotpayself
@@ -38,20 +38,20 @@ import java.util.*
 
 
 class PayCommand : CommandExecutor, TabCompleter {
-    private val dataeconomyvalue = GetConfig.main().getString("DataBase.DataEconomyName")!!
-    private val sound = GetConfig.main().getString("Sounds.OnKillMonsters.Sound")!!
-    private val volume = GetConfig.main().getInt("Sounds.OnKillMonsters.Volume")
-    private val pitch = GetConfig.main().getInt("Sounds.OnKillMonsters.Pitch")
-    private val databasetype = GetConfig.main().getString("DataBase.Type")!!
-    private val soundnoperm = GetConfig.main().getString("Sounds.NoPermission.Sound")!!
-    private val pitchnoperm = GetConfig.main().getInt("Sounds.NoPermission.Pitch")
-    private val volumenoperm = GetConfig.main().getInt("Sounds.NoPermission.Volume")
+    private val dataeconomyvalue = DataManager.main().getString("DataBase.DataEconomyName")!!
+    private val sound = DataManager.main().getString("Sounds.OnKillMonsters.Sound")!!
+    private val volume = DataManager.main().getInt("Sounds.OnKillMonsters.Volume")
+    private val pitch = DataManager.main().getInt("Sounds.OnKillMonsters.Pitch")
+    private val databasetype = DataManager.main().getString("DataBase.Type")!!
+    private val soundnoperm = DataManager.main().getString("Sounds.NoPermission.Sound")!!
+    private val pitchnoperm = DataManager.main().getInt("Sounds.NoPermission.Pitch")
+    private val volumenoperm = DataManager.main().getInt("Sounds.NoPermission.Volume")
 
     override fun onCommand(sender: CommandSender, command: Command, label: String, args: Array<String>): Boolean {
         val player = sender
         if (command.name == "pay") {
             if (args.size == 0) {
-                player.sendMessage(Format.hex(Format.color(IridiumColorAPI.process(usageFormat().replace("%u", usagePayment()!!)))))
+                player.sendMessage(Format.hex(Format.color(IridiumColorAPI.process(usageFormat().replace("%u%", usagePayment()!!)))))
                 if (sound != "NONE") {
                     if (sender is Player) {
                         sender.playSound(sender.location, Sound.valueOf(sound), volume.toFloat(), pitch.toFloat())

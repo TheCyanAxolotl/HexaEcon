@@ -9,13 +9,13 @@ package space.kiyoshi.hexaecon.functions
 
 import org.bukkit.entity.Player
 import space.kiyoshi.hexaecon.HexaEcon
-import space.kiyoshi.hexaecon.utils.GetConfig
+import space.kiyoshi.hexaecon.utils.DataManager
 import java.sql.SQLException
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.ExecutionException
 
 object TableFunctionSQL {
-    private val dataeconomyvalue = GetConfig.main().getString("DataBase.DataEconomyName")!!
+    private val dataeconomyvalue = DataManager.main().getString("DataBase.DataEconomyName")!!
 
     /********************************* MySQL *********************************/
 
@@ -114,6 +114,7 @@ object TableFunctionSQL {
         stmt.close()
     }
 
+    @JvmStatic
     fun selectAllFromTableAsStringSQLite(tableName: String): List<String> {
         val results = mutableListOf<String>()
         try {

@@ -18,10 +18,10 @@ import space.kiyoshi.hexaecon.utils.Language.formattedAmount
 import java.util.concurrent.CompletableFuture
 
 class HexaEconPlaceHolders : PlaceholderExpansion() {
-    private val symbol = GetConfig.main().getString("Economy.Virtual.Symbol")
-    private val dataeconomyvalue = GetConfig.main().getString("DataBase.DataEconomyName")!!
+    private val symbol = DataManager.main().getString("Economy.Virtual.Symbol")
+    private val dataeconomyvalue = DataManager.main().getString("DataBase.DataEconomyName")!!
     private val version = HexaEcon.plugin.description.version
-    private val databasetype = GetConfig.main().getString("DataBase.Type")!!
+    private val databasetype = DataManager.main().getString("DataBase.Type")!!
     override fun getIdentifier(): String {
         return "hexaecon"
     }

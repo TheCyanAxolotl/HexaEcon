@@ -8,11 +8,11 @@ softdepend:
   - PlaceholderAPI
 commands:
   eco:
-    description: "See Balance"
+    description: "With this command u can see ur balance or the balance of other players"
     aliases: [ "balance", "bal" ]
   wallet:
-    description: "Withdraw money from the wallet"
+    description: "Main HexaEcon Command"
     aliases: [ "money", "coin", "coins", "econ", "economy", "bank" ]
   pay:
-    description: "Command  to pay ur friends"
+    description: "With this command you can send money to your friends"
     aliases: [ "sendmoney", "payment" ]

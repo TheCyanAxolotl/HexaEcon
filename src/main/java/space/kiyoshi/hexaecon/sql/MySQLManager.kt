@@ -7,7 +7,7 @@
 
 package space.kiyoshi.hexaecon.sql
 
-import space.kiyoshi.hexaecon.utils.GetConfig
+import space.kiyoshi.hexaecon.utils.DataManager
 import space.kiyoshi.hexaecon.utils.KiyoshiLogger
 import space.kiyoshi.hexaecon.utils.NMSUtils
 import java.sql.Connection
@@ -18,11 +18,11 @@ import java.util.logging.LogRecord
 
 class MySQLManager {
     private val nms = NMSUtils
-    private val host = GetConfig.main().getString("MySQL.Host")!!
-    private val port = GetConfig.main().getInt("MySQL.Port")
-    private val database = GetConfig.main().getString("MySQL.DataBase")!!
-    private val username = GetConfig.main().getString("MySQL.UserName")!!
-    private val password = GetConfig.main().getString("MySQL.Password")!!
+    private val host = DataManager.main().getString("MySQL.Host")!!
+    private val port = DataManager.main().getInt("MySQL.Port")
+    private val database = DataManager.main().getString("MySQL.DataBase")!!
+    private val username = DataManager.main().getString("MySQL.UserName")!!
+    private val password = DataManager.main().getString("MySQL.Password")!!
     private var connection: Connection? = null
     val isConnected: Boolean
         get() = if (connection == null) false else true

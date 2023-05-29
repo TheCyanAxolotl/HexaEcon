@@ -3,5 +3,5 @@
   "%hexaecon_version%": "Returns the version of the plugin",
   "%hexaecon_balance%": "Returns the Balance of the player",
   "%hexaecon_balance_formatted": "Returns the formatted Balance of the player",
-  "%balance_formatted_symbol%": "Returns the formatted Balance of the player with the currency symbol"
+  "%hexaecon_balance_formatted_symbol%": "Returns the formatted Balance of the player with the currency symbol"
 }

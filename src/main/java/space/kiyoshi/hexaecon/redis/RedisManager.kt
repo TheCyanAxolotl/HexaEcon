@@ -8,7 +8,7 @@ package space.kiyoshi.hexaecon.redis
 
 import redis.clients.jedis.Jedis
 
-class RedisManager(private val host: String, private val port: Int) {
+class RedisManager(private val host: String, private val port: Int?) {
     private lateinit var jedis: Jedis
 
     init {
@@ -16,7 +16,7 @@ class RedisManager(private val host: String, private val port: Int) {
     }
 
     private fun connect() {
-        jedis = Jedis(host, port)
+        jedis = Jedis(host, port!!)
         jedis.connect()
     }
 

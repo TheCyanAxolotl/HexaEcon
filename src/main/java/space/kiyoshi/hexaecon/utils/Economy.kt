@@ -19,13 +19,13 @@ import java.text.DecimalFormatSymbols
 
 
 object Economy {
-    private val itemtype = GetConfig.main().getString("Economy.Physical.Item")!!
-    private val pattern = GetConfig.main().getString("Economy.Pattern")!!
-    private val itemdisplayname = GetConfig.main().getString("Economy.Physical.DisplayName")!!
-    private val itemnbtvalue = GetConfig.main().getInt("Economy.Physical.NBT.Value")
-    private val itemlore: List<String> = GetConfig.main().getStringList("Economy.Physical.Lore")
-    private val ignorelevelrestriction = GetConfig.main().getBoolean("Economy.Physical.Enchant.IgnoreLevelRestriction")
-    private val enchantlevel = GetConfig.main().getInt("Economy.Physical.Enchant.Level")
+    private val itemtype = DataManager.main().getString("Economy.Physical.Item")!!
+    private val pattern = DataManager.main().getString("Economy.Pattern")!!
+    private val itemdisplayname = DataManager.main().getString("Economy.Physical.DisplayName")!!
+    private val itemnbtvalue = DataManager.main().getInt("Economy.Physical.NBT.Value")
+    private val itemlore: List<String> = DataManager.main().getStringList("Economy.Physical.Lore")
+    private val ignorelevelrestriction = DataManager.main().getBoolean("Economy.Physical.Enchant.IgnoreLevelRestriction")
+    private val enchantlevel = DataManager.main().getInt("Economy.Physical.Enchant.Level")
     private val nms = NMSUtils
     fun addEconomy(player: Player?, amount: Int?): ItemStack {
         val econ = ItemStack(Material.valueOf(itemtype), amount!!)
@@ -82,7 +82,11 @@ object Economy {
     }
 
     fun formatBalance(balance: String): String {
-        val value = balance.toLongOrNull() ?: return balance
+        val value = balance.toLongOrNull() ?: return "0"
+
+        if (value == 0L) {
+            return "0"
+        }
 
         val suffixes = listOf(
             "",

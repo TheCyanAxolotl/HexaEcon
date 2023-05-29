@@ -10,7 +10,6 @@ package space.kiyoshi.hexaecon.sql
 import space.kiyoshi.hexaecon.HexaEcon
 import java.sql.Connection
 import java.sql.DriverManager
-import java.sql.ResultSet
 import java.sql.SQLException
 
 class SQLiteManager(private val databasePath: String) {

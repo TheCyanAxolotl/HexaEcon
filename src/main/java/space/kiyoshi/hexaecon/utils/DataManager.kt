@@ -7,6 +7,7 @@
 
 package space.kiyoshi.hexaecon.utils
 
+import org.bukkit.Bukkit
 import org.bukkit.configuration.file.FileConfiguration
 import org.bukkit.configuration.file.YamlConfiguration
 import org.bukkit.entity.Player
@@ -14,7 +15,8 @@ import space.kiyoshi.hexaecon.HexaEcon.Companion.plugin
 import java.io.File
 import java.io.IOException
 
-object GetConfig {
+
+object DataManager {
 
     fun main(): FileConfiguration {
         return plugin.config
@@ -173,4 +175,16 @@ object GetConfig {
         }
     }
 
+
+    fun reloadPlugin() {
+        val hexaEcon = Bukkit.getPluginManager().getPlugin("HexaEcon")
+        if (hexaEcon != null) {
+            val config = YamlConfiguration.loadConfiguration(File(hexaEcon.dataFolder, "config.yml"))
+            plugin.saveNewConfig(hexaEcon, config)
+        } else {
+            Bukkit.getLogger().warning("Impossibile trovare il plugin.")
+        }
+        plugin.reloadPlugin()
+        plugin.reloadLanguages()
+    }
 }

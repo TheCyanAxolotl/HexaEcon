@@ -36,6 +36,10 @@ object Language {
         return getPrefix() + plugin.getLanguages().getString("Language.BankAmount")
     }
 
+    fun bankAmountOthers(): String {
+        return getPrefix() + plugin.getLanguages().getString("Language.BankAmountOthers")
+    }
+
     fun genericEarn(): String {
         return getPrefix() + plugin.getLanguages().getString("Language.GenericEarn")
     }

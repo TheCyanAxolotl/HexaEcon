@@ -8,14 +8,12 @@
 package space.kiyoshi.hexaecon.functions
 
 import redis.clients.jedis.Jedis
-import space.kiyoshi.hexaecon.redis.RedisManager
-import space.kiyoshi.hexaecon.utils.GetConfig
+import space.kiyoshi.hexaecon.utils.DataManager
 
 object TableFunctionRedis {
 
-    private val redishost = GetConfig.main().getString("Redis.Host")!!
-    private val redisport = GetConfig.main().getInt("Redis.Port")
-    private val jedis = RedisManager(redishost, redisport)
+    private val redishost = DataManager.main().getString("Redis.Host")!!
+    private val redisport = DataManager.main().getInt("Redis.Port")
 
     fun createTable(name: String) {
         val tableName = name
@@ -38,6 +36,7 @@ object TableFunctionRedis {
         Jedis(redishost, redisport).del(name)
     }
 
+    @JvmStatic
     fun selectAllFromCollectionAsStringRedis(tableName: String): List<String> {
         val results = mutableListOf<String>()
         try {

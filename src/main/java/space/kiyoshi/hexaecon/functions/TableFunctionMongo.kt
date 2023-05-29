@@ -11,11 +11,11 @@ import com.mongodb.ConnectionString
 import com.mongodb.client.MongoClient
 import com.mongodb.client.MongoClients
 import org.bson.Document
-import space.kiyoshi.hexaecon.utils.GetConfig
+import space.kiyoshi.hexaecon.utils.DataManager
 
 object TableFunctionMongo {
-    private val dataeconomyvalue = GetConfig.main().getString("DataBase.DataEconomyName")!!
-    private val mongohost = GetConfig.main().getString("MongoDB.Host")!!
+    private val dataeconomyvalue = DataManager.main().getString("DataBase.DataEconomyName")!!
+    private val mongohost = DataManager.main().getString("MongoDB.Host")!!
     private val mongoClient: MongoClient = MongoClients.create(mongohost)
 
     fun insertValueIntoDocument(databaseName: String, collectionName: String, field: String, value: Any) {
