@@ -5,6 +5,7 @@ Language:
   Prefix: '&e[&9HexaEcon&e]&r '
   IsConsolePlayer: '&eüzgünüm ama bu komutu konsolda çalıştıramazsınız.'
   BankAmount: '&6%amountformatted% &e%valuename% sahipsiniz.'
+  BankAmountOthers: '&6%p% &edeğer &6%amountformatted% &e%valuename%.'
   GenericEarn: '&e+ &6%amountformatted% &e%valuename%.'
   ConfigurationReloaded: '&eyapılandırma dosyaları başarıyla yeniden yüklendi.'
   GenerateToOther: '&e+ &6%p% &eadlı oyuncuya &6%amountformatted% &e%valuename% verdiniz.'

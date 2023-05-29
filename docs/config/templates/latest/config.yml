@@ -39,9 +39,11 @@ Redis:
   Port: 6379
 
 # Modules
-Modules: # Modules
+GenericModules: # Modules
   OnKillMonsters: true
   OnKillAnimals: false
+CustomModules:
+  OnKillGenericMobs: false # When the custom module is enabled, OnKillMonsters Module and OnKillAnimalsModule are ignored
 
 Economy:
   Pattern: "#,##0.##" # Currency Pattern
@@ -79,6 +81,10 @@ Sounds: # https://hub.spigotmc.org/javadocs/bukkit/org/bukkit/Sound.html
     Volume: 100
     Pitch: 1
   OnKillAnimals: # on animals kill
+    Sound: "NONE"
+    Volume: 100
+    Pitch: 1
+  OnKillGenericMobs:
     Sound: "NONE"
     Volume: 100
     Pitch: 1

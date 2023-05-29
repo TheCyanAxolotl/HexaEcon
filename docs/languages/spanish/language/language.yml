@@ -5,6 +5,7 @@ Language:
   Prefix: '&e[&9HexaEcon&e]&r '
   IsConsolePlayer: '&eLo sentimos, pero no puedes ejecutar este comando en la consola.'
   BankAmount: '&eTú tienes &6%formattedamount% &e%valuename% actualmente.'
+  BankAmountOthers: '&6%p% &ehas &6%formattedamount% &e%valuename%.'
   GenericEarn: '&e+ &6%formattedamount% &e%valuename%.'
   ConfigurationReloaded: '&eArchivos de configuración recargadas correctamente.'
   GenerateToOther: '&e+ &6%formattedamount% &e%valuename% generados por &6%p%'
