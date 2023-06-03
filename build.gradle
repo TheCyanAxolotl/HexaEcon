@@ -108,5 +108,7 @@ compileTestKotlin {
 
 
 shadowJar {
+    archiveName = 'HexaEcon.jar'
+    destinationDirectory.set(file('target'))
     relocate 'org.bstats', 'space.kiyoshi.hexaecon.bstats'
 }
