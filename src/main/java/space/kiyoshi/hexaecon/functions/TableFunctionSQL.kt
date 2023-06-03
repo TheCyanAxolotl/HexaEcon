@@ -114,6 +114,7 @@ object TableFunctionSQL {
         stmt.close()
     }
 
+
     @JvmStatic
     fun selectAllFromTableAsStringSQLite(tableName: String): List<String> {
         val results = mutableListOf<String>()

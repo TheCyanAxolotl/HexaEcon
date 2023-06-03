@@ -1,5 +1,6 @@
 //file:noinspection GrDeprecatedAPIUsage
 //file:noinspection GroovyAccessibility
+//file:noinspection GroovyAssignabilityCheck
 plugins {
     id 'java'
     id 'org.jetbrains.kotlin.jvm' version '1.8.20-RC2'
@@ -46,16 +47,24 @@ repositories {
         name = 'iridiumdevelopment'
         url = 'https://nexus.iridiumdevelopment.net/repository/maven-releases/'
     }
+    jcenter()
+    maven { url 'https://jitpack.io' }
 }
 
 dependencies {
-    implementation('org.spigotmc:spigot-api:1.19.4-R0.1-SNAPSHOT')
+    implementation('org.spigotmc:spigot-api:1.19.4-R0.1-SNAPSHOT') {
+        exclude group: 'org.yaml', module: 'snakeyaml'
+    }
+    implementation 'org.yaml:snakeyaml:2.0'
     implementation("org.xerial:sqlite-jdbc:3.41.2.1")
     implementation("org.mongodb:mongo-java-driver:3.12.11")
     implementation 'redis.clients:jedis:3.7.0'
     implementation 'org.jetbrains:annotations:23.0.0'
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
-    implementation("com.googlecode.json-simple:json-simple:1.1.1")
+    implementation('com.googlecode.json-simple:json-simple:1.1.1') {
+        exclude group: 'junit', module: 'junit'
+    }
+    implementation 'junit:junit:4.13.2'
     compileOnly 'me.clip:placeholderapi:2.11.3'
     implementation("com.iridium:IridiumColorAPI:1.0.6@jar")
 }

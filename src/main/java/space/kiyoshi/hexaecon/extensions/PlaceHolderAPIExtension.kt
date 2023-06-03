@@ -5,7 +5,7 @@
 
 @file:Suppress("LocalVariableName", "SpellCheckingInspection")
 
-package space.kiyoshi.hexaecon.utils
+package space.kiyoshi.hexaecon.extensions
 
 import com.iridium.iridiumcolorapi.IridiumColorAPI
 import me.clip.placeholderapi.expansion.PlaceholderExpansion
@@ -14,10 +14,13 @@ import space.kiyoshi.hexaecon.HexaEcon
 import space.kiyoshi.hexaecon.functions.TableFunctionMongo
 import space.kiyoshi.hexaecon.functions.TableFunctionRedis
 import space.kiyoshi.hexaecon.functions.TableFunctionSQL
+import space.kiyoshi.hexaecon.utils.DataManager
+import space.kiyoshi.hexaecon.utils.Economy
+import space.kiyoshi.hexaecon.utils.Format
 import space.kiyoshi.hexaecon.utils.Language.formattedAmount
 import java.util.concurrent.CompletableFuture
 
-class HexaEconPlaceHolders : PlaceholderExpansion() {
+class PlaceHolderAPIExtension : PlaceholderExpansion() {
     private val symbol = DataManager.main().getString("Economy.Virtual.Symbol")
     private val dataeconomyvalue = DataManager.main().getString("DataBase.DataEconomyName")!!
     private val version = HexaEcon.plugin.description.version
@@ -49,11 +52,29 @@ class HexaEconPlaceHolders : PlaceholderExpansion() {
             }
 
             "balance_formatted" -> {
-                Format.hex(Format.color(IridiumColorAPI.process(formattedAmount()?.replace("%amountformatted%", Economy.formatBalance(getBalance(player)))!!)))
+                Format.hex(
+                    Format.color(
+                        IridiumColorAPI.process(
+                            formattedAmount()?.replace(
+                                "%amountformatted%",
+                                Economy.formatBalance(getBalance(player))
+                            )!!
+                        )
+                    )
+                )
             }
 
             "balance_formatted_symbol" -> {
-                Format.hex(Format.color(IridiumColorAPI.process(formattedAmount()?.replace("%amountformatted%", Economy.formatBalance(getBalance(player))+symbol.toString())!!)))
+                Format.hex(
+                    Format.color(
+                        IridiumColorAPI.process(
+                            formattedAmount()?.replace(
+                                "%amountformatted%",
+                                Economy.formatBalance(getBalance(player)) + symbol.toString()
+                            )!!
+                        )
+                    )
+                )
             }
 
             else -> null

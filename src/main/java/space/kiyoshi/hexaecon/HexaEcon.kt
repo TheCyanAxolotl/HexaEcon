@@ -17,6 +17,7 @@ import org.bukkit.plugin.java.JavaPlugin
 import space.kiyoshi.hexaecon.commands.EcoCommand
 import space.kiyoshi.hexaecon.commands.PayCommand
 import space.kiyoshi.hexaecon.commands.WalletCommand
+import space.kiyoshi.hexaecon.extensions.PlaceHolderAPIExtension
 import space.kiyoshi.hexaecon.listeners.EventListener
 import space.kiyoshi.hexaecon.mongo.MongoDBManager
 import space.kiyoshi.hexaecon.redis.RedisManager
@@ -165,7 +166,7 @@ class HexaEcon : JavaPlugin() {
         if (PAPI) {
             KiyoshiLogger.log(LogRecord(Level.INFO, "PlaceholderAPI found."), "HexaEcon")
             if (Bukkit.getPluginManager().isPluginEnabled("PlaceholderAPI")) {
-                HexaEconPlaceHolders().register()
+                PlaceHolderAPIExtension().register()
             } else {
                 KiyoshiLogger.log(LogRecord(Level.INFO, "PlaceholderAPI found but not enabled."), "HexaEcon")
             }
@@ -294,7 +295,7 @@ class HexaEcon : JavaPlugin() {
                 val pluginDescription = PluginDescriptionFile(pluginYmlStream)
 
                 // Customize the plugin matching criteria as needed
-                if (pluginDescription.name.equals("YourPluginName", ignoreCase = true)) {
+                if (pluginDescription.name.equals("HexaEcon", ignoreCase = true)) {
                     val pluginClassLoader = Bukkit.getPluginManager().getPlugin(pluginDescription.name)?.javaClass?.classLoader
 
                     jarFile.close()

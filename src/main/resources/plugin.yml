@@ -16,3 +16,6 @@ commands:
   pay:
     description: "With this command you can send money to your friends"
     aliases: [ "sendmoney", "payment" ]
+  baltop:
+    description: "With this command you can get a balance top"
+    aliases: [ "balancetop", "topbalance"]
