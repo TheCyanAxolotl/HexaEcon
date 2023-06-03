@@ -106,5 +106,8 @@ TextureManager:
   Enabled: false # Texture not works for 1.8
   Texture: "https://www.dropbox.com/s/b9gmdetcysz66zn/HexaEcon.zip?dl=1"
 
+# Metrics
+bStats: true
+
 # Don't change this value
 config: "legacy"

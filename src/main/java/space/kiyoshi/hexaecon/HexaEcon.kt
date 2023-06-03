@@ -3,10 +3,12 @@
  *   All rights reserved.
  */
 
-@file:Suppress("SpellCheckingInspection", "SameParameterValue")
+@file:Suppress("SpellCheckingInspection", "SameParameterValue", "unused")
 
 package space.kiyoshi.hexaecon
 
+import org.bstats.bukkit.Metrics
+import org.bstats.charts.SimplePie
 import org.bukkit.Bukkit
 import org.bukkit.configuration.file.FileConfiguration
 import org.bukkit.configuration.file.YamlConfiguration
@@ -47,6 +49,7 @@ class HexaEcon : JavaPlugin() {
     private val mongohost = config.getString("MongoDB.Host")!!
     private val redishost = config.getString("Redis.Host")!!
     private val redisport = config.getInt("Redis.Port")
+    private val bstats = config.getBoolean("bStats")
 
 
     private fun initialize() {
@@ -67,6 +70,16 @@ class HexaEcon : JavaPlugin() {
             config.options().parseComments(true)
         }
         plugin = this
+        if(bstats) {
+            val metrics = Metrics(plugin, 18660)
+            metrics.addCustomChart(SimplePie("player_count") {
+                val playerCount = Bukkit.getOnlinePlayers().size
+                playerCount.toString()
+            })
+            KiyoshiLogger.log(LogRecord(Level.INFO, "Metrics enabled for HexaEcon"), "HexaEcon")
+        }
+
+
     }
 
     private fun configs() {
@@ -201,6 +214,11 @@ class HexaEcon : JavaPlugin() {
                     RedisManager(redishost, redisport).disconnect()
                 } catch (_: ClassNotFoundException) {}
             }
+        }
+        if(bstats) {
+            val metrics = Metrics(plugin, 18660)
+            metrics.shutdown()
+            KiyoshiLogger.log(LogRecord(Level.WARNING, "Metrics disabled for HexaEcon"), "HexaEcon")
         }
     }
 

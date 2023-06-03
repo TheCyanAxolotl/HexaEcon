@@ -4,6 +4,7 @@
 plugins {
     id 'java'
     id 'org.jetbrains.kotlin.jvm' version '1.8.20-RC2'
+    id 'com.github.johnrengelman.shadow' version '7.1.0'
 }
 
 group = 'space.kiyoshi'
@@ -67,6 +68,7 @@ dependencies {
     implementation 'junit:junit:4.13.2'
     compileOnly 'me.clip:placeholderapi:2.11.3'
     implementation("com.iridium:IridiumColorAPI:1.0.6@jar")
+    implementation 'org.bstats:bstats-bukkit:3.0.2'
 }
 
 def targetJavaVersion = 17
@@ -102,4 +104,9 @@ compileTestKotlin {
     kotlinOptions {
         jvmTarget = "1.8"
     }
+}
+
+
+shadowJar {
+    relocate 'org.bstats', 'space.kiyoshi.hexaecon.bstats'
 }
