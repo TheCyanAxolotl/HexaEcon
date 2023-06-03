@@ -107,7 +107,7 @@ class HexaEcon : JavaPlugin() {
                 languageconfig["Language.WalletWithdrawConverted"] = "&6%amountformatted% &e%valuename% converted."
                 languageconfig["Language.WalletWithdrawRemaningAmount"] = "&ethey still remain %valuename% &6%amountformatted%."
                 languageconfig["Language.WalletWithdrawNoEnoughAmount"] = "&eyou don't have enough %valuename%, you have &6%amountformatted% &e%valuename%."
-                languageconfig["Language.PlayerPayed"] = "&eYou have successfully sent to &6%p &6%amountformatted% &e%valuename%."
+                languageconfig["Language.PlayerPayed"] = "&eYou have successfully sent to &6%p% &6%amountformatted% &e%valuename%."
                 languageconfig["Language.PlayerPaymentRecived"] = "&eYou recived a payment of &6%amountformatted &e%valuename% &eby &6%p%."
                 languageconfig["Language.CannotPaySelf"] = "&eYou cannot pay yourself."
                 languageconfig["Language.RemovedEconFromPlayer"] = "&eYou have successfully removed &6%amountformatted% &e%valuename% from &6%p%."
